@@ -142,7 +142,8 @@ Assume - unchanged options inherited values from cod example & need to be checke
 - Final Year in Projection = 2018 since not projected, revisit ???
 - Projection Data by Year placeholder data unchanged, revisit ???
 
-## Read in data for use in WHAM
+# Read in data for use in WHAM
+## Fit WHAM
 CANNOT add comments at end of lines (comments must be separate lines)
 ```{r}
 # Load data
@@ -184,6 +185,7 @@ plot_wham_output(mod=mcod, out.type='html')
 ```
 
 ## WHAM with only NEFSC trawl surveys (excludes MA DMF as in 2018 assessment update)
+### First & second iterations
 ```{r}
 # Setwd for this model run
 setwd(paste(here::here(), "Model_runs", sep="/"))
@@ -212,16 +214,443 @@ input2 <- prepare_wham_input(asap3, model_name = "Plaice_noMADMF2",
 
 # Fit plaice model
 plaice_model2 <- fit_wham(input2) # https://timjmiller.github.io/wham/articles/ex7_debug.html # do.fit = F returns an error
-check_convergence(plaice_model)
+check_convergence(plaice_model2)
 
 # Generate diagnostics
 plot_wham_output(mod = plaice_model2, out.type = 'html')
 ```
 
+### Third iteration to fix selectivity based on example.R
+Fix selectivity for age 9, update starting selectivity values, add random effect for NAA
+```{r}
+# Setwd for this model run
+setwd(paste(here::here(), "Model_runs", sep="/"))
+
+##### Data
+# Load data
+asap3 <- read_asap3_dat(paste(here::here(), "Plaice_noMADMF.dat", sep="/"))
+# iid random effects for recruitment only 
+NAA_re = list(sigma = "rec") #random about mean
+NAA_re$recruit_model = 2 #random effects with a constant mean
+NAA_re$recruit_pars = exp(10) #initial guess for mean recruitment
+# Selectivity
+init_fleet_sel <- list(c(2,0.4)) # logistic, same as in the asap dat file
+fix_index_sel = lapply(1:input$data$n_indices, function(x) 9) # Index NA means do not fix them
+fix_fleet_sel = lapply(1:input$data$n_fleets, function(x) NA) #need this for fleets
+init_index_sel = lapply(1:input$data$n_indices, function(x) c(rep(0.5,8),1,0,0))
+sel_list <- list( model=c(rep("logistic", input$data$n_fleets), rep("age-specific", input$data$n_indices) ),
+                  #re=c( rep("none", 1), "2dar1", rep("none", 3) ) ,
+                  #re=c( rep("none", 1),  rep("2dar1", 4) ) ,
+                  initial_pars=c(init_fleet_sel, init_index_sel) ,
+                  fix_pars=c(fix_fleet_sel, fix_index_sel))
+
+##### Prep WHAM input
+input3 <- prepare_wham_input(asap3 = asap3, NAA_re = NAA_re, selectivity = sel_list, model_name = "Plaice_noMADMF3")
+
+###### Fit plaice model
+plaice_model3 <- fit_wham(input3, do.osa = FALSE,do.retro=FALSE,do.check=TRUE) #do.check will suggest where to look for and parameters that are challenging to estimate in current config
+check_convergence(plaice_model3)
+
+# Generate diagnostics
+plot_wham_output(mod = plaice_model3, out.type = 'html')
+
+# Look at selectivity patterns 
+plaice_model3$rep$selAA[[2]][1,] #index 1 selectivity
+plaice_model3$rep$selAA[[3]][1,] #index 2 selectivity. compare with lines 50-51
+```
+Still looks like dome-selectivity for indices but 9+ group has higher selectivity since grouped
+- The above fixed full selectivity to age 9, looks like age 4 for index 1, age 5 for index 2
+
+### Fourth iteration fix age 4 and 5 for indices 1 and 2 respectively
+```{r}
+# Setwd for this model run
+setwd(paste(here::here(), "Model_runs", sep="/"))
+
+##### Data
+# Load data
+asap3 <- read_asap3_dat(paste(here::here(), "Plaice_noMADMF.dat", sep="/"))
+# iid random effects for recruitment only 
+NAA_re = list(sigma = "rec") #random about mean
+NAA_re$recruit_model = 2 #random effects with a constant mean
+NAA_re$recruit_pars = exp(10) #initial guess for mean recruitment
+# Selectivity
+init_fleet_sel <- list(c(2,0.4)) # logistic, same as in the asap dat file
+fix_index_sel[[1]][1] <- 4 # Index NA means do not fix them
+fix_index_sel[[2]][1] <- 5
+fix_fleet_sel = lapply(1:input$data$n_fleets, function(x) NA) #need this for fleets
+init_index_sel[[1]] <- c(0.5, 0.5, 0.5, 1.0, 0.5, 0.5, 0.5, 0.5, 0.5, 0, 0)
+init_index_sel[[2]] <- c(0.5, 0.5, 0.5, 0.5, 1.0, 0.5, 0.5, 0.5, 0.5, 0, 0)
+sel_list <- list( model=c(rep("logistic", input$data$n_fleets), rep("age-specific", input$data$n_indices) ),
+                  #re=c( rep("none", 1), "2dar1", rep("none", 3) ) ,
+                  #re=c( rep("none", 1),  rep("2dar1", 4) ) ,
+                  initial_pars=c(init_fleet_sel, init_index_sel) ,
+                  fix_pars=c(fix_fleet_sel, fix_index_sel))
+
+##### Prep WHAM input
+input4 <- prepare_wham_input(asap3 = asap3, NAA_re = NAA_re, selectivity = sel_list, model_name = "Plaice_noMADMF4")
+
+###### Fit plaice model
+plaice_model4 <- fit_wham(input4, do.osa = FALSE,do.retro=FALSE,do.check=TRUE) #do.check will suggest where to look for and parameters that are challenging to estimate in current config
+check_convergence(plaice_model4)
+
+# Generate diagnostics
+plot_wham_output(mod = plaice_model4, out.type = 'html')
+
+# Look at selectivity patterns 
+plaice_model4$rep$selAA[[2]][1,] #index 1 selectivity
+plaice_model4$rep$selAA[[3]][1,] #index 2 selectivity. compare with lines 50-51
+```
+Worse fit, ages 4 and 5 (for index 1 and 2 respectively) and age 9+ at 1
+- age comp residuals small for larger ages, try fixing age 9 at estimated value for age 8
+
+### Fifth iteration builds on iteration 3
+Fix selectivity for age 9 near estimate for age 8 from plaice_model3 (0.49969888, 0.516221002), fix ages 4 and 5 (index 1 and 2 respectively) at 1
+```{r}
+# Setwd for this model run
+setwd(paste(here::here(), "Model_runs", sep="/"))
+
+##### Data
+# Load data
+asap3 <- read_asap3_dat(paste(here::here(), "Plaice_noMADMF.dat", sep="/"))
+# iid random effects for recruitment only 
+NAA_re = list(sigma = "rec") #random about mean
+NAA_re$recruit_model = 2 #random effects with a constant mean
+NAA_re$recruit_pars = exp(10) #initial guess for mean recruitment
+# Selectivity
+init_fleet_sel <- list(c(2,0.4)) # logistic, same as in the asap dat file
+fix_index_sel <- NULL
+fix_index_sel[[1]] <- c(4,9) # Index NA means do not fix them
+fix_index_sel[[2]] <- c(5,9)
+fix_fleet_sel = lapply(1:input$data$n_fleets, function(x) NA) #need this for fleets
+init_index_sel[[1]] <- c(0.5, 0.5, 0.5, 1.0, 0.5, 0.5, 0.5, 0.5, 0.5, 0, 0)
+init_index_sel[[2]] <- c(0.5, 0.5, 0.5, 0.5, 1.0, 0.5, 0.5, 0.5, 0.5, 0, 0)
+sel_list <- list( model=c(rep("logistic", input$data$n_fleets), rep("age-specific", input$data$n_indices) ),
+                  #re=c( rep("none", 1), "2dar1", rep("none", 3) ) ,
+                  #re=c( rep("none", 1),  rep("2dar1", 4) ) ,
+                  initial_pars=c(init_fleet_sel, init_index_sel) ,
+                  fix_pars=c(fix_fleet_sel, fix_index_sel))
+
+##### Prep WHAM input
+input5 <- prepare_wham_input(asap3 = asap3, NAA_re = NAA_re, selectivity = sel_list, model_name = "Plaice_noMADMF5")
+
+###### Fit plaice model
+plaice_model5 <- fit_wham(input5, do.osa = FALSE,do.retro=FALSE,do.check=TRUE) #do.check will suggest where to look for and parameters that are challenging to estimate in current config
+check_convergence(plaice_model5)
+
+# Generate diagnostics
+plot_wham_output(mod = plaice_model5, out.type = 'html')
+
+# Look at selectivity patterns 
+plaice_model5$rep$selAA[[2]][1,] #index 1 selectivity
+plaice_model5$rep$selAA[[3]][1,] #index 2 selectivity. compare with lines 50-51
+```
+Results more consistent dome-shaped selectivity pattern by index, similar age comp residual patterns. Compare likelihood:
+```{r}
+check_convergence(plaice_model3) # Age 9+ fixed selectivity to 1
+check_convergence(plaice_model5) # Age 9+ fixed selectivity at 0.5 and ages 4 & 5 fixed at 1 for index 1 & 2
+  # Results in larger likelihood, dome-shaped selectivity, little change in age comp
+```
+### Sixth iteration fix age 9 at 0.5 and freely estimates remaining ages (answers: is dome selectivity more gradual change if age 4/5 not fixed to 1)
+```{r}
+# Setwd for this model run
+setwd(paste(here::here(), "Model_runs", sep="/"))
+
+##### Data
+# Load data
+asap3 <- read_asap3_dat(paste(here::here(), "Plaice_noMADMF.dat", sep="/"))
+# iid random effects for recruitment only 
+NAA_re = list(sigma = "rec") #random about mean
+NAA_re$recruit_model = 2 #random effects with a constant mean
+NAA_re$recruit_pars = exp(10) #initial guess for mean recruitment
+# Selectivity
+init_fleet_sel <- list(c(2,0.4)) # logistic, same as in the asap dat file
+fix_index_sel[[1]][1] <- 9 # Index NA means do not fix them
+fix_index_sel[[2]][1] <- 9
+fix_fleet_sel = lapply(1:input$data$n_fleets, function(x) NA) #need this for fleets
+init_index_sel[[1]] <- c(0.5, 0.5, 0.5, 1.0, 0.5, 0.5, 0.5, 0.5, 0.5, 0, 0)
+init_index_sel[[2]] <- c(0.5, 0.5, 0.5, 0.5, 1.0, 0.5, 0.5, 0.5, 0.5, 0, 0)
+sel_list <- list( model=c(rep("logistic", input$data$n_fleets), rep("age-specific", input$data$n_indices) ),
+                  #re=c( rep("none", 1), "2dar1", rep("none", 3) ) ,
+                  #re=c( rep("none", 1),  rep("2dar1", 4) ) ,
+                  initial_pars=c(init_fleet_sel, init_index_sel) ,
+                  fix_pars=c(fix_fleet_sel, fix_index_sel))
+
+##### Prep WHAM input
+input6 <- prepare_wham_input(asap3 = asap3, NAA_re = NAA_re, selectivity = sel_list, model_name = "Plaice_noMADMF6")
+
+###### Fit plaice model
+plaice_model6 <- fit_wham(input6, do.osa = FALSE,do.retro=FALSE,do.check=TRUE) #do.check will suggest where to look for and parameters that are challenging to estimate in current config
+check_convergence(plaice_model6)
+
+# Generate diagnostics
+plot_wham_output(mod = plaice_model6, out.type = 'html')
+
+# Look at selectivity patterns 
+plaice_model6$rep$selAA[[2]][1,] #index 1 selectivity
+plaice_model6$rep$selAA[[3]][1,] #index 2 selectivity. compare with lines 50-51
+```
+Results in lower estimates of selectivity than plaice_model5, but pattern is similar to plaice_model3 with highest selectivity for age 9+. plaice_model3 or plaice_model5 still appear to be the best candidates
+
+
+
+### Seventh iteration builds on iteration 5
+Fix selectivity for age 9 near estimate for age 8 from plaice_model3 (0.49969888, 0.516221002), fix ages 4 and 5 (index 1 and 2 respectively) at 1, use logistic normal age comps treating 0s as missing
+```{r}
+# Setwd for this model run
+setwd(paste(here::here(), "Model_runs", sep="/"))
+
+##### Data
+# Load data
+asap3 <- read_asap3_dat(paste(here::here(), "Plaice_noMADMF.dat", sep="/"))
+# iid random effects for recruitment only 
+NAA_re = list(sigma = "rec") #random about mean
+NAA_re$recruit_model = 2 #random effects with a constant mean
+NAA_re$recruit_pars = exp(10) #initial guess for mean recruitment
+# Selectivity
+init_fleet_sel <- list(c(2,0.4)) # logistic, same as in the asap dat file
+fix_index_sel <- NULL
+fix_index_sel[[1]] <- c(4,9) # Index NA means do not fix them
+fix_index_sel[[2]] <- c(5,9)
+fix_fleet_sel = lapply(1:input$data$n_fleets, function(x) NA) #need this for fleets
+init_index_sel[[1]] <- c(0.5, 0.5, 0.5, 1.0, 0.5, 0.5, 0.5, 0.5, 0.5, 0, 0)
+init_index_sel[[2]] <- c(0.5, 0.5, 0.5, 0.5, 1.0, 0.5, 0.5, 0.5, 0.5, 0, 0)
+sel_list <- list( model=c(rep("logistic", input$data$n_fleets), rep("age-specific", input$data$n_indices) ),
+                  #re=c( rep("none", 1), "2dar1", rep("none", 3) ) ,
+                  #re=c( rep("none", 1),  rep("2dar1", 4) ) ,
+                  initial_pars=c(init_fleet_sel, init_index_sel) ,
+                  fix_pars=c(fix_fleet_sel, fix_index_sel))
+
+##### Prep WHAM input
+input7 <- prepare_wham_input(asap3 = asap3, NAA_re = NAA_re, selectivity = sel_list, age_comp = "logistic-normal-miss0", model_name = "Plaice_noMADMF7")
+
+###### Fit plaice model
+plaice_model7 <- fit_wham(input7, do.osa = FALSE,do.retro=FALSE,do.check=TRUE) #do.check will suggest where to look for and parameters that are challenging to estimate in current config
+check_convergence(plaice_model7)
+
+# Generate diagnostics
+plot_wham_output(mod = plaice_model7, out.type = 'html')
+
+# Look at selectivity patterns 
+plaice_model7$rep$selAA[[2]][1,] #index 1 selectivity
+plaice_model7$rep$selAA[[3]][1,] #index 2 selectivity. compare with lines 50-51
+```
+Compared to plaice_model5, this model had increased recruitment CV over timeseries, lower estimates of full F, generally smaller poplulation size over time, full catch selectivity by age 6ish rather than 9, lower overall estimates of selectivity except where fixed 
+
+### Eighth iteration same as 3 but lognormal age comp likelihood
+```{r}
+# Setwd for this model run
+setwd(paste(here::here(), "Model_runs", sep="/"))
+
+##### Data
+# Load data
+asap3 <- read_asap3_dat(paste(here::here(), "Plaice_noMADMF.dat", sep="/"))
+# iid random effects for recruitment only 
+NAA_re = list(sigma = "rec") #random about mean
+NAA_re$recruit_model = 2 #random effects with a constant mean
+NAA_re$recruit_pars = exp(10) #initial guess for mean recruitment
+# Selectivity
+init_fleet_sel <- list(c(2,0.4)) # logistic, same as in the asap dat file
+fix_index_sel = lapply(1:input$data$n_indices, function(x) 9) # Index NA means do not fix them
+fix_fleet_sel = lapply(1:input$data$n_fleets, function(x) NA) #need this for fleets
+init_index_sel = lapply(1:input$data$n_indices, function(x) c(rep(0.5,8),1,0,0))
+sel_list <- list( model=c(rep("logistic", input$data$n_fleets), rep("age-specific", input$data$n_indices) ),
+                  #re=c( rep("none", 1), "2dar1", rep("none", 3) ) ,
+                  #re=c( rep("none", 1),  rep("2dar1", 4) ) ,
+                  initial_pars=c(init_fleet_sel, init_index_sel) ,
+                  fix_pars=c(fix_fleet_sel, fix_index_sel))
+
+##### Prep WHAM input
+input8 <- prepare_wham_input(asap3 = asap3, NAA_re = NAA_re, selectivity = sel_list, age_comp = "logistic-normal-miss0", model_name = "Plaice_noMADMF8")
+
+###### Fit plaice model
+plaice_model8 <- fit_wham(input8, do.osa = FALSE,do.retro=FALSE,do.check=TRUE) #do.check will suggest where to look for and parameters that are challenging to estimate in current config
+check_convergence(plaice_model8)
+
+# Generate diagnostics
+plot_wham_output(mod = plaice_model8, out.type = 'html')
+
+# Look at selectivity patterns 
+plaice_model8$rep$selAA[[2]][1,] #index 1 selectivity
+plaice_model8$rep$selAA[[3]][1,] #index 2 selectivity. compare with lines 50-51
+```
+Improved fit over plaice_model7, large negative fleet age_comp residuals for age 4, larger residuals in general compared to plaice_model7, age 9+ larger selectivity than age 8
+
+### Ninth iteration builds on iteration 7
+Fix selectivity for age 9 near estimate for age 8 from plaice_model8 (0.47896143, 0.508556168) instead of plaice_model3, fix ages 4 and 5 (index 1 and 2 respectively) at 1, use logistic normal age comps treating 0s as missing
+```{r}
+# Setwd for this model run
+setwd(paste(here::here(), "Model_runs", sep="/"))
+
+##### Data
+# Load data
+asap3 <- read_asap3_dat(paste(here::here(), "Plaice_noMADMF.dat", sep="/"))
+# iid random effects for recruitment only 
+NAA_re = list(sigma = "rec") #random about mean
+NAA_re$recruit_model = 2 #random effects with a constant mean
+NAA_re$recruit_pars = exp(10) #initial guess for mean recruitment
+# Selectivity
+init_fleet_sel <- list(c(2,0.4)) # logistic, same as in the asap dat file
+fix_index_sel <- NULL
+fix_index_sel[[1]] <- c(4,9) # Index NA means do not fix them
+fix_index_sel[[2]] <- c(5,9)
+fix_fleet_sel = lapply(1:input$data$n_fleets, function(x) NA) #need this for fleets
+init_index_sel[[1]] <- c(0.5, 0.5, 0.5, 1.0, 0.5, 0.5, 0.5, 0.5, 0.47, 0, 0)
+init_index_sel[[2]] <- c(0.5, 0.5, 0.5, 0.5, 1.0, 0.5, 0.5, 0.5, 0.50, 0, 0)
+sel_list <- list( model=c(rep("logistic", input$data$n_fleets), rep("age-specific", input$data$n_indices) ),
+                  #re=c( rep("none", 1), "2dar1", rep("none", 3) ) ,
+                  #re=c( rep("none", 1),  rep("2dar1", 4) ) ,
+                  initial_pars=c(init_fleet_sel, init_index_sel) ,
+                  fix_pars=c(fix_fleet_sel, fix_index_sel))
+
+##### Prep WHAM input
+input9 <- prepare_wham_input(asap3 = asap3, NAA_re = NAA_re, selectivity = sel_list, age_comp = "logistic-normal-miss0", model_name = "Plaice_noMADMF9")
+
+###### Fit plaice model
+plaice_model9 <- fit_wham(input9, do.osa = FALSE,do.retro=FALSE,do.check=TRUE) #do.check will suggest where to look for and parameters that are challenging to estimate in current config
+check_convergence(plaice_model9)
+
+# Generate diagnostics
+plot_wham_output(mod = plaice_model9, out.type = 'html')
+
+# Look at selectivity patterns 
+plaice_model9$rep$selAA[[2]][1,] #index 1 selectivity
+plaice_model9$rep$selAA[[3]][1,] #index 2 selectivity. compare with lines 50-51
+```
+Slightly smaller gradient than plaice_model8, improves on gradient for plaice-model7, still has peak for age 9+, large negative age comps for age 4 (fleet & index 1) and age 5 (index 2). DON'T USE THIS MODEL - slightly smaller AIC but residual patterns in age comp
+
+## Compare WHAM models with default age_comp likelihood
+```{r}
+table.opts <- NULL
+table.opts$calc.rho = FALSE
+compare_wham_models(list(plaice_model3, # Fix age 9+ to 1
+                         plaice_model5), # Fix age 9+ to 0.5, age 4 and 5 to 1
+ table.opts=table.opts) 
+```
+plaice_model3 has lower AIC and smaller gradient but appear to have very similar trends/magnitudes except for specified differences in selectivity
+
+## Compare WHAM models with lognormal likelihood that treats 0 as missing
+```{r}
+compare_wham_models(list(plaice_model8, # Same as model 3 except for likelihood
+                    plaice_model7, # Same as model 5 except for likelihood
+                    plaice_model9), # Same as model 7 but age 9+ fixed at values near age 8 estimate from plaice_model8 (result in different value for index1)
+                    table.opts = table.opts) 
+                         
+```
+
+## 3 & 5 Most promising thus far, 
+### Tenth iteration
+Model 3 with survey cv increased to 0.3
+```{r}
+# Setwd for this model run
+setwd(paste(here::here(), "Model_runs", sep="/"))
+
+##### Data
+# Load data
+asap3 <- read_asap3_dat(paste(here::here(), "Plaice_noMADMF_HighSurvCV.dat", sep="/"))
+# iid random effects for recruitment only 
+NAA_re = list(sigma = "rec") #random about mean
+NAA_re$recruit_model = 2 #random effects with a constant mean
+NAA_re$recruit_pars = exp(10) #initial guess for mean recruitment
+# Selectivity
+init_fleet_sel <- list(c(2,0.4)) # logistic, same as in the asap dat file
+fix_index_sel = lapply(1:input$data$n_indices, function(x) 9) # Index NA means do not fix them
+fix_fleet_sel = lapply(1:input$data$n_fleets, function(x) NA) #need this for fleets
+init_index_sel = lapply(1:input$data$n_indices, function(x) c(rep(0.5,8),1,0,0))
+sel_list <- list( model=c(rep("logistic", input$data$n_fleets), rep("age-specific", input$data$n_indices) ),
+                  #re=c( rep("none", 1), "2dar1", rep("none", 3) ) ,
+                  #re=c( rep("none", 1),  rep("2dar1", 4) ) ,
+                  initial_pars=c(init_fleet_sel, init_index_sel) ,
+                  fix_pars=c(fix_fleet_sel, fix_index_sel))
+
+##### Prep WHAM input
+input10 <- prepare_wham_input(asap3 = asap3, NAA_re = NAA_re, selectivity = sel_list, model_name = "Plaice_noMADMF10")
+
+###### Fit plaice model
+plaice_model10 <- fit_wham(input10, do.osa = FALSE,do.retro=FALSE,do.check=TRUE) #do.check will suggest where to look for and parameters that are challenging to estimate in current config
+check_convergence(plaice_model10)
+
+# Generate diagnostics
+plot_wham_output(mod = plaice_model10, out.type = 'html')
+
+# Look at selectivity patterns 
+plaice_model10$rep$selAA[[2]][1,] #index 1 selectivity
+plaice_model10$rep$selAA[[3]][1,] #index 2 selectivity. compare with lines 50-51
+```
+age 9+ still has highest selectivity estimate, no strong differences in residual patterns
+
+### Eleventh iteration
+plaice_model5 with survey CV increased to 0.3
+```{r}
+# Setwd for this model run
+setwd(paste(here::here(), "Model_runs", sep="/"))
+
+##### Data
+# Load data
+asap3 <- read_asap3_dat(paste(here::here(), "Plaice_noMADMF_HighSurvCV.dat", sep="/"))
+# iid random effects for recruitment only 
+NAA_re = list(sigma = "rec") #random about mean
+NAA_re$recruit_model = 2 #random effects with a constant mean
+NAA_re$recruit_pars = exp(10) #initial guess for mean recruitment
+# Selectivity
+init_fleet_sel <- list(c(2,0.4)) # logistic, same as in the asap dat file
+fix_index_sel <- NULL
+fix_index_sel[[1]] <- c(4,9) # Index NA means do not fix them
+fix_index_sel[[2]] <- c(5,9)
+fix_fleet_sel = lapply(1:input$data$n_fleets, function(x) NA) #need this for fleets
+init_index_sel[[1]] <- c(0.5, 0.5, 0.5, 1.0, 0.5, 0.5, 0.5, 0.5, 0.5, 0, 0)
+init_index_sel[[2]] <- c(0.5, 0.5, 0.5, 0.5, 1.0, 0.5, 0.5, 0.5, 0.5, 0, 0)
+sel_list <- list( model=c(rep("logistic", input$data$n_fleets), rep("age-specific", input$data$n_indices) ),
+                  #re=c( rep("none", 1), "2dar1", rep("none", 3) ) ,
+                  #re=c( rep("none", 1),  rep("2dar1", 4) ) ,
+                  initial_pars=c(init_fleet_sel, init_index_sel) ,
+                  fix_pars=c(fix_fleet_sel, fix_index_sel))
+
+##### Prep WHAM input
+input11 <- prepare_wham_input(asap3 = asap3, NAA_re = NAA_re, selectivity = sel_list, model_name = "Plaice_noMADMF11")
+
+###### Fit plaice model
+plaice_model11 <- fit_wham(input11, do.osa = FALSE,do.retro=FALSE,do.check=TRUE) #do.check will suggest where to look for and parameters that are challenging to estimate in current config
+check_convergence(plaice_model11)
+
+# Generate diagnostics
+plot_wham_output(mod = plaice_model11, out.type = 'html')
+
+# Look at selectivity patterns 
+plaice_model11$rep$selAA[[2]][1,] #index 1 selectivity
+plaice_model11$rep$selAA[[3]][1,] #index 2 selectivity. compare with lines 50-51
+```
+Smaller gradient than plaice_model10, indices don't have peak for age 9+, more dome shaped, higher AIC than first model, fleet selectivity shifted left
+
+## Compare WHAM models with default age_comp likelihood and higher survey CV
+```{r}
+table.opts <- NULL
+table.opts$calc.rho = FALSE
+compare_wham_models(list(plaice_model10, # Fix age 9+ to 1
+                         plaice_model11), # Fix age 9+ to 0.5, age 4 and 5 to 1
+ table.opts=table.opts) 
+```
+Models 3 and 5 still appear to be best models, worth having a conversation about how selectivity constrained, possibility that peak for age 9+ either 1) poorly informed since few samples for older fish (in which case using logistic normal may be better since fishery fully selected at age 6ish rather than 8ish) or 2) is influenced by the definition of the plus group.
+
+
+
+
+Next try changing the age comp logistic normal settings (not clear to me difference between 0, 0or1... other options)
+
+also rerun above models with retros, see if there are clear/big differences
+
+
+
+Next up may want to do same adjustment for  fleet selectivity
+Time-varying maturity?
+
 
 
 # Notes on data
-I had a productive hour not paying attention to my boring call and playing with plaice data in ASAP. 1) There are some errors in the .dat you sent me. I fixed some data errors, but I'm not sure if my solutions were appropriate. Easiest thing would be to set up another chat and I can share my screen and discuss. 2) Some of the structural settings were nonsensical, typically as it pertains to selectivity. I fixed those, but again, worth a chat. 3) The attached dat "works" in that it converges and runs in ASAP. The model fit is ugly and I did not spend any time refining this model. 4) The attached dat will convert to WHAM and run. Although I did get an error message about the covariance matrix, I suspect due to some crazy high parameter correlations. It should at least give you a starting place to horse around in WHAM, however. 5) I have some ideas about changes to make in ASAP that would likely fix some problems and also result in a better WHAM transition. Again, for discussion later. 
+I had a productive hour not paying attention to my boring call and playing with plaice data in ASAP. 1) There are some errors in the .dat you sent me. I fixed some data errors, but I'm not sure if my solutions were appropriate. Easiest thing would be to set up another chat and I can share my screen and discuss. 2) Some of the structural settings were nonsensical, typically as it pertains to selectivity. I fixed those, but again, worth a chat. 3) The attached dat "works" in that it converges and runs in ASAP. The model fit is ugly and I did not spend any time refining this model. 4) The attached dat will convert to WHAM and run. Although I did get an error message about the covariance matrix, I suspect due to some crazy high parameter correlations. It should at least give you a starting place to horse around in WHAM, however. 5) I have some ideas about changes to make in ASAP that would likely fix some problems and also result in a better WHAM transition. Again, for discussion later. - from JD
+
+
+
+
 
 
 
