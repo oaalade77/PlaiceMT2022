@@ -142,6 +142,12 @@ Assume - unchanged options inherited values from cod example & need to be checke
 - Final Year in Projection = 2018 since not projected, revisit ???
 - Projection Data by Year placeholder data unchanged, revisit ???
 
+# Load R packages
+```{r}
+library(tidyverse)
+library(wham)
+```
+
 # Read in data for use in WHAM
 ## Fit WHAM
 CANNOT add comments at end of lines (comments must be separate lines)
@@ -154,7 +160,7 @@ asap3 <- read_asap3_dat("Plaice.dat")
 input <- prepare_wham_input(asap3) # Problem reading last column of asap3$IAA_mats?
 
 # Fit plaice model
-plaice_model <- fit_wham(input) # https://timjmiller.github.io/wham/articles/ex7_debug.html # do.fit = F returns an error
+plaice_model <- fit_wham(input, MakeADFun.silent = TRUE) # https://timjmiller.github.io/wham/articles/ex7_debug.html # do.fit = F returns an error
 check_convergence(plaice_model)
 
 input <- prepare_wham_input(asap3 = asap3,
@@ -177,7 +183,7 @@ input1 <- prepare_wham_input(asap3, recruit_model=2, model_name="GOM Cod",
                                               initial_pars=list(c(0.013, 0.066, 0.271, 0.663, 0.912, 0.982, 0.997, 1, 1),c(0.038, 0.134, 0.289, 0.531, 0.778, 1, 1, 1, 1)),  
                                               fix_pars=list(7:9,6:9)),
                              NAA_re = list(sigma="rec", cor="iid"))
-mcod <- fit_wham(input1, do.osa = F)
+mcod <- fit_wham(input1, do.osa = F, MakeADFun.silent = TRUE)
 check_convergence(mcod)
 
 mcod_proj <- project_wham(model=mcod)
@@ -197,7 +203,7 @@ asap3 <- read_asap3_dat(paste(here::here(), "Plaice_noMADMF.dat", sep="/"))
 input1 <- prepare_wham_input(asap3, model_name = "Plaice_noMADMF") 
 
 # Fit plaice model
-plaice_model1 <- fit_wham(input1) # https://timjmiller.github.io/wham/articles/ex7_debug.html # do.fit = F returns an error
+plaice_model1 <- fit_wham(input1, MakeADFun.silent = TRUE) # https://timjmiller.github.io/wham/articles/ex7_debug.html # do.fit = F returns an error
 check_convergence(plaice_model)
 
 
@@ -213,7 +219,7 @@ input2 <- prepare_wham_input(asap3, model_name = "Plaice_noMADMF2",
                                   fix_pars=list(c(0),c(4,5),c(4,5)))) 
 
 # Fit plaice model
-plaice_model2 <- fit_wham(input2) # https://timjmiller.github.io/wham/articles/ex7_debug.html # do.fit = F returns an error
+plaice_model2 <- fit_wham(input2, MakeADFun.silent = TRUE) # https://timjmiller.github.io/wham/articles/ex7_debug.html # do.fit = F returns an error
 check_convergence(plaice_model2)
 
 # Generate diagnostics
@@ -235,10 +241,10 @@ NAA_re$recruit_model = 2 #random effects with a constant mean
 NAA_re$recruit_pars = exp(10) #initial guess for mean recruitment
 # Selectivity
 init_fleet_sel <- list(c(2,0.4)) # logistic, same as in the asap dat file
-fix_index_sel = lapply(1:input$data$n_indices, function(x) 9) # Index NA means do not fix them
-fix_fleet_sel = lapply(1:input$data$n_fleets, function(x) NA) #need this for fleets
-init_index_sel = lapply(1:input$data$n_indices, function(x) c(rep(0.5,8),1,0,0))
-sel_list <- list( model=c(rep("logistic", input$data$n_fleets), rep("age-specific", input$data$n_indices) ),
+fix_index_sel = lapply(1:asap3$dat$n_indices, function(x) 9) # Index NA means do not fix them
+fix_fleet_sel = lapply(1:asap3$dat$n_fleets, function(x) NA) #need this for fleets
+init_index_sel = lapply(1:asap3$dat$n_indices, function(x) c(rep(0.5,8),1,0,0))
+sel_list <- list( model=c(rep("logistic", asap3$dat$n_fleets), rep("age-specific", asap3$dat$n_indices) ),
                   #re=c( rep("none", 1), "2dar1", rep("none", 3) ) ,
                   #re=c( rep("none", 1),  rep("2dar1", 4) ) ,
                   initial_pars=c(init_fleet_sel, init_index_sel) ,
@@ -248,7 +254,7 @@ sel_list <- list( model=c(rep("logistic", input$data$n_fleets), rep("age-specifi
 input3 <- prepare_wham_input(asap3 = asap3, NAA_re = NAA_re, selectivity = sel_list, model_name = "Plaice_noMADMF3")
 
 ###### Fit plaice model
-plaice_model3 <- fit_wham(input3, do.osa = FALSE,do.retro=FALSE,do.check=TRUE) #do.check will suggest where to look for and parameters that are challenging to estimate in current config
+plaice_model3 <- fit_wham(input3, do.osa = FALSE,do.retro=FALSE,do.check=TRUE, MakeADFun.silent = TRUE) #do.check will suggest where to look for and parameters that are challenging to estimate in current config
 check_convergence(plaice_model3)
 
 # Generate diagnostics
@@ -277,10 +283,10 @@ NAA_re$recruit_pars = exp(10) #initial guess for mean recruitment
 init_fleet_sel <- list(c(2,0.4)) # logistic, same as in the asap dat file
 fix_index_sel[[1]][1] <- 4 # Index NA means do not fix them
 fix_index_sel[[2]][1] <- 5
-fix_fleet_sel = lapply(1:input$data$n_fleets, function(x) NA) #need this for fleets
+fix_fleet_sel = lapply(1:asap3$dat$n_fleets, function(x) NA) #need this for fleets
 init_index_sel[[1]] <- c(0.5, 0.5, 0.5, 1.0, 0.5, 0.5, 0.5, 0.5, 0.5, 0, 0)
 init_index_sel[[2]] <- c(0.5, 0.5, 0.5, 0.5, 1.0, 0.5, 0.5, 0.5, 0.5, 0, 0)
-sel_list <- list( model=c(rep("logistic", input$data$n_fleets), rep("age-specific", input$data$n_indices) ),
+sel_list <- list( model=c(rep("logistic", asap3$dat$n_fleets), rep("age-specific", asap3$dat$n_indices) ),
                   #re=c( rep("none", 1), "2dar1", rep("none", 3) ) ,
                   #re=c( rep("none", 1),  rep("2dar1", 4) ) ,
                   initial_pars=c(init_fleet_sel, init_index_sel) ,
@@ -290,7 +296,7 @@ sel_list <- list( model=c(rep("logistic", input$data$n_fleets), rep("age-specifi
 input4 <- prepare_wham_input(asap3 = asap3, NAA_re = NAA_re, selectivity = sel_list, model_name = "Plaice_noMADMF4")
 
 ###### Fit plaice model
-plaice_model4 <- fit_wham(input4, do.osa = FALSE,do.retro=FALSE,do.check=TRUE) #do.check will suggest where to look for and parameters that are challenging to estimate in current config
+plaice_model4 <- fit_wham(input4, do.osa = FALSE,do.retro=FALSE,do.check=TRUE, MakeADFun.silent = TRUE) #do.check will suggest where to look for and parameters that are challenging to estimate in current config
 check_convergence(plaice_model4)
 
 # Generate diagnostics
@@ -321,10 +327,10 @@ init_fleet_sel <- list(c(2,0.4)) # logistic, same as in the asap dat file
 fix_index_sel <- NULL
 fix_index_sel[[1]] <- c(4,9) # Index NA means do not fix them
 fix_index_sel[[2]] <- c(5,9)
-fix_fleet_sel = lapply(1:input$data$n_fleets, function(x) NA) #need this for fleets
+fix_fleet_sel = lapply(1:asap3$dat$n_fleets, function(x) NA) #need this for fleets
 init_index_sel[[1]] <- c(0.5, 0.5, 0.5, 1.0, 0.5, 0.5, 0.5, 0.5, 0.5, 0, 0)
 init_index_sel[[2]] <- c(0.5, 0.5, 0.5, 0.5, 1.0, 0.5, 0.5, 0.5, 0.5, 0, 0)
-sel_list <- list( model=c(rep("logistic", input$data$n_fleets), rep("age-specific", input$data$n_indices) ),
+sel_list <- list( model=c(rep("logistic", asap3$dat$n_fleets), rep("age-specific", asap3$dat$n_indices) ),
                   #re=c( rep("none", 1), "2dar1", rep("none", 3) ) ,
                   #re=c( rep("none", 1),  rep("2dar1", 4) ) ,
                   initial_pars=c(init_fleet_sel, init_index_sel) ,
@@ -334,7 +340,7 @@ sel_list <- list( model=c(rep("logistic", input$data$n_fleets), rep("age-specifi
 input5 <- prepare_wham_input(asap3 = asap3, NAA_re = NAA_re, selectivity = sel_list, model_name = "Plaice_noMADMF5")
 
 ###### Fit plaice model
-plaice_model5 <- fit_wham(input5, do.osa = FALSE,do.retro=FALSE,do.check=TRUE) #do.check will suggest where to look for and parameters that are challenging to estimate in current config
+plaice_model5 <- fit_wham(input5, do.osa = FALSE,do.retro=FALSE,do.check=TRUE, MakeADFun.silent = TRUE) #do.check will suggest where to look for and parameters that are challenging to estimate in current config
 check_convergence(plaice_model5)
 
 # Generate diagnostics
@@ -366,10 +372,10 @@ NAA_re$recruit_pars = exp(10) #initial guess for mean recruitment
 init_fleet_sel <- list(c(2,0.4)) # logistic, same as in the asap dat file
 fix_index_sel[[1]][1] <- 9 # Index NA means do not fix them
 fix_index_sel[[2]][1] <- 9
-fix_fleet_sel = lapply(1:input$data$n_fleets, function(x) NA) #need this for fleets
+fix_fleet_sel = lapply(1:asap3$dat$n_fleets, function(x) NA) #need this for fleets
 init_index_sel[[1]] <- c(0.5, 0.5, 0.5, 1.0, 0.5, 0.5, 0.5, 0.5, 0.5, 0, 0)
 init_index_sel[[2]] <- c(0.5, 0.5, 0.5, 0.5, 1.0, 0.5, 0.5, 0.5, 0.5, 0, 0)
-sel_list <- list( model=c(rep("logistic", input$data$n_fleets), rep("age-specific", input$data$n_indices) ),
+sel_list <- list( model=c(rep("logistic", asap3$dat$n_fleets), rep("age-specific", asap3$dat$n_indices) ),
                   #re=c( rep("none", 1), "2dar1", rep("none", 3) ) ,
                   #re=c( rep("none", 1),  rep("2dar1", 4) ) ,
                   initial_pars=c(init_fleet_sel, init_index_sel) ,
@@ -379,7 +385,7 @@ sel_list <- list( model=c(rep("logistic", input$data$n_fleets), rep("age-specifi
 input6 <- prepare_wham_input(asap3 = asap3, NAA_re = NAA_re, selectivity = sel_list, model_name = "Plaice_noMADMF6")
 
 ###### Fit plaice model
-plaice_model6 <- fit_wham(input6, do.osa = FALSE,do.retro=FALSE,do.check=TRUE) #do.check will suggest where to look for and parameters that are challenging to estimate in current config
+plaice_model6 <- fit_wham(input6, do.osa = FALSE,do.retro=FALSE,do.check=TRUE, MakeADFun.silent = TRUE) #do.check will suggest where to look for and parameters that are challenging to estimate in current config
 check_convergence(plaice_model6)
 
 # Generate diagnostics
@@ -411,10 +417,10 @@ init_fleet_sel <- list(c(2,0.4)) # logistic, same as in the asap dat file
 fix_index_sel <- NULL
 fix_index_sel[[1]] <- c(4,9) # Index NA means do not fix them
 fix_index_sel[[2]] <- c(5,9)
-fix_fleet_sel = lapply(1:input$data$n_fleets, function(x) NA) #need this for fleets
+fix_fleet_sel = lapply(1:asap3$dat$n_fleets, function(x) NA) #need this for fleets
 init_index_sel[[1]] <- c(0.5, 0.5, 0.5, 1.0, 0.5, 0.5, 0.5, 0.5, 0.5, 0, 0)
 init_index_sel[[2]] <- c(0.5, 0.5, 0.5, 0.5, 1.0, 0.5, 0.5, 0.5, 0.5, 0, 0)
-sel_list <- list( model=c(rep("logistic", input$data$n_fleets), rep("age-specific", input$data$n_indices) ),
+sel_list <- list( model=c(rep("logistic", asap3$dat$n_fleets), rep("age-specific", asap3$dat$n_indices) ),
                   #re=c( rep("none", 1), "2dar1", rep("none", 3) ) ,
                   #re=c( rep("none", 1),  rep("2dar1", 4) ) ,
                   initial_pars=c(init_fleet_sel, init_index_sel) ,
@@ -424,7 +430,7 @@ sel_list <- list( model=c(rep("logistic", input$data$n_fleets), rep("age-specifi
 input7 <- prepare_wham_input(asap3 = asap3, NAA_re = NAA_re, selectivity = sel_list, age_comp = "logistic-normal-miss0", model_name = "Plaice_noMADMF7")
 
 ###### Fit plaice model
-plaice_model7 <- fit_wham(input7, do.osa = FALSE,do.retro=FALSE,do.check=TRUE) #do.check will suggest where to look for and parameters that are challenging to estimate in current config
+plaice_model7 <- fit_wham(input7, do.osa = FALSE,do.retro=FALSE,do.check=TRUE, MakeADFun.silent = TRUE) #do.check will suggest where to look for and parameters that are challenging to estimate in current config
 check_convergence(plaice_model7)
 
 # Generate diagnostics
@@ -450,10 +456,10 @@ NAA_re$recruit_model = 2 #random effects with a constant mean
 NAA_re$recruit_pars = exp(10) #initial guess for mean recruitment
 # Selectivity
 init_fleet_sel <- list(c(2,0.4)) # logistic, same as in the asap dat file
-fix_index_sel = lapply(1:input$data$n_indices, function(x) 9) # Index NA means do not fix them
-fix_fleet_sel = lapply(1:input$data$n_fleets, function(x) NA) #need this for fleets
-init_index_sel = lapply(1:input$data$n_indices, function(x) c(rep(0.5,8),1,0,0))
-sel_list <- list( model=c(rep("logistic", input$data$n_fleets), rep("age-specific", input$data$n_indices) ),
+fix_index_sel = lapply(1:asap3$dat$n_indices, function(x) 9) # Index NA means do not fix them
+fix_fleet_sel = lapply(1:asap3$dat$n_fleets, function(x) NA) #need this for fleets
+init_index_sel = lapply(1:asap3$dat$n_indices, function(x) c(rep(0.5,8),1,0,0))
+sel_list <- list( model=c(rep("logistic", asap3$dat$n_fleets), rep("age-specific", asap3$dat$n_indices) ),
                   #re=c( rep("none", 1), "2dar1", rep("none", 3) ) ,
                   #re=c( rep("none", 1),  rep("2dar1", 4) ) ,
                   initial_pars=c(init_fleet_sel, init_index_sel) ,
@@ -463,7 +469,7 @@ sel_list <- list( model=c(rep("logistic", input$data$n_fleets), rep("age-specifi
 input8 <- prepare_wham_input(asap3 = asap3, NAA_re = NAA_re, selectivity = sel_list, age_comp = "logistic-normal-miss0", model_name = "Plaice_noMADMF8")
 
 ###### Fit plaice model
-plaice_model8 <- fit_wham(input8, do.osa = FALSE,do.retro=FALSE,do.check=TRUE) #do.check will suggest where to look for and parameters that are challenging to estimate in current config
+plaice_model8 <- fit_wham(input8, do.osa = FALSE,do.retro=FALSE,do.check=TRUE, MakeADFun.silent = TRUE) #do.check will suggest where to look for and parameters that are challenging to estimate in current config
 check_convergence(plaice_model8)
 
 # Generate diagnostics
@@ -493,10 +499,10 @@ init_fleet_sel <- list(c(2,0.4)) # logistic, same as in the asap dat file
 fix_index_sel <- NULL
 fix_index_sel[[1]] <- c(4,9) # Index NA means do not fix them
 fix_index_sel[[2]] <- c(5,9)
-fix_fleet_sel = lapply(1:input$data$n_fleets, function(x) NA) #need this for fleets
+fix_fleet_sel = lapply(1:asap3$dat$n_fleets, function(x) NA) #need this for fleets
 init_index_sel[[1]] <- c(0.5, 0.5, 0.5, 1.0, 0.5, 0.5, 0.5, 0.5, 0.47, 0, 0)
 init_index_sel[[2]] <- c(0.5, 0.5, 0.5, 0.5, 1.0, 0.5, 0.5, 0.5, 0.50, 0, 0)
-sel_list <- list( model=c(rep("logistic", input$data$n_fleets), rep("age-specific", input$data$n_indices) ),
+sel_list <- list( model=c(rep("logistic", asap3$dat$n_fleets), rep("age-specific", asap3$dat$n_indices) ),
                   #re=c( rep("none", 1), "2dar1", rep("none", 3) ) ,
                   #re=c( rep("none", 1),  rep("2dar1", 4) ) ,
                   initial_pars=c(init_fleet_sel, init_index_sel) ,
@@ -506,7 +512,7 @@ sel_list <- list( model=c(rep("logistic", input$data$n_fleets), rep("age-specifi
 input9 <- prepare_wham_input(asap3 = asap3, NAA_re = NAA_re, selectivity = sel_list, age_comp = "logistic-normal-miss0", model_name = "Plaice_noMADMF9")
 
 ###### Fit plaice model
-plaice_model9 <- fit_wham(input9, do.osa = FALSE,do.retro=FALSE,do.check=TRUE) #do.check will suggest where to look for and parameters that are challenging to estimate in current config
+plaice_model9 <- fit_wham(input9, do.osa = FALSE,do.retro=FALSE,do.check=TRUE, MakeADFun.silent = TRUE) #do.check will suggest where to look for and parameters that are challenging to estimate in current config
 check_convergence(plaice_model9)
 
 # Generate diagnostics
@@ -553,10 +559,10 @@ NAA_re$recruit_model = 2 #random effects with a constant mean
 NAA_re$recruit_pars = exp(10) #initial guess for mean recruitment
 # Selectivity
 init_fleet_sel <- list(c(2,0.4)) # logistic, same as in the asap dat file
-fix_index_sel = lapply(1:input$data$n_indices, function(x) 9) # Index NA means do not fix them
-fix_fleet_sel = lapply(1:input$data$n_fleets, function(x) NA) #need this for fleets
-init_index_sel = lapply(1:input$data$n_indices, function(x) c(rep(0.5,8),1,0,0))
-sel_list <- list( model=c(rep("logistic", input$data$n_fleets), rep("age-specific", input$data$n_indices) ),
+fix_index_sel = lapply(1:asap3$dat$n_indices, function(x) 9) # Index NA means do not fix them
+fix_fleet_sel = lapply(1:asap3$dat$n_fleets, function(x) NA) #need this for fleets
+init_index_sel = lapply(1:asap3$dat$n_indices, function(x) c(rep(0.5,8),1,0,0))
+sel_list <- list( model=c(rep("logistic", asap3$dat$n_fleets), rep("age-specific", asap3$dat$n_indices) ),
                   #re=c( rep("none", 1), "2dar1", rep("none", 3) ) ,
                   #re=c( rep("none", 1),  rep("2dar1", 4) ) ,
                   initial_pars=c(init_fleet_sel, init_index_sel) ,
@@ -566,7 +572,7 @@ sel_list <- list( model=c(rep("logistic", input$data$n_fleets), rep("age-specifi
 input10 <- prepare_wham_input(asap3 = asap3, NAA_re = NAA_re, selectivity = sel_list, model_name = "Plaice_noMADMF10")
 
 ###### Fit plaice model
-plaice_model10 <- fit_wham(input10, do.osa = FALSE,do.retro=FALSE,do.check=TRUE) #do.check will suggest where to look for and parameters that are challenging to estimate in current config
+plaice_model10 <- fit_wham(input10, do.osa = FALSE,do.retro=FALSE,do.check=TRUE, MakeADFun.silent = TRUE) #do.check will suggest where to look for and parameters that are challenging to estimate in current config
 check_convergence(plaice_model10)
 
 # Generate diagnostics
@@ -596,10 +602,10 @@ init_fleet_sel <- list(c(2,0.4)) # logistic, same as in the asap dat file
 fix_index_sel <- NULL
 fix_index_sel[[1]] <- c(4,9) # Index NA means do not fix them
 fix_index_sel[[2]] <- c(5,9)
-fix_fleet_sel = lapply(1:input$data$n_fleets, function(x) NA) #need this for fleets
+fix_fleet_sel = lapply(1:asap3$dat$n_fleets, function(x) NA) #need this for fleets
 init_index_sel[[1]] <- c(0.5, 0.5, 0.5, 1.0, 0.5, 0.5, 0.5, 0.5, 0.5, 0, 0)
 init_index_sel[[2]] <- c(0.5, 0.5, 0.5, 0.5, 1.0, 0.5, 0.5, 0.5, 0.5, 0, 0)
-sel_list <- list( model=c(rep("logistic", input$data$n_fleets), rep("age-specific", input$data$n_indices) ),
+sel_list <- list( model=c(rep("logistic", asap3$dat$n_fleets), rep("age-specific", asap3$dat$n_indices) ),
                   #re=c( rep("none", 1), "2dar1", rep("none", 3) ) ,
                   #re=c( rep("none", 1),  rep("2dar1", 4) ) ,
                   initial_pars=c(init_fleet_sel, init_index_sel) ,
@@ -609,7 +615,7 @@ sel_list <- list( model=c(rep("logistic", input$data$n_fleets), rep("age-specifi
 input11 <- prepare_wham_input(asap3 = asap3, NAA_re = NAA_re, selectivity = sel_list, model_name = "Plaice_noMADMF11")
 
 ###### Fit plaice model
-plaice_model11 <- fit_wham(input11, do.osa = FALSE,do.retro=FALSE,do.check=TRUE) #do.check will suggest where to look for and parameters that are challenging to estimate in current config
+plaice_model11 <- fit_wham(input11, do.osa = FALSE,do.retro=FALSE,do.check=TRUE, MakeADFun.silent = TRUE) #do.check will suggest where to look for and parameters that are challenging to estimate in current config
 check_convergence(plaice_model11)
 
 # Generate diagnostics
@@ -631,31 +637,173 @@ compare_wham_models(list(plaice_model10, # Fix age 9+ to 1
 ```
 Models 3 and 5 still appear to be best models, worth having a conversation about how selectivity constrained, possibility that peak for age 9+ either 1) poorly informed since few samples for older fish (in which case using logistic normal may be better since fishery fully selected at age 6ish rather than 8ish) or 2) is influenced by the definition of the plus group.
 
+Compare models 3 and 5
+```{r}
+table.opts <- NULL
+table.opts$calc.rho = FALSE
+compare_wham_models(list(plaice_model3, # Fix age 9+ to 1
+                         plaice_model5), # Fix age 9+ to 0.5, age 4 and 5 to 1
+ table.opts=table.opts) 
+```
 
 
+# Test environmental link with recruitment
+Take base model 3 before data updated (i.e. still using VPA data) and add in bottom temperature link with recruitment.
 
-Next try changing the age comp logistic normal settings (not clear to me difference between 0, 0or1... other options)
+Load annual bottom temperature from FVCOM:
+```{r}
+load(paste(here::here(), "data", "ALLyearly_bottomtemp_clip.RData", sep="/"))
+annualBT <- ALLyearly_bottomtemp_clip
+sigmas <- rep(0.1, nrow(annualBT)) # Add sigmas, need real info for this 
+annualBT <- cbind(annualBT, sigmas)
+annualBT <- filter(annualBT, as.numeric(Year) > 1978, as.numeric(Year) < 2019) # Filter to match timeframe of other data
+annualBT$Year <- as.numeric(annualBT$Year)
+head(annualBT)
+```
 
-also rerun above models with retros, see if there are clear/big differences
+Make a data.frame specifying different recruitment models to explore:
+```{r}
+df.mods <- data.frame(Recruitment = c(2,2,2,2), # Random about mean
+                      ecov_process = c('rw', 'ar1', 'rw', 'ar1'), # random walk='rw' and AR1='ar1'
+                      ecov_how = c(0,0,2,2), # no effect=0, limiting effect=2
+                      ecov_where = c("none", "none", "recruit", "recruit")) # Where does environment impact population, none when how = no effect
+n.mods <- nrow(df.mods)
+df.mods$Model <- paste0("ecoMod", 1:n.mods)
+df.mods <- dplyr::select(df.mods,Model, tidyselect::everything()) # Moves Model column to first column
+```
+
+Fit model with environmental link on recruitment: !!! Ecov_beta causing problems, not sure what this does, not able to turn off
+```{r}
+# Setwd for this model run
+setwd(paste(here::here(), "Model_runs", sep="/"))
+
+# Loop over possible recruitment models
+for(imod in 1:n.mods){
+  print(paste("Model",imod))
+  ##### Data
+  # Setup environmental data and options
+  ecov <- list(
+    label = "BT",
+    mean = as.matrix(annualBT$Avg_bottom_temp),
+    logsigma = as.matrix(log(annualBT$sigmas)),
+    year = as.numeric(annualBT$Year),
+    use_obs = matrix(1, ncol = 1, nrow=nrow(annualBT)), # use all obs =1
+    lag = 1, # BT in year t impact R in year t+1
+    process_model = df.mods$ecov_process[imod],
+    where = df.mods$ecov_where[imod],
+    how = df.mods$ecov_how[imod]
+  )
+
+# Load data
+asap3 <- read_asap3_dat(paste(here::here(), "Plaice_noMADMF.dat", sep="/"))
+# iid random effects for recruitment only 
+NAA_re = list(sigma = "rec") #random about mean
+NAA_re$recruit_model = 2 #random effects with a constant mean
+NAA_re$recruit_pars = exp(10) #initial guess for mean recruitment
+# Selectivity
+init_fleet_sel <- list(c(2,0.4)) # logistic, same as in the asap dat file
+fix_index_sel = lapply(1:asap3$dat$n_indices, function(x) 9) # Index NA means do not fix them
+fix_fleet_sel = lapply(1:asap3$dat$n_fleets, function(x) NA) #need this for fleets
+init_index_sel = lapply(1:asap3$dat$n_indices, function(x) c(rep(0.5,8),1,0,0))
+sel_list <- list( model=c(rep("logistic", asap3$dat$n_fleets), rep("age-specific", asap3$dat$n_indices) ),
+                  #re=c( rep("none", 1), "2dar1", rep("none", 3) ) ,
+                  #re=c( rep("none", 1),  rep("2dar1", 4) ) ,
+                  initial_pars=c(init_fleet_sel, init_index_sel) ,
+                  fix_pars=c(fix_fleet_sel, fix_index_sel))
+
+##### Prep WHAM input
+input <- prepare_wham_input(asap3 = asap3, 
+                            NAA_re = NAA_re, 
+                            selectivity = sel_list, 
+                            ecov=ecov,
+                            model_name = "Plaice_noMADMF3_envR")
+if(ecov_how[imod]!=0){ # When env covariate considered also specify Ecov_beta effect on recruitment
+  input$par$Ecov_beta[4,1,1,] = 0.5
+  input$map$Ecov_beta = rep(NA,44)
+}
 
 
+###### Fit plaice model
+plaice_model_ecoTest <- fit_wham(input, do.osa = TRUE,do.retro=TRUE,do.check=TRUE, MakeADFun.silent = TRUE) #do.check will suggest where to look for and parameters that are challenging to estimate in current config
 
-Next up may want to do same adjustment for  fleet selectivity
-Time-varying maturity?
+###### Save model
+saveRDS(plaice_model_ecoTest, file=paste0(df.mods$Model[imod], ".rds"))
+
+###### Plot output in new subfolder
+plot_wham_output(mod=plaice_model_ecoTest, dir.main=file.path(getwd(), df.mods$Model[imod]), out.type='html')
+
+} # End loop over R models
+```
+
+Check model convergence
+```{r}
+# Form model list
+mod.list <- paste0(df.mods$Model,".rds")
+mods <- lapply(mod.list, readRDS)
+
+# Check convergence
+convInfo <- lapply(mods, function(x) capture.output(check_convergence(x)))
+for(imod in 1:n.mods){
+  cat(paste0("Model ", imod, ":"), convInfo[[imod]], "", sep='\n')
+}
+```
+
+Compare models
+```{r}
+# Make model table prettier
+df.mods$Recruitment <- dplyr::recode(df.mods$Recruitment, `2`='Random', `0`='None')
+df.mods$ecov_how <- dplyr::recode(df.mods$ecov_how, `0`='NoEffect', `2`='Limiting')
+
+# Get convergence info
+opt_conv = 1-sapply(mods, function(x) x$opt$convergence)
+ok_sdrep = sapply(mods, function(x) if(x$na_sdrep==FALSE & !is.na(x$na_sdrep)) 1 else 0)
+df.mods$conv <- as.logical(opt_conv)
+df.mods$pdHess <- as.logical(ok_sdrep)
+df.mods$NLL <- sapply(mods, function(x) round(x$opt$objective,3))
+
+# Start here with AIC and Mohn's rho calculations !!!
+```
+
+Calculate AIC & Mohn's rho for converged models
+```{r}
+not_conv <- !df.mods$conv | !df.mods$pdHess
+mods2 <- mods
+mods2[not_conv] <- NULL
+df.aic.tmp <- as.data.frame(compare_wham_models(mods2, table.opts=list(sort=FALSE, calc.rho=T))$tab)
+df.aic <- df.aic.tmp[FALSE,]
+ct = 1
+for(i in 1:n.mods){
+  if(not_conv[i]){
+    df.aic[i,] <- rep(NA,5)
+  } else {
+    df.aic[i,] <- df.aic.tmp[ct,]
+    ct <- ct + 1
+  }
+}
+df.mods <- cbind(df.mods, df.aic)
+df.mods <- df.mods[order(df.mods$dAIC, na.last=TRUE),]
+df.mods[is.na(df.mods$AIC), c('dAIC','AIC','rho_R','rho_SSB','rho_Fbar')] <- "---"
+rownames(df.mods) <- NULL
+```
+
+Print and save results
+```{r}
+print(df.mods)
+save("df.mods", file = "testPlaiceWithEnv")
+```
+
+# Try once data updated
+- Next try changing the age comp logistic normal settings (not clear to me difference between 0, 0or1... other options)
+
+- Also rerun above models with retros, see if there are clear/big differences
+
+- Next up may want to do same adjustment for  fleet selectivity
+
+- Time-varying maturity?
 
 
 
 # Notes on data
-I had a productive hour not paying attention to my boring call and playing with plaice data in ASAP. 1) There are some errors in the .dat you sent me. I fixed some data errors, but I'm not sure if my solutions were appropriate. Easiest thing would be to set up another chat and I can share my screen and discuss. 2) Some of the structural settings were nonsensical, typically as it pertains to selectivity. I fixed those, but again, worth a chat. 3) The attached dat "works" in that it converges and runs in ASAP. The model fit is ugly and I did not spend any time refining this model. 4) The attached dat will convert to WHAM and run. Although I did get an error message about the covariance matrix, I suspect due to some crazy high parameter correlations. It should at least give you a starting place to horse around in WHAM, however. 5) I have some ideas about changes to make in ASAP that would likely fix some problems and also result in a better WHAM transition. Again, for discussion later. - from JD
-
-
-
-
-
-
-
-
-
 Debugging using source code for read_asap3_dat
 ```{r}
 # filename <- paste(here::here(), "Gulf_of_Maine_cod_WHAM_example", "codGOMcopy.dat", sep="/") # Debug example cod data with additional ages (10-11) and years added(1980-1981)
