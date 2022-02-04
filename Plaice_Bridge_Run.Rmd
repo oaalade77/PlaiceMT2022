@@ -1,0 +1,53 @@
+---
+title: "Plaice_Bridge_Runs"
+output: html_document
+---
+
+This document contains code to run a bridge run (VPA to WHAM using same ASAP .dat file used for ASAP bridge run) and an initial WHAM run with updated assessment data based on ToR2&3 data decisions.
+
+# Load R packages
+```{r}
+library(tidyverse)
+library(wham)
+```
+
+# Try bridge run - VPA to WHAM
+This run uses the same file as the ASAP bridge run, the abundance indices at each age mean that selectivity for each index is estimated at 1. 
+
+Load ASAP .dat file used for ASAP bridge run & prep for use in WHAM bridge run
+```{r}
+asap3 <- read_asap3_dat(paste(here::here(), "data", "PlaiceASAP1-2019VPAINPUT.DAT", sep="/"))
+
+input <- prepare_wham_input(asap3, model_name = "model_try_bridge") 
+```
+Fit bridge model, check convergence, and plot output
+```{r}
+model_try_bridge <- fit_wham(input, MakeADFun.silent = TRUE) 
+check_convergence(model_try_bridge)
+print(paste("Number of parameters", length(model_try_bridge$par), sep=" "))
+
+plot_wham_output(mod=model_try_bridge, out.type='html')
+```
+
+How does this relate to the 2018 VPA? https://apps-nefsc.fisheries.noaa.gov/saw/sasi/uploads/2019_PLA_UNIT_MOD_VPA_T2018_NEC_ONLY.dat
+
+
+# Bridge run with multi-age indices
+The .dat file used for the ASAP bridge run treats each survey age as a separate index so selectivity for each index = 1. The following bridge run aggregates surveys to include multiple ages, and otherwise uses the same data as the ASAP bridge run with the following exception:
+
+- Index 19 from the ASAP bridge .dat file was excluded from the WHAM .dat bridge file, but was not used for fitting either bridge model
+
+Load .dat file adapted from ASAP bridge run to include multi=age survey for WHAM bridge run
+```{r}
+asap3 <- read_asap3_dat(paste(here::here(), "data", "PlaiceWHAM1-2019VPAINPUT.DAT", sep="/"))
+
+input <- prepare_wham_input(asap3, model_name = "model_bridge") 
+```
+Fit bridge model, check convergence, and plot output
+```{r}
+model_bridge <- fit_wham(input, MakeADFun.silent = TRUE) 
+check_convergence(model_bridge)
+print(paste("Number of parameters", length(model_bridge$par), sep=" "))
+
+plot_wham_output(mod=model_bridge, out.type='html')
+```
