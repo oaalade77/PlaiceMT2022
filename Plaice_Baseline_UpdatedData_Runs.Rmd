@@ -1,0 +1,159 @@
+---
+title: "Plaice_Baseline_Model_Variations"
+output: html_document
+---
+
+This document pulls in the most up-to-date data for plaice to develop a baseline model similar to the bridge run (only NEFSC trawl data)
+
+This document updates the bridge run model with most up-to-date data for plaice (downloaded from shared drive 2/3/22) and adjusts model structure to take advantage of state-space modeling features. Subsequent runs vary the data inputs and assumptions of the base case.
+
+# Load R packages
+```{r}
+library(tidyverse)
+library(wham)
+library(readxl)
+library(DataExplorer)
+```
+
+# Load most up-to-date data
+- Don't use Age 0 data
+- M = 0.3, may also try freely estimating M in WHAM
+
+Catch data
+```{r}
+# Catch-at-age data (use middle table with 11+ group)
+CAA <- read_xlsx(paste(here::here(), "data", "AMP_Tables and Figures_USE THIS.xlsx", sep="/"), sheet = 15, skip = 2, range = "AA3:AN43")
+CAA <- drop_columns(CAA, "Age 0") 
+# Catch weight-at-age data (use middle table with the following warning: PLUS GROUP 11+ MID-YEAR WEIGHTS (NEED TO ADDRESS THE SHADED CLLS WITH DECREASING WTS)) - equivalent to WAA matrix 1 in bridge data
+cWAA <- read_xlsx(paste(here::here(), "data", "AMP_Tables and Figures_USE THIS.xlsx", sep="/"), sheet = 16, range = "AB3:AN43")
+cWAA <- drop_columns(cWAA, "Age 0") 
+```
+
+Jan1 spawning stock WAA - equivalent to WAA matrix 2&3 in bridge data
+```{r}
+jan1WAA <- read_xlsx(paste(here::here(), "data", "AMP_Tables and Figures_USE THIS.xlsx", sep="/"), sheet = 17, skip = 2, range = "A3:L43") 
+```
+
+VAST indices
+```{r}
+# Spring
+sVAST <- read_xlsx(paste(here::here(), "data", "Plaice_VAST_Indices.xlsx", sep="/"), sheet = 1)
+
+# Fall
+fVAST <- read_xlsx(paste(here::here(), "data", "Plaice_VAST_Indices.xlsx", sep="/"), sheet = 2)
+fVAST <- drop_columns(fVAST, "Season") # Drop mislabeled column (confirmed with AHansell 2/3/22)
+
+# At some point should replace NA with -999 to be safe
+```
+
+Survey indices
+```{r}
+# Spring & fall indices for: NEFSC, MADMF
+indices <- readRDS(paste(here::here(), "data", "Survey Data", "NEFSC and MADMF", "AMPLAsurveyData", "Indices.rds", sep="/"))
+
+# Spring NAA
+sNAA <- readRDS(paste(here::here(), "data", "Survey Data", "NEFSC and MADMF", "AMPLAsurveyData", "NAASpring.rds", sep="/"))
+
+# Fall NAA
+fNAA <- readRDS(paste(here::here(), "data", "Survey Data", "NEFSC and MADMF", "AMPLAsurveyData", "NAAFall.rds", sep="/"))
+
+# MENH survey
+```
+
+Other general information that will remain consistent across models
+```{r}
+ages <- c(1:11)
+years <- c(1980:2019)
+n_age <- length(ages)
+n_year <- length(years)
+```
+
+
+# Baseline model
+Differences from bridge run
+- Updated data (additional year of data, values re-estimated)
+- M = 0.3
+- NAA random effect included
+
+Similarities with bridge run
+- 1 fleet
+- only NEFSC spring & fall surveys included
+
+Setup data list & other WHAM data inputs
+```{r}
+##### List object
+datalist = list()
+
+# General info
+datalist$ages = ages
+datalist$years = years
+
+# Fleets 
+datalist$n_fleets = 1
+datalist$agg_catch = matrix(CAA$Total, ncol = 1)
+
+CAAlist <- list(drop_columns(CAA, c("Year", "Total"))) # Make a temporary list of catch-at-age by fleet (exclude, year & Total columns)
+datalist$catch_paa = array(NA, dim = c(datalist$n_fleets, n_year, n_age)) # setup array
+for(i in 1:datalist$n_fleets){
+  datalist$catch_paa[i,,] = as.matrix(CAAlist[[i]])
+}
+
+datalist$catch_cv = matrix(0.1, n_year, datalist$n_fleets)
+datalist$catch_Neff = matrix(100, n_year, datalist$n_fleets)
+datalist$use_catch_paa = matrix(1, n_year, datalist$n_fleets)
+
+# Indices
+datalist$n_indices = 2 # Only fitting to NEFSC surveys spring & fall
+datalist$agg_indices = cbind(indices$`INDEX_NMFS spring BTS_Abundance (numbers/tow)`, indices$`INDEX_NMFS fall BTS_Abundance (numbers/tow)`) # spring and fall #/tow !!!! How change units to #/tow?
+datalist$index_paa = input$data$index_paa # !!!! How calculate given units???
+datalist$index_cv = cbind(indices$`CV_NMFS spring BTS_Abundance (numbers/tow)`, indices$`CV_NMFS fall BTS_Abundance (numbers/tow)`) 
+datalist$index_Neff = matrix(rep(50, 2*length(n_year)), ncol = datalist$n_indices, nrow = n_year) # ??? less arbitrary way to specify this
+datalist$fracyr_indices = matrix(rep(0, 2*length(n_year)), ncol = datalist$n_indices, nrow = n_year) # Survey at start of year (i.e. month 1)
+datalist$index_units = rep(2, datalist$n_indices) # 1=biomass 2=abundance # ??? how to set to #/tow
+datalist$index_paa_units = rep(2, datalist$n_indices) # ??? how to set to #/tow
+datalist$use_index_paa = matrix(rep(0, 2*length(n_year)), ncol = datalist$n_indices, nrow = n_year) # Currently not used
+
+# Maturity and weight-at-age
+datalist$maturity = rbind(input$data$mature, input$data$mature[39,]) # pull matrix from ASAP file ??? Where to get this for updated assessment
+	  
+WAAlist <- list(drop_columns(cWAA, "Year"), drop_columns(jan1WAA, "Year"), drop_columns(jan1WAA, "Year"),drop_columns(cWAA, "Year") , drop_columns(jan1WAA, "Year")) # Make a temporary list of weight-at-age by fleet, index, total catch, SSB (length = (datalist$n_fleets + datalist$n_indices + 2)) ??? use jan1WAA for surveyWAA? (currently done)
+datalist$waa = array(NA, dim = c((datalist$n_fleets + datalist$n_indices + 2), n_year, n_age)) # setup array
+for(i in 1:length(WAAlist)){
+  datalist$waa[i,,] = as.matrix(WAAlist[[i]]) 
+}
+
+datalist$fracyr_SSB = rep(0.25, n_year)
+
+# q, F, selectivity
+datalist$Fbar_ages = c(6:9)
+datalist$q = c(0,0) # better way to set starting estimate?
+#datalist$F matrix(0.2, n_year, datalist$n_fleets) # ??? May need this
+
+datalist$selblock_pointer_fleets <- t(matrix(1:datalist$n_fleets, datalist$n_fleets, n_year))
+datalist$selblock_pointer_indices <- t(matrix(datalist$n_fleets+1:datalist$n_indices, datalist$n_indices, n_year)) # borrow from ASAP file
+
+
+##### Other WHAM data inputs
+selectivity = list(model = c(rep("logistic", datalist$n_fleets), rep("logistic", datalist$n_indices)), # Type of selectivity
+                   initial_pars = rep(list(c(5,1.5)), (datalist$n_fleets + datalist$n_indices)))
+M = list(model = "constant", initial_means = 0.2)
+# M = list(initial_means = rep(0.3, n_age))
+
+NAA_re = list(sigma = "rec") #random about mean
+NAA_re$recruit_model = 2 #random effects with a constant mean
+NAA_re$recruit_pars = exp(10) #initial guess for mean recruitment
+
+input <- prepare_wham_input(basic_info = datalist, NAA_re = NAA_re, selectivity = selectivity, M = M)
+```
+Warning about selblock pointers: "number of selblocks, 3, is being determined by input$data$selblock_pointer_fleets and input$data$selblock_pointer_indices. Those should be 1,...,max(pointers)."
+
+Fit wham model
+```{r}
+fit_wham(input, MakeADFun.silent = TRUE)
+```
+
+
+
+
+
+
