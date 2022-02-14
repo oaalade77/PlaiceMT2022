@@ -19,6 +19,20 @@ library(DataExplorer)
 - Don't use Age 0 data
 - M = 0.3, may also try freely estimating M in WHAM
 
+Major data updates include:
+- M set to 0.3
+- Fixed maturity schedule over time
+- Updated catch, NEFSC survey, and MADMF survey data
+- Included VAST survey estimates
+- Spring index month set to 4, fall index month set to 10 (bridge run set all to 1)
+
+### Load data available to use in WHAM
+```{r}
+asap3 <- read_asap3_dat(paste(here::here(), "data", "PlaiceWHAM-2019.DAT", sep="/"))
+```
+
+### Data passed to WHAM via PlaiceWHAM-2019.DAT can also be loaded into R via the following:
+
 Catch data
 ```{r}
 # Catch-at-age data (use middle table with 11+ group)
@@ -51,7 +65,7 @@ Survey indices
 # Spring & fall indices for: NEFSC, MADMF
 indices <- readRDS(paste(here::here(), "data", "Survey Data", "NEFSC and MADMF", "AMPLAsurveyData", "Indices.rds", sep="/"))
 
-# Spring NAA
+# Spring NAA (1st table is NAA, 2nd is proportion at age)
 sNAA <- readRDS(paste(here::here(), "data", "Survey Data", "NEFSC and MADMF", "AMPLAsurveyData", "NAASpring.rds", sep="/"))
 
 # Fall NAA
@@ -60,100 +74,312 @@ fNAA <- readRDS(paste(here::here(), "data", "Survey Data", "NEFSC and MADMF", "A
 # MENH survey
 ```
 
-Other general information that will remain consistent across models
+
+# Run 1: Use updated data
+Check updated data file usable. Run with fit to NEFSC spring and fall surveys, I didn't do anything to selectivity so this is likely to be weird. 
+
+Prep data for use
 ```{r}
-ages <- c(1:11)
-years <- c(1980:2019)
-n_age <- length(ages)
-n_year <- length(years)
+asap3 <- read_asap3_dat(paste(here::here(), "data", "PlaiceWHAM-2019.DAT", sep="/"))
+
+input <- prepare_wham_input(asap3, model_name = "model_dataUpdate") 
+```
+Run model with raw updated data, check convergence, and plot output
+```{r}
+model_dataUpdate <- fit_wham(input, MakeADFun.silent = TRUE) 
+check_convergence(model_dataUpdate)
+print(paste("Number of parameters", length(model_dataUpdate$par), sep=" "))
+
+plot_wham_output(mod=model_dataUpdate, out.type='html')
 ```
 
+Large negative residuals for survey age 1 & 2, large positive residuals for ages 3-5. Selectivity taken from bridge run is unrealistic & needs to be updated.
 
-# Baseline model
-Differences from bridge run
-- Updated data (additional year of data, values re-estimated)
-- M = 0.3
-- NAA random effect included
+# Run 2: Update selectivity 
+Change input file so selectivity is estimated.
 
-Similarities with bridge run
-- 1 fleet
-- only NEFSC spring & fall surveys included
-
-Setup data list & other WHAM data inputs
+Prep data for use
 ```{r}
-##### List object
-datalist = list()
+asap3 <- read_asap3_dat(paste(here::here(), "data", "PlaiceWHAM-2019_selectivity.DAT", sep="/"))
 
-# General info
-datalist$ages = ages
-datalist$years = years
+# Setup initial selectivity model and parameters
+use_n_indices = 2
+modelsetup <- c(rep("logistic", asap3$dat$n_fleet_sel_blocks), rep("age-specific", use_n_indices))
 
-# Fleets 
-datalist$n_fleets = 1
-datalist$agg_catch = matrix(CAA$Total, ncol = 1)
+init_fleet_sel <- list(c(2,0.4)) # logistic parameters, based on model type
+init_index_sel = lapply(1:use_n_indices, function(x) c(rep(0.5,8),1,1,0))
 
-CAAlist <- list(drop_columns(CAA, c("Year", "Total"))) # Make a temporary list of catch-at-age by fleet (exclude, year & Total columns)
-datalist$catch_paa = array(NA, dim = c(datalist$n_fleets, n_year, n_age)) # setup array
-for(i in 1:datalist$n_fleets){
-  datalist$catch_paa[i,,] = as.matrix(CAAlist[[i]])
-}
+# Setup fixed parameters
+fix_fleet_sel <- lapply(1:asap3$dat$n_fleets, function(x) NA) 
+fix_index_sel <- lapply(1:use_n_indices, function(x) NA) 
 
-datalist$catch_cv = matrix(0.1, n_year, datalist$n_fleets)
-datalist$catch_Neff = matrix(100, n_year, datalist$n_fleets)
-datalist$use_catch_paa = matrix(1, n_year, datalist$n_fleets)
+# Setup selectivity list
+sel_list <- list(model = modelsetup, # list selectivity model for each fleet and index 
+                 initial_pars = c(init_fleet_sel, init_index_sel),
+                 fix_pars = c(fix_fleet_sel, fix_index_sel))
 
-# Indices
-datalist$n_indices = 2 # Only fitting to NEFSC surveys spring & fall
-datalist$agg_indices = cbind(indices$`INDEX_NMFS spring BTS_Abundance (numbers/tow)`, indices$`INDEX_NMFS fall BTS_Abundance (numbers/tow)`) # spring and fall #/tow !!!! How change units to #/tow?
-datalist$index_paa = input$data$index_paa # !!!! How calculate given units???
-datalist$index_cv = cbind(indices$`CV_NMFS spring BTS_Abundance (numbers/tow)`, indices$`CV_NMFS fall BTS_Abundance (numbers/tow)`) 
-datalist$index_Neff = matrix(rep(50, 2*length(n_year)), ncol = datalist$n_indices, nrow = n_year) # ??? less arbitrary way to specify this
-datalist$fracyr_indices = matrix(rep(0, 2*length(n_year)), ncol = datalist$n_indices, nrow = n_year) # Survey at start of year (i.e. month 1)
-datalist$index_units = rep(2, datalist$n_indices) # 1=biomass 2=abundance # ??? how to set to #/tow
-datalist$index_paa_units = rep(2, datalist$n_indices) # ??? how to set to #/tow
-datalist$use_index_paa = matrix(rep(0, 2*length(n_year)), ncol = datalist$n_indices, nrow = n_year) # Currently not used
-
-# Maturity and weight-at-age
-datalist$maturity = rbind(input$data$mature, input$data$mature[39,]) # pull matrix from ASAP file ??? Where to get this for updated assessment
-	  
-WAAlist <- list(drop_columns(cWAA, "Year"), drop_columns(jan1WAA, "Year"), drop_columns(jan1WAA, "Year"),drop_columns(cWAA, "Year") , drop_columns(jan1WAA, "Year")) # Make a temporary list of weight-at-age by fleet, index, total catch, SSB (length = (datalist$n_fleets + datalist$n_indices + 2)) ??? use jan1WAA for surveyWAA? (currently done)
-datalist$waa = array(NA, dim = c((datalist$n_fleets + datalist$n_indices + 2), n_year, n_age)) # setup array
-for(i in 1:length(WAAlist)){
-  datalist$waa[i,,] = as.matrix(WAAlist[[i]]) 
-}
-
-datalist$fracyr_SSB = rep(0.25, n_year)
-
-# q, F, selectivity
-datalist$Fbar_ages = c(6:9)
-datalist$q = c(0,0) # better way to set starting estimate?
-#datalist$F matrix(0.2, n_year, datalist$n_fleets) # ??? May need this
-
-datalist$selblock_pointer_fleets <- t(matrix(1:datalist$n_fleets, datalist$n_fleets, n_year))
-datalist$selblock_pointer_indices <- t(matrix(datalist$n_fleets+1:datalist$n_indices, datalist$n_indices, n_year)) # borrow from ASAP file
+##### Prep WHAM input
+# browser() # Useful debugger 
+input <- prepare_wham_input(asap3 = asap3, selectivity = sel_list, model_name = "model_dataUpdate2")
 
 
-##### Other WHAM data inputs
-selectivity = list(model = c(rep("logistic", datalist$n_fleets), rep("logistic", datalist$n_indices)), # Type of selectivity
-                   initial_pars = rep(list(c(5,1.5)), (datalist$n_fleets + datalist$n_indices)))
-M = list(model = "constant", initial_means = 0.2)
-# M = list(initial_means = rep(0.3, n_age))
+```
+Run model with raw updated data, check convergence, and plot output
+```{r}
+model_dataUpdate2 <- fit_wham(input, MakeADFun.silent = TRUE) 
+check_convergence(model_dataUpdate2)
+print(paste("Number of parameters", length(model_dataUpdate2$par), sep=" "))
 
+# plot_wham_output(mod=model_dataUpdate2, out.type='html')
+plot_wham_output(mod=model_dataUpdate2, out.type='png', dir.main = paste(here::here(), "model_dataUpdate2", sep="/"))
+```
+Much better residual patterns and improved fit to survey indices. May still want to check age 1 & NAA plots - it looks like recruitment might be weird. Missing values (0s) in survey weight-at-age data for older fish could be a problem. Survey age 4 appears to have second highest selectivity with age 10+ estimated at 1. 
+
+Hessian not positive definite. 
+
+# Run 3: Fix age 4 selectivity for indices
+Fix age 4 selectivity at 1. For index 1 this matches the freely estimated value, for index 2 age 4 has the second highest selectivity (10+ has highest) when selectivity is freely estimated.
+
+Prep data for use
+```{r}
+asap3 <- read_asap3_dat(paste(here::here(), "data", "PlaiceWHAM-2019_selectivity.DAT", sep="/"))
+
+# Setup initial selectivity model and parameters
+use_n_indices = 2
+modelsetup <- c(rep("logistic", asap3$dat$n_fleet_sel_blocks), rep("age-specific", use_n_indices))
+
+init_fleet_sel <- list(c(2,0.4)) # logistic parameters, based on model type
+init_index_sel <- lapply(1:use_n_indices, function(x) c(0.5, 0.5, 0.5, 1, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5,0))
+
+# Setup fixed parameters
+fix_fleet_sel <- lapply(1:asap3$dat$n_fleets, function(x) NA) 
+fix_index_sel <- lapply(1:use_n_indices, function(x) 4) # Fix age 4 for both indices,  NA means do not fix
+#fix_index_sel[[1]][1] <- 4 # Fix age for for index 1,  NA means do not fix them
+#fix_index_sel[[2]][1] <- 4 # Fix age for for index 2
+
+# Setup selectivity list
+sel_list <- list(model = modelsetup, # list selectivity model for each fleet and index
+                 initial_pars = c(init_fleet_sel, init_index_sel),
+                 fix_pars = c(fix_fleet_sel, fix_index_sel))
+
+##### Prep WHAM input
+input <- prepare_wham_input(asap3 = asap3, selectivity = sel_list, model_name = "model_dataUpdate3")
+
+```
+Run model with raw updated data, check convergence, and plot output
+```{r}
+model_dataUpdate3 <- fit_wham(input, MakeADFun.silent = TRUE) 
+check_convergence(model_dataUpdate3)
+print(paste("Number of parameters", length(model_dataUpdate3$par), sep=" "))
+
+plot_wham_output(mod=model_dataUpdate3, out.type='html')
+# plot_wham_output(mod=model_dataUpdate3, out.type='png', dir.main = paste(here::here(), "model_dataUpdate3", sep="/"))
+```
+There doesn't appear to be much difference in model fit or diagnostics compared to Run 2 but the hessian for this model is invertable. The selectivity pattern is very similar to Run 2 for index 1 and index 2 has slightly higher selectivity estimates for intermediate ages near age 4. Both indices still have 10+ estimates at 1. 
+
+# Run 4: Add random effect for recruitment - random about mean
+Same as run 3 (freely estimate selectivity) but also add random effect for recruitment that is random about the mean
+
+Prep data for use
+```{r}
+asap3 <- read_asap3_dat(paste(here::here(), "data", "PlaiceWHAM-2019_selectivity.DAT", sep="/"))
+
+# iid random effects for recruitment only 
 NAA_re = list(sigma = "rec") #random about mean
-NAA_re$recruit_model = 2 #random effects with a constant mean
+NAA_re$recruit_model = 2 # random effects with a constant mean
 NAA_re$recruit_pars = exp(10) #initial guess for mean recruitment
 
-input <- prepare_wham_input(basic_info = datalist, NAA_re = NAA_re, selectivity = selectivity, M = M)
-```
-Warning about selblock pointers: "number of selblocks, 3, is being determined by input$data$selblock_pointer_fleets and input$data$selblock_pointer_indices. Those should be 1,...,max(pointers)."
+# Setup initial selectivity model and parameters
+use_n_indices = 2
+modelsetup <- c(rep("logistic", asap3$dat$n_fleet_sel_blocks), rep("age-specific", use_n_indices))
 
-Fit wham model
+init_fleet_sel <- list(c(2,0.4)) # logistic parameters, based on model type
+init_index_sel <- lapply(1:use_n_indices, function(x) c(0.5, 0.5, 0.5, 1, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5,0))
+
+# Setup fixed parameters
+fix_fleet_sel <- lapply(1:asap3$dat$n_fleets, function(x) NA) 
+fix_index_sel <- lapply(1:use_n_indices, function(x) 4) # Fix age 4 for both indices,  NA means do not fix 
+
+# Setup selectivity list
+sel_list <- list(model = modelsetup, # list selectivity model for each fleet and index 
+                 initial_pars = c(init_fleet_sel, init_index_sel),
+                 fix_pars = c(fix_fleet_sel, fix_index_sel))
+
+##### Prep WHAM input
+input <- prepare_wham_input(asap3 = asap3, NAA_re = NAA_re, selectivity = sel_list, model_name = "model_dataUpdate4")
+
+```
+Run model with raw updated data, check convergence, and plot output
 ```{r}
-fit_wham(input, MakeADFun.silent = TRUE)
+model_dataUpdate4 <- fit_wham(input, MakeADFun.silent = TRUE) 
+check_convergence(model_dataUpdate4)
+print(paste("Number of parameters", length(model_dataUpdate4$par), sep=" "))
+
+plot_wham_output(mod=model_dataUpdate4, out.type='html')
+# plot_wham_output(mod=model_dataUpdate4, out.type='png', dir.main = paste(here::here(), "model_dataUpdate4", sep="/"))
 ```
 
+Recruitment residuals look a bit better (distributed about 0 rather than all positive, but very large residuals at end of time series are concerning). OSA residuals for the fleet and both indices look a bit bigger.
+
+# Run 5: Add random effect for recruitment - random walk
+Same as run 4 (freely estimate selectivity) but with add random effect for recruitment with random walk
+
+Prep data for use
+```{r}
+asap3 <- read_asap3_dat(paste(here::here(), "data", "PlaiceWHAM-2019_selectivity.DAT", sep="/"))
+
+# iid random effects for recruitment only 
+NAA_re = list(sigma = "rec") #random about mean
+NAA_re$recruit_model = 1 # random effects with random walk
+NAA_re$recruit_pars = exp(10) #initial guess for mean recruitment
+
+# Setup initial selectivity model and parameters
+use_n_indices = 2
+modelsetup <- c(rep("logistic", asap3$dat$n_fleet_sel_blocks), rep("age-specific", use_n_indices))
+
+init_fleet_sel <- list(c(2,0.4)) # logistic parameters, based on model type
+init_index_sel <- lapply(1:use_n_indices, function(x) c(0.5, 0.5, 0.5, 1, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5,0))
+
+# Setup fixed parameters
+fix_fleet_sel <- lapply(1:asap3$dat$n_fleets, function(x) NA) 
+fix_index_sel <- lapply(1:use_n_indices, function(x) 4) # Fix age 4 for both indices,  NA means do not fix
+
+# Setup selectivity list
+sel_list <- list(model = modelsetup, # list selectivity model for each fleet and index 
+                 initial_pars = c(init_fleet_sel, init_index_sel),
+                 fix_pars = c(fix_fleet_sel, fix_index_sel))
+
+##### Prep WHAM input
+input <- prepare_wham_input(asap3 = asap3, NAA_re = NAA_re, selectivity = sel_list, model_name = "model_dataUpdate5")
+
+```
+Run model with raw updated data, check convergence, and plot output
+```{r}
+model_dataUpdate5 <- fit_wham(input, MakeADFun.silent = TRUE) 
+check_convergence(model_dataUpdate5)
+print(paste("Number of parameters", length(model_dataUpdate5$par), sep=" "))
+
+plot_wham_output(mod=model_dataUpdate5, out.type='html')
+# plot_wham_output(mod=model_dataUpdate5, out.type='png', dir.main = paste(here::here(), "model_dataUpdate5", sep="/"))
+```
+
+Recruitment residuals at the end of the timeseries are still fairly large, but are not biased negatively. More closely track recruitment variability. No strong retrospective patterns. Selectivity for age 10+ is still much higher than ages 5-9.
+
+# Run 6: Add MADMF surveys
+Run 5 model with NEFSC + MADMF spring and fall surveys
+
+Prep data for use
+```{r}
+asap3 <- read_asap3_dat(paste(here::here(), "data", "PlaiceWHAM-2019_selectivity.DAT", sep="/"))
+
+# Select MADMF spring and fall surveys (indices 3 + 4) for use in addition to NEFSC
+asap3$dat$use_index <- c(1,1,1,1,0,0,0,0,0,0,0,0)
+
+# iid random effects for recruitment only 
+NAA_re = list(sigma = "rec") #random about mean
+NAA_re$recruit_model = 1 # random effects with random walk
+NAA_re$recruit_pars = exp(10) #initial guess for mean recruitment
+
+# Turn off age comp for MADMF spring and fall survey (since not provided)
+asap$dat$use_index_acomp <- c(1,1,0,0)
+
+# Setup initial selectivity model and parameters
+use_n_indices = 4
+modelsetup <- c(rep("logistic", asap3$dat$n_fleet_sel_blocks), rep("age-specific", use_n_indices))
+
+init_fleet_sel <- list(c(2,0.4)) # logistic parameters, based on model type
+# init_index_sel <- lapply(1:use_n_indices, function(x) c(0.5, 0.5, 0.5, 1, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5,0))
+init_index_sel[[3]] <- c(rep(1, 11)) # initial values for all ages = 1
+init_index_sel[[4]] <- c(rep(1, 11)) # initial values for all ages = 1
+
+# Setup fixed parameters
+fix_fleet_sel <- lapply(1:asap3$dat$n_fleets, function(x) NA) 
+fix_index_sel <- lapply(1:use_n_indices, function(x) 4) # Fix age 4 for NEFSC indices,  NA means do not fix
+fix_index_sel[[3]] <- c(1:11) # Fix selectivity for MADMF spring & fall
+fix_index_sel[[4]] <- c(1:11)
+
+# Setup selectivity list
+sel_list <- list(model = modelsetup, # list selectivity model for each fleet and index 
+                 initial_pars = c(init_fleet_sel, init_index_sel),
+                 fix_pars = c(fix_fleet_sel, fix_index_sel))
+
+##### Prep WHAM input
+input <- prepare_wham_input(asap3 = asap3, NAA_re = NAA_re, selectivity = sel_list, model_name = "model_dataUpdate6")
+
+```
+Run model with raw updated data, check convergence, and plot output
+```{r}
+model_dataUpdate6 <- fit_wham(input, MakeADFun.silent = TRUE) 
+check_convergence(model_dataUpdate6)
+print(paste("Number of parameters", length(model_dataUpdate6$par), sep=" "))
+
+plot_wham_output(mod=model_dataUpdate6, out.type='html')
+# plot_wham_output(mod=model_dataUpdate6, out.type='png', dir.main = paste(here::here(), "model_dataUpdate6", sep="/"))
+```
+Both the spring and fall MADMF survey indices (3 and 4) have very large negative residuals towards the end of the time series and somewhat smaller but still large residuals early in the time series. Introduces residual pattern for NEFSC indices (1 and 2), residuals move from large negative residuals early in the time series to large positive residuals at the end of the time series. 
 
 
 
+# Use VAST data instead
+# Only NEFSC VAST index
 
+# Run 7: Fit to VAST NEFSC spring and fall surveys
+Fit to VAST estimated NEFSC indices (i.e. model-based index) rather than observation-based NEFSC indices
+
+Prep data for use
+```{r}
+asap3 <- read_asap3_dat(paste(here::here(), "data", "PlaiceWHAM-2019_selectivity.DAT", sep="/"))
+
+# Select VAST estimated NEFSC spring and fall surveys (indices 5 and 6) 
+asap3$dat$use_index <- c(0,0,0,0,1,1,0,0,0,0,0,0)
+
+# iid random effects for recruitment only 
+NAA_re = list(sigma = "rec") #random about mean
+NAA_re$recruit_model = 1 # random effects with random walk
+NAA_re$recruit_pars = exp(10) #initial guess for mean recruitment
+
+# Turn off age comp for spring and fall survey (since not estimated)
+asap$dat$use_index_acomp <- c(0,0)
+
+# Setup initial selectivity model and parameters
+use_n_indices = 2
+modelsetup <- c(rep("logistic", asap3$dat$n_fleet_sel_blocks), rep("age-specific", use_n_indices))
+
+init_fleet_sel <- list(c(2,0.4)) # logistic parameters, based on model type
+init_index_sel <- lapply(1:use_n_indices, function(x) rep(1, 11)) # initial values for all ages = 1
+
+# Setup fixed parameters
+fix_fleet_sel <- lapply(1:asap3$dat$n_fleets, function(x) NA) 
+fix_index_sel <- lapply(1:use_n_indices, function(x) 1:11) # Fix all ages for VAST NEFSC indices,  NA means do not fix
+
+# Setup selectivity list
+sel_list <- list(model = modelsetup, # list selectivity model for each fleet and index
+                 initial_pars = c(init_fleet_sel, init_index_sel),
+                 fix_pars = c(fix_fleet_sel, fix_index_sel))
+
+##### Prep WHAM input
+input <- prepare_wham_input(asap3 = asap3, NAA_re = NAA_re, selectivity = sel_list, model_name = "model_dataUpdate7")
+
+```
+Run model with raw updated data, check convergence, and plot output
+```{r}
+model_dataUpdate7 <- fit_wham(input, MakeADFun.silent = TRUE) 
+check_convergence(model_dataUpdate7)
+print(paste("Number of parameters", length(model_dataUpdate7$par), sep=" "))
+
+plot_wham_output(mod=model_dataUpdate7, out.type='html')
+# plot_wham_output(mod=model_dataUpdate7, out.type='png', dir.main = paste(here::here(), "model_dataUpdate7", sep="/"))
+```
+
+Higher recruitment CV than observation-based model. Very large residuals for both spring and fall indices, spring index (1) more positive than negative residuals except end of timeseries. Fleet OSA residuals also less normally distributed.
+
+
+# NEFSC VAST + MADMF VAST
+# NEFSC VAST + MENH VAST
+# NEFSC VAST + MADMF VAST + MENH VAST
+# ALL VAST
+
+
+
+Notes - not all plots (e.g. plot.cv) will be generated if not positive definite hessian (no sdreport)
 
