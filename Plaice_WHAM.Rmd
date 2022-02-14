@@ -717,10 +717,10 @@ input <- prepare_wham_input(asap3 = asap3,
                             selectivity = sel_list, 
                             ecov=ecov,
                             model_name = "Plaice_noMADMF3_envR")
-if(ecov_how[imod]!=0){ # When env covariate considered also specify Ecov_beta effect on recruitment
-  input$par$Ecov_beta[4,1,1,] = 0.5
-  input$map$Ecov_beta = rep(NA,44)
-}
+# if(df.mods$ecov_how[imod]!=0){ # When env covariate considered also specify Ecov_beta effect on recruitment
+#   input$par$Ecov_beta[4,1,1,] = 0.5
+#   input$map$Ecov_beta = rep(NA,44)
+# }
 
 
 ###### Fit plaice model
