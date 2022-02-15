@@ -275,6 +275,8 @@ saveRDS(model_dataUpdate5, file=paste(here::here(), "model_dataUpdate5", "model_
 
 Recruitment residuals at the end of the timeseries are still fairly large, but are not biased negatively. More closely track recruitment variability. No strong retrospective patterns. Selectivity for age 10+ is still much higher than ages 5-9.
 
+# In progress beyond this point
+
 # Run 6: Add MADMF surveys 
 Run 5 model with NEFSC + MADMF spring and fall surveys
 
