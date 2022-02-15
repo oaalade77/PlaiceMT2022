@@ -27,6 +27,9 @@ check_convergence(model_try_bridge)
 print(paste("Number of parameters", length(model_try_bridge$par), sep=" "))
 
 plot_wham_output(mod=model_try_bridge, out.type='html')
+plot_wham_output(mod=model_try_bridge, out.type='png', dir.main = paste(here::here(), "model_try_bridge", sep="/"))
+
+saveRDS(model_try_bridge, file=paste(here::here(), "model_try_bridge", "model_try_bridge.rds", sep="/"))
 ```
 
 How does this relate to the 2018 VPA? https://apps-nefsc.fisheries.noaa.gov/saw/sasi/uploads/2019_PLA_UNIT_MOD_VPA_T2018_NEC_ONLY.dat
@@ -50,4 +53,7 @@ check_convergence(model_bridge)
 print(paste("Number of parameters", length(model_bridge$par), sep=" "))
 
 plot_wham_output(mod=model_bridge, out.type='html')
+plot_wham_output(mod=model_bridge, out.type='png', dir.main = paste(here::here(), "model_bridge", sep="/"))
+
+saveRDS(model_bridge, file=paste(here::here(), "model_bridge", "model_bridge.rds", sep="/"))
 ```
