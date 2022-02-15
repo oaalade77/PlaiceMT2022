@@ -91,6 +91,8 @@ check_convergence(model_dataUpdate)
 print(paste("Number of parameters", length(model_dataUpdate$par), sep=" "))
 
 plot_wham_output(mod=model_dataUpdate, out.type='html')
+# plot_wham_output(mod=model_dataUpdate, out.type='png', dir.main = paste(here::here(), "model_dataUpdate", sep="/"))
+saveRDS(model_dataUpdate, file=paste(here::here(), "model_dataUpdate", "model_dataUpdate.rds", sep="/"))
 ```
 
 Large negative residuals for survey age 1 & 2, large positive residuals for ages 3-5. Selectivity taken from bridge run is unrealistic & needs to be updated.
@@ -132,6 +134,8 @@ print(paste("Number of parameters", length(model_dataUpdate2$par), sep=" "))
 
 # plot_wham_output(mod=model_dataUpdate2, out.type='html')
 plot_wham_output(mod=model_dataUpdate2, out.type='png', dir.main = paste(here::here(), "model_dataUpdate2", sep="/"))
+
+saveRDS(model_dataUpdate2, file=paste(here::here(), "model_dataUpdate2", "model_dataUpdate2.rds", sep="/"))
 ```
 Much better residual patterns and improved fit to survey indices. May still want to check age 1 & NAA plots - it looks like recruitment might be weird. Missing values (0s) in survey weight-at-age data for older fish could be a problem. Survey age 4 appears to have second highest selectivity with age 10+ estimated at 1. 
 
@@ -174,6 +178,8 @@ print(paste("Number of parameters", length(model_dataUpdate3$par), sep=" "))
 
 plot_wham_output(mod=model_dataUpdate3, out.type='html')
 # plot_wham_output(mod=model_dataUpdate3, out.type='png', dir.main = paste(here::here(), "model_dataUpdate3", sep="/"))
+
+saveRDS(model_dataUpdate3, file=paste(here::here(), "model_dataUpdate3", "model_dataUpdate3.rds", sep="/"))
 ```
 There doesn't appear to be much difference in model fit or diagnostics compared to Run 2 but the hessian for this model is invertable. The selectivity pattern is very similar to Run 2 for index 1 and index 2 has slightly higher selectivity estimates for intermediate ages near age 4. Both indices still have 10+ estimates at 1. 
 
@@ -217,6 +223,8 @@ print(paste("Number of parameters", length(model_dataUpdate4$par), sep=" "))
 
 plot_wham_output(mod=model_dataUpdate4, out.type='html')
 # plot_wham_output(mod=model_dataUpdate4, out.type='png', dir.main = paste(here::here(), "model_dataUpdate4", sep="/"))
+
+saveRDS(model_dataUpdate4, file=paste(here::here(), "model_dataUpdate4", "model_dataUpdate4.rds", sep="/"))
 ```
 
 Recruitment residuals look a bit better (distributed about 0 rather than all positive, but very large residuals at end of time series are concerning). OSA residuals for the fleet and both indices look a bit bigger.
@@ -261,6 +269,8 @@ print(paste("Number of parameters", length(model_dataUpdate5$par), sep=" "))
 
 plot_wham_output(mod=model_dataUpdate5, out.type='html')
 # plot_wham_output(mod=model_dataUpdate5, out.type='png', dir.main = paste(here::here(), "model_dataUpdate5", sep="/"))
+
+saveRDS(model_dataUpdate5, file=paste(here::here(), "model_dataUpdate5", "model_dataUpdate5.rds", sep="/"))
 ```
 
 Recruitment residuals at the end of the timeseries are still fairly large, but are not biased negatively. More closely track recruitment variability. No strong retrospective patterns. Selectivity for age 10+ is still much higher than ages 5-9.
@@ -315,6 +325,8 @@ print(paste("Number of parameters", length(model_dataUpdate6$par), sep=" "))
 
 plot_wham_output(mod=model_dataUpdate6, out.type='html')
 # plot_wham_output(mod=model_dataUpdate6, out.type='png', dir.main = paste(here::here(), "model_dataUpdate6", sep="/"))
+
+saveRDS(model_dataUpdate6, file=paste(here::here(), "model_dataUpdate6", "model_dataUpdate6.rds", sep="/"))
 ```
 Both the spring and fall MADMF survey indices (3 and 4) have very large negative residuals towards the end of the time series and somewhat smaller but still large residuals early in the time series. Introduces residual pattern for NEFSC indices (1 and 2), residuals move from large negative residuals early in the time series to large positive residuals at the end of the time series. 
 
@@ -369,6 +381,8 @@ print(paste("Number of parameters", length(model_dataUpdate7$par), sep=" "))
 
 plot_wham_output(mod=model_dataUpdate7, out.type='html')
 # plot_wham_output(mod=model_dataUpdate7, out.type='png', dir.main = paste(here::here(), "model_dataUpdate7", sep="/"))
+
+saveRDS(model_dataUpdate7, file=paste(here::here(), "model_dataUpdate7", "model_dataUpdate7.rds", sep="/"))
 ```
 
 Higher recruitment CV than observation-based model. Very large residuals for both spring and fall indices, spring index (1) more positive than negative residuals except end of timeseries. Fleet OSA residuals also less normally distributed.
@@ -382,4 +396,16 @@ Higher recruitment CV than observation-based model. Very large residuals for bot
 
 
 Notes - not all plots (e.g. plot.cv) will be generated if not positive definite hessian (no sdreport)
+
+# Compare model F, SSB, Recruitment
+```{r}
+model_list <- paste(here::here(), c("model_bridge/model_bridge.rds", "model_dataUpdate/model_dataUpdate.rds", "model_dataUpdate3/model_dataUpdate3.rds", "model_dataUpdate4/model_dataUpdate4.rds", "model_dataUpdate5/model_dataUpdate5.rds"), sep="/")
+models <- lapply(model_list, readRDS)
+# models <- list(model_dataUpdate, model_dataUpdate3, model_dataUpdate4, model_dataUpdate5)
+names(models) <- c("Bridge", "Updated", "Fix_Age4", "R_mean", "R_walk")
+
+compare_wham_models(models, do.plot = TRUE, do.table=FALSE, fdir=paste(here::here(), "model_comparison", sep="/"), plot.opts=list(which = 1))
+
+compare_wham_models(models[1:2], do.plot = TRUE, do.table=FALSE, fdir=paste(here::here(), "model_comparison", sep="/"), plot.opts=list(which = 1))
+```
 
