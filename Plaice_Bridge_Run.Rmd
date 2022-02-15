@@ -11,7 +11,7 @@ library(tidyverse)
 library(wham)
 ```
 
-# Try bridge run - VPA to WHAM
+# Try bridge run - VPA to WHAM: Run 1 in WG spreadsheet
 This run uses the same file as the ASAP bridge run, the abundance indices at each age mean that selectivity for each index is estimated at 1. 
 
 Load ASAP .dat file used for ASAP bridge run & prep for use in WHAM bridge run
@@ -35,7 +35,7 @@ saveRDS(model_try_bridge, file=paste(here::here(), "model_try_bridge", "model_tr
 How does this relate to the 2018 VPA? https://apps-nefsc.fisheries.noaa.gov/saw/sasi/uploads/2019_PLA_UNIT_MOD_VPA_T2018_NEC_ONLY.dat
 
 
-# Bridge run with multi-age indices
+# Bridge run with multi-age indices: Run 2 in WG spreadsheet
 The .dat file used for the ASAP bridge run treats each survey age as a separate index so selectivity for each index = 1. The following bridge run aggregates surveys to include multiple ages, and otherwise uses the same data as the ASAP bridge run with the following exception:
 
 - Index 19 from the ASAP bridge .dat file was excluded from the WHAM .dat bridge file, but was not used for fitting either bridge model
