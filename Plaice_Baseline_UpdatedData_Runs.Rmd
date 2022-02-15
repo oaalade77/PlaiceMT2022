@@ -75,7 +75,7 @@ fNAA <- readRDS(paste(here::here(), "data", "Survey Data", "NEFSC and MADMF", "A
 ```
 
 
-# Run 1: Use updated data
+# Run 1: Use updated data - Run 3 in WG spreadsheet
 Check updated data file usable. Run with fit to NEFSC spring and fall surveys, I didn't do anything to selectivity so this is likely to be weird. 
 
 Prep data for use
@@ -141,7 +141,7 @@ Much better residual patterns and improved fit to survey indices. May still want
 
 Hessian not positive definite. 
 
-# Run 3: Fix age 4 selectivity for indices
+# Run 3: Fix age 4 selectivity for indices - Run 4 in WG spreadsheet
 Fix age 4 selectivity at 1. For index 1 this matches the freely estimated value, for index 2 age 4 has the second highest selectivity (10+ has highest) when selectivity is freely estimated.
 
 Prep data for use
@@ -183,7 +183,7 @@ saveRDS(model_dataUpdate3, file=paste(here::here(), "model_dataUpdate3", "model_
 ```
 There doesn't appear to be much difference in model fit or diagnostics compared to Run 2 but the hessian for this model is invertable. The selectivity pattern is very similar to Run 2 for index 1 and index 2 has slightly higher selectivity estimates for intermediate ages near age 4. Both indices still have 10+ estimates at 1. 
 
-# Run 4: Add random effect for recruitment - random about mean
+# Run 4: Add random effect for recruitment - random about mean - Run 5 in WG spreadsheet
 Same as run 3 (freely estimate selectivity) but also add random effect for recruitment that is random about the mean
 
 Prep data for use
@@ -229,7 +229,7 @@ saveRDS(model_dataUpdate4, file=paste(here::here(), "model_dataUpdate4", "model_
 
 Recruitment residuals look a bit better (distributed about 0 rather than all positive, but very large residuals at end of time series are concerning). OSA residuals for the fleet and both indices look a bit bigger.
 
-# Run 5: Add random effect for recruitment - random walk
+# Run 5: Add random effect for recruitment - random walk - Run 6 in WG spreadsheet
 Same as run 4 (freely estimate selectivity) but with add random effect for recruitment with random walk
 
 Prep data for use
@@ -275,7 +275,7 @@ saveRDS(model_dataUpdate5, file=paste(here::here(), "model_dataUpdate5", "model_
 
 Recruitment residuals at the end of the timeseries are still fairly large, but are not biased negatively. More closely track recruitment variability. No strong retrospective patterns. Selectivity for age 10+ is still much higher than ages 5-9.
 
-# Run 6: Add MADMF surveys
+# Run 6: Add MADMF surveys 
 Run 5 model with NEFSC + MADMF spring and fall surveys
 
 Prep data for use
@@ -399,6 +399,7 @@ Notes - not all plots (e.g. plot.cv) will be generated if not positive definite 
 
 # Compare model F, SSB, Recruitment
 ```{r}
+## Compare all models
 model_list <- paste(here::here(), c("model_bridge/model_bridge.rds", "model_dataUpdate/model_dataUpdate.rds", "model_dataUpdate3/model_dataUpdate3.rds", "model_dataUpdate4/model_dataUpdate4.rds", "model_dataUpdate5/model_dataUpdate5.rds"), sep="/")
 models <- lapply(model_list, readRDS)
 # models <- list(model_dataUpdate, model_dataUpdate3, model_dataUpdate4, model_dataUpdate5)
@@ -406,6 +407,14 @@ names(models) <- c("Bridge", "Updated", "Fix_Age4", "R_mean", "R_walk")
 
 compare_wham_models(models, do.plot = TRUE, do.table=FALSE, fdir=paste(here::here(), "model_comparison", sep="/"), plot.opts=list(which = 1))
 
+## Generate tables for all models
+compare_wham_models(models, do.plot = FALSE, do.table=TRUE, fdir=paste(here::here(), "model_comparison", sep="/"), plot.opts=list(which = 1))
+
+expandModels <- c(models, list(readRDS(paste(here::here(), "model_try_bridge/model_try_bridge.rds", sep="/"))))
+names(expandModels) <- c("Bridge", "Updated", "Fix_Age4", "R_mean", "R_walk", "try_bridge")
+compare_wham_models(expandModels, do.plot = FALSE, do.table=TRUE, fdir=paste(here::here(), "model_comparison", sep="/"), plot.opts=list(which = 1))
+
+## Only plot the final 2 models
 compare_wham_models(models[1:2], do.plot = TRUE, do.table=FALSE, fdir=paste(here::here(), "model_comparison", sep="/"), plot.opts=list(which = 1))
 ```
 
