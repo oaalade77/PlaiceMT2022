@@ -7,6 +7,9 @@ This document pulls in the most up-to-date data for plaice to develop a baseline
 
 This document updates the bridge run model with most up-to-date data for plaice (downloaded from shared drive 2/3/22) and adjusts model structure to take advantage of state-space modeling features. Subsequent runs vary the data inputs and assumptions of the base case.
 
+All attempted runs are numbered here, key runs with informative outputs are also included in the working group spreadsheet for WHAM runs and may be numbered differently. To find the code below that corresponds with a given spreadsheet run # search for the following string in this document: "Run # in WG spreadsheet"
+- WG spreadsheet runs 1 & 2 may be found in "Plaice_Bridge_Run.Rmd" 
+
 # Load R packages
 ```{r}
 library(tidyverse)
@@ -97,6 +100,69 @@ saveRDS(model_dataUpdate, file=paste(here::here(), "model_dataUpdate", "model_da
 
 Large negative residuals for survey age 1 & 2, large positive residuals for ages 3-5. Selectivity taken from bridge run is unrealistic & needs to be updated.
 
+# Run 1A: Check impact of M change - Run 3A in WG spreadsheet
+Fit model to updated data but revert to the natural mortality used in the VPA (0.2) to evaluate the effect of this change (to 0.3 in fully updated data) on SSB/R/F timeseries. 
+
+Prep data for use
+```{r}
+asap3 <- read_asap3_dat(paste(here::here(), "data", "PlaiceWHAM-2019.DAT", sep="/"))
+
+M_input <- list(initial_means = rep(0.2, 11))
+
+input <- prepare_wham_input(asap3, model_name = "model_dataUpdate1A", M = M_input) 
+```
+Run model with raw updated data, check convergence, and plot output
+```{r}
+model_dataUpdate1A <- fit_wham(input, MakeADFun.silent = TRUE) 
+check_convergence(model_dataUpdate1A)
+print(paste("Number of parameters", length(model_dataUpdate1A$par), sep=" "))
+
+plot_wham_output(mod=model_dataUpdate1A, out.type='html')
+# plot_wham_output(mod=model_dataUpdate1A, out.type='png', dir.main = paste(here::here(), "model_dataUpdate1A", sep="/"))
+saveRDS(model_dataUpdate1A, file=paste(here::here(), "model_dataUpdate1A", "model_dataUpdate1A.rds", sep="/"))
+```
+
+Intermediate SSB/F/R timeseries estimates when compared to VPA bridge and fully updated models (run 2). 
+
+# Run 1B: Check impact of M & maturity change - no run in WG spreadsheet
+Fit model to updated data but revert to the natural mortality used in the VPA (0.2) and old maturity from the VPA bridge to evaluate the effect of this change on SSB/R/F timeseries. 
+
+Prep data for use: no maturity data in final year since using VPA data through 2018
+```{r}
+asap3 <- read_asap3_dat(paste(here::here(), "data", "PlaiceWHAM-2019_VPAMaturity.DAT", sep="/"))
+
+M_input <- list(initial_means = rep(0.2, 11))
+
+input <- prepare_wham_input(asap3, model_name = "model_dataUpdate1B", M = M_input) 
+```
+Run model with raw updated data, check convergence, and plot output
+```{r}
+model_dataUpdate1B <- fit_wham(input, MakeADFun.silent = TRUE) 
+check_convergence(model_dataUpdate1B)
+print(paste("Number of parameters", length(model_dataUpdate1B$par), sep=" "))
+
+plot_wham_output(mod=model_dataUpdate1B, out.type='html')
+# plot_wham_output(mod=model_dataUpdate1B, out.type='png', dir.main = paste(here::here(), "model_dataUpdate1B", sep="/"))
+saveRDS(model_dataUpdate1B, file=paste(here::here(), "model_dataUpdate1B", "model_dataUpdate1B.rds", sep="/"))
+```
+
+## Compare the bridge run (revised format) with Run 1A (updated data but old natural mortality assumption)
+```{r}
+## Compare several
+model_list <- paste(here::here(), c("model_bridge/model_bridge.rds",             "model_dataUpdate1B/model_dataUpdate1B.rds", "model_dataUpdate1A/model_dataUpdate1A.rds",  "model_dataUpdate/model_dataUpdate.rds"), sep="/")
+models <- lapply(model_list, readRDS)
+# models <- list(model_dataUpdate, model_dataUpdate3, model_dataUpdate4, model_dataUpdate5)
+names(models) <- c("Bridge", "Updated_oldM-oldMat", "Updated_oldM-newMat", "Updated_newM-Mat")
+
+compare_wham_models(models, do.plot = TRUE, do.table=FALSE, fdir=paste(here::here(), "model_comparison", sep="/"), plot.opts=list(which = 1))
+
+# Model runs 1,3,4 only
+compare_wham_models(models[c(1,3,4)], do.plot = TRUE, do.table=FALSE, fdir=paste(here::here(), "model_comparison", sep="/"), plot.opts=list(which = 1))
+
+## Generate tables for all models
+compare_wham_models(models[], do.plot = FALSE, do.table=TRUE, fdir=paste(here::here(), "model_comparison", sep="/"))
+```
+
 # Run 2: Update selectivity 
 Change input file so selectivity is estimated.
 
@@ -184,7 +250,7 @@ saveRDS(model_dataUpdate3, file=paste(here::here(), "model_dataUpdate3", "model_
 There doesn't appear to be much difference in model fit or diagnostics compared to Run 2 but the hessian for this model is invertable. The selectivity pattern is very similar to Run 2 for index 1 and index 2 has slightly higher selectivity estimates for intermediate ages near age 4. Both indices still have 10+ estimates at 1. 
 
 # Run 4: Add random effect for recruitment - random about mean - Run 5 in WG spreadsheet
-Same as run 3 (freely estimate selectivity) but also add random effect for recruitment that is random about the mean
+Same as run 3 (freely estimate selectivity but fix index age 4) but also add random effect for recruitment that is random about the mean
 
 Prep data for use
 ```{r}
@@ -230,14 +296,14 @@ saveRDS(model_dataUpdate4, file=paste(here::here(), "model_dataUpdate4", "model_
 Recruitment residuals look a bit better (distributed about 0 rather than all positive, but very large residuals at end of time series are concerning). OSA residuals for the fleet and both indices look a bit bigger.
 
 # Run 5: Add random effect for recruitment - random walk - Run 6 in WG spreadsheet
-Same as run 4 (freely estimate selectivity) but with add random effect for recruitment with random walk
+Same as run 4 (freely estimate selectivity but fix index age 4) but with add random effect for recruitment with random walk
 
 Prep data for use
 ```{r}
 asap3 <- read_asap3_dat(paste(here::here(), "data", "PlaiceWHAM-2019_selectivity.DAT", sep="/"))
 
 # iid random effects for recruitment only 
-NAA_re = list(sigma = "rec") #random about mean
+NAA_re = list(sigma = "rec") #random effect on recruitment
 NAA_re$recruit_model = 1 # random effects with random walk
 NAA_re$recruit_pars = exp(10) #initial guess for mean recruitment
 
@@ -275,9 +341,68 @@ saveRDS(model_dataUpdate5, file=paste(here::here(), "model_dataUpdate5", "model_
 
 Recruitment residuals at the end of the timeseries are still fairly large, but are not biased negatively. More closely track recruitment variability. No strong retrospective patterns. Selectivity for age 10+ is still much higher than ages 5-9.
 
+# Run 6: Add random effect for recruitment - AR1 - Run 7 in WG spreadsheet
+Same as run 4 (freely estimate selectivity but fix index age 4) but with add random effect for recruitment with random walk
+
+Prep data for use
+```{r}
+asap3 <- read_asap3_dat(paste(here::here(), "data", "PlaiceWHAM-2019_selectivity.DAT", sep="/"))
+
+# AR1 random effects for recruitment only 
+NAA_re = list(sigma = "rec", # random effect on recruitment
+              cor = "ar1_y") # AR1 correlated by year
+NAA_re$recruit_model = 1 # random effects with random walk
+NAA_re$recruit_pars = exp(10) #initial guess for mean recruitment
+
+# Setup initial selectivity model and parameters
+use_n_indices = 2
+modelsetup <- c(rep("logistic", asap3$dat$n_fleet_sel_blocks), rep("age-specific", use_n_indices))
+
+init_fleet_sel <- list(c(2,0.4)) # logistic parameters, based on model type
+init_index_sel <- lapply(1:use_n_indices, function(x) c(0.5, 0.5, 0.5, 1, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5,0))
+
+# Setup fixed parameters
+fix_fleet_sel <- lapply(1:asap3$dat$n_fleets, function(x) NA) 
+fix_index_sel <- lapply(1:use_n_indices, function(x) 4) # Fix age 4 for both indices,  NA means do not fix
+
+# Setup selectivity list
+sel_list <- list(model = modelsetup, # list selectivity model for each fleet and index 
+                 initial_pars = c(init_fleet_sel, init_index_sel),
+                 fix_pars = c(fix_fleet_sel, fix_index_sel))
+
+##### Prep WHAM input
+input <- prepare_wham_input(asap3 = asap3, NAA_re = NAA_re, selectivity = sel_list, model_name = "model_dataUpdate6")
+
+```
+Run model with raw updated data, check convergence, and plot output
+```{r}
+model_dataUpdate6 <- fit_wham(input, MakeADFun.silent = TRUE) 
+check_convergence(model_dataUpdate6)
+print(paste("Number of parameters", length(model_dataUpdate6$par), sep=" "))
+
+plot_wham_output(mod=model_dataUpdate6, out.type='html')
+# plot_wham_output(mod=model_dataUpdate6, out.type='png', dir.main = paste(here::here(), "model_dataUpdate6", sep="/"))
+
+saveRDS(model_dataUpdate6, file=paste(here::here(), "model_dataUpdate6", "model_dataUpdate6.rds", sep="/"))
+```
+## Compare run 5 and 6
+Compare the bridge run (revised format) with Run 1A (updated data but old natural mortality assumption)
+```{r}
+## Compare run 5 and 6
+model_list <- paste(here::here(), c("model_dataUpdate5/model_dataUpdate5.rds", "model_dataUpdate6/model_dataUpdate6.rds"), sep="/")
+models <- lapply(model_list, readRDS)
+names(models) <- c("Run5", "Run6")
+
+compare_wham_models(models, do.plot = TRUE, do.table=FALSE)
+
+# Calculate AIC & other diagnostic tables for run 5 & 6
+compare_wham_models(c(list(model_dataUpdate5), list(model_dataUpdate6)), do.plot = FALSE, do.table=TRUE)
+```
+Very little difference in expected outcomes between runs 5 & 6, slight difference in recruitment in last 5 years of timeseries (not surprising since large residuals observed at end of timeseries in previous runs). Since run 6 adds a parameter, recommend sticking with run 5
+
 # In progress beyond this point
 
-# Run 6: Add MADMF surveys 
+# Run 7: Add MADMF surveys 
 Run 5 model with NEFSC + MADMF spring and fall surveys
 
 Prep data for use
@@ -316,19 +441,19 @@ sel_list <- list(model = modelsetup, # list selectivity model for each fleet and
                  fix_pars = c(fix_fleet_sel, fix_index_sel))
 
 ##### Prep WHAM input
-input <- prepare_wham_input(asap3 = asap3, NAA_re = NAA_re, selectivity = sel_list, model_name = "model_dataUpdate6")
+input <- prepare_wham_input(asap3 = asap3, NAA_re = NAA_re, selectivity = sel_list, model_name = "model_dataUpdate7")
 
 ```
 Run model with raw updated data, check convergence, and plot output
 ```{r}
-model_dataUpdate6 <- fit_wham(input, MakeADFun.silent = TRUE) 
-check_convergence(model_dataUpdate6)
-print(paste("Number of parameters", length(model_dataUpdate6$par), sep=" "))
+model_dataUpdate7 <- fit_wham(input, MakeADFun.silent = TRUE) 
+check_convergence(model_dataUpdate7)
+print(paste("Number of parameters", length(model_dataUpdate7$par), sep=" "))
 
-plot_wham_output(mod=model_dataUpdate6, out.type='html')
-# plot_wham_output(mod=model_dataUpdate6, out.type='png', dir.main = paste(here::here(), "model_dataUpdate6", sep="/"))
+plot_wham_output(mod=model_dataUpdate7, out.type='html')
+# plot_wham_output(mod=model_dataUpdate7, out.type='png', dir.main = paste(here::here(), "model_dataUpdate7", sep="/"))
 
-saveRDS(model_dataUpdate6, file=paste(here::here(), "model_dataUpdate6", "model_dataUpdate6.rds", sep="/"))
+saveRDS(model_dataUpdate7, file=paste(here::here(), "model_dataUpdate7", "model_dataUpdate7.rds", sep="/"))
 ```
 Both the spring and fall MADMF survey indices (3 and 4) have very large negative residuals towards the end of the time series and somewhat smaller but still large residuals early in the time series. Introduces residual pattern for NEFSC indices (1 and 2), residuals move from large negative residuals early in the time series to large positive residuals at the end of the time series. 
 
@@ -337,7 +462,7 @@ Both the spring and fall MADMF survey indices (3 and 4) have very large negative
 # Use VAST data instead
 # Only NEFSC VAST index
 
-# Run 7: Fit to VAST NEFSC spring and fall surveys
+# Run 8: Fit to VAST NEFSC spring and fall surveys
 Fit to VAST estimated NEFSC indices (i.e. model-based index) rather than observation-based NEFSC indices
 
 Prep data for use
@@ -372,19 +497,19 @@ sel_list <- list(model = modelsetup, # list selectivity model for each fleet and
                  fix_pars = c(fix_fleet_sel, fix_index_sel))
 
 ##### Prep WHAM input
-input <- prepare_wham_input(asap3 = asap3, NAA_re = NAA_re, selectivity = sel_list, model_name = "model_dataUpdate7")
+input <- prepare_wham_input(asap3 = asap3, NAA_re = NAA_re, selectivity = sel_list, model_name = "model_dataUpdate8")
 
 ```
 Run model with raw updated data, check convergence, and plot output
 ```{r}
-model_dataUpdate7 <- fit_wham(input, MakeADFun.silent = TRUE) 
-check_convergence(model_dataUpdate7)
-print(paste("Number of parameters", length(model_dataUpdate7$par), sep=" "))
+model_dataUpdate8 <- fit_wham(input, MakeADFun.silent = TRUE) 
+check_convergence(model_dataUpdate8)
+print(paste("Number of parameters", length(model_dataUpdate8$par), sep=" "))
 
-plot_wham_output(mod=model_dataUpdate7, out.type='html')
-# plot_wham_output(mod=model_dataUpdate7, out.type='png', dir.main = paste(here::here(), "model_dataUpdate7", sep="/"))
+plot_wham_output(mod=model_dataUpdate8, out.type='html')
+# plot_wham_output(mod=model_dataUpdate8, out.type='png', dir.main = paste(here::here(), "model_dataUpdate8", sep="/"))
 
-saveRDS(model_dataUpdate7, file=paste(here::here(), "model_dataUpdate7", "model_dataUpdate7.rds", sep="/"))
+saveRDS(model_dataUpdate8, file=paste(here::here(), "model_dataUpdate8", "model_dataUpdate8.rds", sep="/"))
 ```
 
 Higher recruitment CV than observation-based model. Very large residuals for both spring and fall indices, spring index (1) more positive than negative residuals except end of timeseries. Fleet OSA residuals also less normally distributed.
@@ -416,7 +541,9 @@ expandModels <- c(models, list(readRDS(paste(here::here(), "model_try_bridge/mod
 names(expandModels) <- c("Bridge", "Updated", "Fix_Age4", "R_mean", "R_walk", "try_bridge")
 compare_wham_models(expandModels, do.plot = FALSE, do.table=TRUE, fdir=paste(here::here(), "model_comparison", sep="/"), plot.opts=list(which = 1))
 
-## Only plot the final 2 models
+## Only plot the first 2 models
 compare_wham_models(models[1:2], do.plot = TRUE, do.table=FALSE, fdir=paste(here::here(), "model_comparison", sep="/"), plot.opts=list(which = 1))
 ```
+
+
 
