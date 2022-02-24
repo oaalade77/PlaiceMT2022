@@ -21,6 +21,7 @@ A folder containing ASAP input data files for WG modeling.
 | PlaiceWHAM-2019_VPAMaturity.DAT | WG data file containing updated data and selectivity as in above file EXCEPT for the maturity which matches that in the VPA-WHAM bridge run (PlacieWHAM1-2019VPAINPUT.DAT). |
 
 ### Other files
+All files containing WG runs are noted in the description.
 | File | Description |
 | ------| -----------|
 | Plaice.dat | Preliminary ASAP data file containing all survey and fishery data from VPA. |
