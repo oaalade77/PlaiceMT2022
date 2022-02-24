@@ -19,6 +19,7 @@ A folder containing ASAP input data files for WG modeling.
 | PlaiceWHAM-2019.DAT | WG data file containing updated data following WG decisions (additional year of catch data, updated indices, updated maturity, M=0.3). |
 | PlaiceWHAM-2019_selectivity.DAT | WG data file containing updated data as in above file but change selectivity settings for NEFSC surveys so selectivity-at-age estimated. Often overwritten in R WHAM model specification. |
 | PlaiceWHAM-2019_VPAMaturity.DAT | WG data file containing updated data and selectivity as in above file EXCEPT for the maturity which matches that in the VPA-WHAM bridge run (PlacieWHAM1-2019VPAINPUT.DAT). |
+| PlaiceWHAM-2019_revised_NEFSC-LW-WAA.DAT | WG data file containing revised updated data including: revised catch-at-age, catch WAA, and Jan1 WAA (from AMP_Tables and Figures_USETHIS_REVISED.xlsx tables 13-17) as well as revised NEFSC spring and fall mean predicted WAA calculated using the L-W relationship (from Plaice NEFSC Survey Weight at Age v3.xlsx L-W tab). |
 
 ### Other files
 All files containing WG runs are noted in the description.
