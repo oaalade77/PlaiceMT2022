@@ -1,0 +1,54 @@
+---
+title: "WHAM_Run10_RevisedData-Maturity"
+output: html_document
+date: '2022-02-25'
+---
+
+## Model description
+
+This run is similar to [run 1A](https://github.com/ahart1/PlaiceWG2021/blob/main/Plaice_Baseline_UpdatedData_Runs.Rmd) and uses revised WHAM data and updated maturity but revert to the natural mortality used in the VPA (0.2). The run uses the model as specified in the ASAP-style .dat input file.
+
+Major differences from run 1A include: revised discard data (estimated rather than imputed) and an 11+ group in the NEFSC spring and fall surveys (with selectivity of ages 10-11+ initially set at 1).
+
+### Load R packages
+```{r, echo=FALSE}
+library(tidyverse)
+library(wham)
+library(readxl)
+library(DataExplorer)
+```
+
+### Load data
+```{r}
+asap3 <- read_asap3_dat(paste(here::here(), "data", "PlaiceWHAM-2019_revised_NEFSC-LW-WAA.DAT", sep="/"))
+```
+
+### Prepare model input
+```{r}
+M_input <- list(initial_means = rep(0.2, 11))
+
+input <- prepare_wham_input(asap3, model_name = "WHAM_Run10", M = M_input) 
+```
+
+### Fit model, check convergence, and run diagnostics
+```{r}
+WHAM_Run10 <- fit_wham(input, MakeADFun.silent = TRUE) 
+check_convergence(WHAM_Run10)
+print(paste("Number of parameters", length(WHAM_Run10$par), sep=" "))
+
+plot_wham_output(mod=WHAM_Run10, out.type='html')
+# plot_wham_output(mod=WHAM_Run10, out.type='png', dir.main = paste(here::here(), "WHAM_Run10", sep="/"))
+```
+
+### Save input & output
+```{r}
+# Save model data input
+saveRDS(input, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run10_RevisedData-Maturity", "WHAM_Run10_input.rds", sep="/"))
+
+# Save fitted model
+saveRDS(WHAM_Run10, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run10_RevisedData-Maturity", "WHAM_Run10_model.rds", sep="/"))
+```
+
+## Comments
+Similar diagnostic problems with run 9, large residual patterns across survey ages. This run had lower SSB, higher F, and lower recruitment expectations than run 9, likely due to lower M (used VPA value of 0.2).
+

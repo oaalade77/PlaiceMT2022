@@ -1,0 +1,70 @@
+---
+title: "WHAM_Run16_FixSelectivity-at-age_2SelBlock"
+output: html_document
+date: '2022-02-25'
+---
+
+## Model description
+This run is the same as run 13, but includes two selectivity blocks, one from 1980-1999 and another from 2000-2019.
+
+### Load R packages
+```{r, echo=FALSE}
+library(tidyverse)
+library(wham)
+library(readxl)
+library(DataExplorer)
+```
+
+### Load data
+```{r}
+asap3 <- read_asap3_dat(paste(here::here(), "data", "PlaiceWHAM-2019_revised_NEFSC-LW-WAA_2SelBlock.DAT", sep="/"))
+```
+
+### Prepare model input
+```{r}
+# Setup initial selectivity model and parameters
+use_n_indices = 2
+use_n_selBlocks = 2
+modelsetup <- c(rep("logistic", asap3$dat$n_fleet_sel_blocks), rep("age-specific", use_n_indices))
+
+init_fleet_sel <- list(c(2,0.4), c(2,0.4)) # logistic parameters for each selectivity block, based on model type
+
+init_index_sel <- lapply(1:use_n_indices, function(x) c(0.5, 0.5, 0.5, 1, 1, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5))
+
+# Setup fixed parameters
+fix_fleet_sel <- lapply(1:(asap3$dat$n_fleets*use_n_selBlocks), function(x) NA) 
+# fix_index_sel <- lapply(1:use_n_indices, function(x) 4) # Fix age 4 for both indices,  NA means do not fix 
+
+fix_index_sel[[1]] <- c(4,5) # Fix age 4 & 5 for for index 1
+fix_index_sel[[2]][1] <- 4 # Fix age 4 for for index 2
+
+# Setup selectivity list
+sel_list <- list(model = modelsetup, # list selectivity model for each fleet and index
+                 initial_pars = c(init_fleet_sel, init_index_sel),
+                 fix_pars = c(fix_fleet_sel, fix_index_sel))
+
+input <- prepare_wham_input(asap3, selectivity = sel_list, model_name = "WHAM_Run16") 
+```
+
+### Fit model, check convergence, and run diagnostics
+```{r}
+WHAM_Run16 <- fit_wham(input, MakeADFun.silent = TRUE) 
+check_convergence(WHAM_Run16)
+print(paste("Number of parameters", length(WHAM_Run16$par), sep=" "))
+
+plot_wham_output(mod=WHAM_Run16, out.type='html')
+# plot_wham_output(mod=WHAM_Run16, out.type='png', dir.main = paste(here::here(), "WHAM_Run16", sep="/"))
+```
+
+### Save input & output
+```{r}
+# Save model data input
+saveRDS(input, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run16_FixSelectivity-at-age_2SelBlock", "WHAM_Run16_input.rds", sep="/"))
+
+# Save fitted model
+saveRDS(WHAM_Run16, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run16_FixSelectivity-at-age_2SelBlock", "WHAM_Run16_model.rds", sep="/"))
+```
+
+## Comment
+Still several years with large residuals especially at ages 1-3 for the fleet & both surveys. Catch residuals have a consistent pattern of overestimating at the beginning and end of the timeseries and underestimating in the middle. Recruitment residuals are all positive. There is also a slight retrospective pattern.The fleet's age comp likelihood contribution is a bit smaller than for run 13.
+
