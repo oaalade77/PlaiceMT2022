@@ -1,0 +1,32 @@
+### WHAM plaice runs with revised data
+
+This folder contains all WHAM runs for the plaice based on revised data (uses estimated rather than imputed discards). Bridge runs can be found in [Plaice_Bridge_Run.Rmd](https://github.com/ahart1/PlaiceWG2021/blob/main/Plaice_Bridge_Run.Rmd) and runs 1-8 (corresponding to [ToR4 model runs 1-7](https://docs.google.com/spreadsheets/d/1OHxEXFMquQa4-iRyGyDGMu1hgSmvQvb5/edit#gid=72920202)) can be found in [Plaice_Baseline_UpdatedData_Runs.Rmd](https://github.com/ahart1/PlaiceWG2021/blob/main/Plaice_Baseline_UpdatedData_Runs.Rmd). For the sake of clarity moving forward, all runs based on revised data will be put in separate folders as detailed below.
+
+Revised data included revised catch-at-age which in turn impacted catch WAA, Jan1 WAA, discards-at-age and discard WAA. NEFSC spring and fall WAA were also revised to use to mean predicted WAA calculated using the L-W relationship ([PlaiceWHAM-2019_revised_NEFSC-LW-WAA.DAT](https://github.com/ahart1/PlaiceWG2021/blob/main/data/PlaiceWHAM-2019_revised_NEFSC-LW-WAA.DAT)).
+
+Each run folder contains the following information:
+
+-   An Rmarkdown file that performs a WHAM model run and includes any associated commentary on model fit.
+-   A Rdata object containing the input data used to fith the WHAM model
+-   A Rdata object containing the fitted model output
+-   An html document with all model diagnostics
+
+### WHAM runs based on revised data
+
+| Folder | Description                   |
+|--------|-------------------------------|
+| WHAM_Run9_RevisedData-M-Maturity | WG run similar to run 1 with updated M and maturity expectations, but using revised data and 11+ group for NEFSC surveys. |
+| WHAM_Run10_RevisedData-Maturity | WG run similar to run 1A with updated maturity and VPA M expectations, but using revised data and an 11+ group for NEFSC surveys. |
+| WHAM_Run11_RevisedData | WG run similar to run 1B with VPA maturity and M expectations, but using revised data and an 11+ group for NEFSC surveys. |
+| WHAM_Run12_FreeSelectivity-at-age | WG run similar to run 2 with freely estimated selectivity for all ages/fleets/indices,but using revised data and an 11+ group for NEFSC surveys. Hessian not invertable. |
+| WHAM_Run13_FixSelectivity-at-age | WG run similar to run 3 but NEFSC spring selecitivty at ages 4 & 5 fixed, age 4 fixed for NEFSC fall, model fit to revised data and an 11+ group for NEFSC surveys. |
+| WHAM_Run14_Index2Sel-logistic | WG run similar to run 13 but NEFSC fall survey switched to logistic selectivity. |
+| WHAM_Run15_Index2Sel-doublelogistic | WG run similar to run 14 but NEFSC fall survey switched to double-logistic selectivity. |
+| WHAM_Run16_FixSelectivity-at-age_2SelBlock | WG run similar to run 13 but two selectivity blocks (1980-1999, 2000-2019) included for the fleet. |
+| WHAM_Run17_2SelBlock_Rrand-mean | WG run similar to run 16 but a recruitment random effect was added.| 
+
+### Other files
+
+| File                 | Description                                                                 |
+|---------------------------|---------------------------------------------|
+| Model_Comparison.Rmd | A script that reads in fitted model objects and generates comparison plots. |
