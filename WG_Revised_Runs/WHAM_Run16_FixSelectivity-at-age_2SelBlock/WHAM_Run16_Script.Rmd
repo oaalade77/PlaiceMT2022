@@ -1,7 +1,7 @@
 ---
 title: "WHAM_Run16_FixSelectivity-at-age_2SelBlock"
 output: html_document
-date: '2022-02-25'
+date: '2022-02-28'
 ---
 
 ## Model description
@@ -66,5 +66,5 @@ saveRDS(WHAM_Run16, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run16_FixS
 ```
 
 ## Comment
-Still several years with large residuals especially at ages 1-3 for the fleet & both surveys. Catch residuals have a consistent pattern of overestimating at the beginning and end of the timeseries and underestimating in the middle. Recruitment residuals are all positive. There is also a slight retrospective pattern.The fleet's age comp likelihood contribution is a bit smaller than for run 13.
+Still several years with large residuals especially at ages 1-3 for the fleet & both surveys. Catch residuals have a consistent pattern of overestimating at the beginning and end of the timeseries and underestimating in the middle. Recruitment residuals are all positive - this is a plotting artifact and the NAA_4panel_1.png plot for runs that treat R as a fixed effect (as is done here) is not an informative diagnostic. There is also a slight retrospective pattern, but this falls within in the middle of the range observed across runs. The fleet and index age comp likelihood contribution is a bit smaller than for run 13.
 

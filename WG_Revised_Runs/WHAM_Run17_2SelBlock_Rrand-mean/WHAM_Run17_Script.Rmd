@@ -1,7 +1,7 @@
 ---
 title: "WHAM_Run17_2SelBlock_Rrand-mean"
 output: html_document
-date: '2022-02-25'
+date: '2022-02-28'
 ---
 
 ## Model description
@@ -71,7 +71,7 @@ saveRDS(WHAM_Run17, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run17_2Sel
 ```
 
 ## Comment
-Age 1 residuals are more evenly distributed about 0 but large negative residuals toward the end of the time series. Unclear why the mean recruitment in the first year is still different from the remaining years
+Age 1 residuals are fairly evenly distributed about 0 but large negative residuals toward the end of the time series. Mean recruitment in the first year is different from subsequent years because it is treated as a fixed effect.
 
 When compared to run 16, this run has lower recruitment CV towards the end of the timeseries and slightly higher recruitment expectations towards the end of the timeseries.
 

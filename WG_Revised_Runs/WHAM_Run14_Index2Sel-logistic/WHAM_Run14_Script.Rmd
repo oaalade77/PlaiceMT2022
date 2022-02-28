@@ -1,7 +1,7 @@
 ---
 title: "WHAM_Run14_Index2Sel-logistic"
 output: html_document
-date: '2022-02-25'
+date: '2022-02-28'
 ---
 
 ## Model description
@@ -64,6 +64,6 @@ saveRDS(WHAM_Run14, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run14_Inde
 ```
 
 ## Comment
-The model converged and the hessian was invertable. The selectivity pattern is similar for the fleet and index 1 (NEFSC spring) which were not altered, but index 2 (NEFSC fall) now has flat topped selectivity reaching 1 around age 5 or 6. 
+The model converged and the hessian was invertable. The selectivity pattern is similar for the fleet and index 1 (NEFSC spring) observed in run 13 which were not altered, but index 2 (NEFSC fall) now has flat topped selectivity reaching full selectivity around age 5 or 6. 
 
-Overall model fit seems similar between runs 13 an 14, but catchability estimates between index 1 (NEFSC spring) and index 2 (NEFSC fall) are more similar in run 14 than 13 (see "WG_Revised_Runs/WHAM_Run14_Index2Sel-logistic/plots_png/results/q_time_series.png" and "WG_Revised_Runs/WHAM_Run13_FixSelectivity-at-age/plots_png/results/q_time_series.png" plots).
+Overall model diagnostics seems similar between runs 13 an 14, but catchability estimates between index 1 (NEFSC spring) and index 2 (NEFSC fall) are more similar in run 14 than 13 (see "WG_Revised_Runs/WHAM_Run14_Index2Sel-logistic/plots_png/results/q_time_series.png" and "WG_Revised_Runs/WHAM_Run13_FixSelectivity-at-age/plots_png/results/q_time_series.png" plots). This model had a larger AIC than run 13.
