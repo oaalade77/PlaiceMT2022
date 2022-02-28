@@ -18,12 +18,17 @@ Each run folder contains the following information:
 | WHAM_Run9_RevisedData-M-Maturity | WG run similar to run 1 with updated M and maturity expectations, but using revised data and 11+ group for NEFSC surveys. |
 | WHAM_Run10_RevisedData-Maturity | WG run similar to run 1A with updated maturity and VPA M expectations, but using revised data and an 11+ group for NEFSC surveys. |
 | WHAM_Run11_RevisedData | WG run similar to run 1B with VPA maturity and M expectations, but using revised data and an 11+ group for NEFSC surveys. |
-| WHAM_Run12_FreeSelectivity-at-age | WG run similar to run 2 with freely estimated selectivity for all ages/fleets/indices,but using revised data and an 11+ group for NEFSC surveys. Hessian not invertable. |
+| WHAM_Run12_FreeSelectivity-at-age | WG run similar to run 2 with freely estimated selectivity for all ages/fleets/indices,but using revised data and an 11+ group for NEFSC surveys. Hessian not invertible. |
 | WHAM_Run13_FixSelectivity-at-age | WG run similar to run 3 but NEFSC spring selecitivty at ages 4 & 5 fixed, age 4 fixed for NEFSC fall, model fit to revised data and an 11+ group for NEFSC surveys. |
 | WHAM_Run14_Index2Sel-logistic | WG run similar to run 13 but NEFSC fall survey switched to logistic selectivity. |
 | WHAM_Run15_Index2Sel-doublelogistic | WG run similar to run 14 but NEFSC fall survey switched to double-logistic selectivity. |
 | WHAM_Run16_FixSelectivity-at-age_2SelBlock | WG run similar to run 13 but two selectivity blocks (1980-1999, 2000-2019) included for the fleet. |
 | WHAM_Run17_2SelBlock_Rrand-mean | WG run similar to run 16 but a recruitment random effect was added.| 
+| WHAM_Run18_2SelBlock_logistic-normal-agecomp | WG run similar to run 16 but logistic normal age comp model implemented. Hessian not invertible. |
+| WHAM_Run19_2SelBlock_logistic-normal-agecomp_Index2Sel-logistic | WG run similar to run 18 but NEFSC fall survey switched to logistic selectivity. |
+| WHAM_Run20_2SelBlock_dir-mult-agecomp | WG run similar to run 16 but a dirichlet-multinomial age comp model implemented. Hessian not invertible.  | 
+| WHAM_Run21_2SelBlock_dir-mult-agecomp_Index2Sel-logistic | WG similar to run 20 but NEFSC fall survey switched to logistic selectivity. Model did not converge. |
+| WHAM_Run22_2SelBlock_changeESS | WG run similar to run 16, but effective sample size changed to 30 as was done in ASAP run 12. | 
 
 ### Other files
 
