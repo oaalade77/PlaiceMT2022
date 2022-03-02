@@ -1,0 +1,72 @@
+---
+title: "WHAM_Run24_SelRandEffect-ar1_y"
+output: html_document
+date: '2022-03-02'
+---
+
+## Model description
+This run is similar to run 23 (revised data, fixed selectivity at intermediate ages, logistic fleet selectivity, age-specific index selectivity), but incorporates an AR1 random effect for annually correlated selectivity ("ar1_y" option) instead of an iid random effect.
+
+### Load R packages
+```{r, echo=FALSE}
+library(tidyverse)
+library(wham)
+library(readxl)
+library(DataExplorer)
+```
+
+### Load data
+```{r}
+asap3 <- read_asap3_dat(paste(here::here(), "data", "PlaiceWHAM-2019_revised_NEFSC-LW-WAA.DAT", sep="/"))
+```
+
+### Prepare model input
+```{r}
+# Setup initial selectivity model and parameters
+use_n_indices = 2
+modelsetup <- c(rep("logistic", asap3$dat$n_fleet_sel_blocks), rep("age-specific", use_n_indices))
+
+init_fleet_sel <- list(c(2,0.4)) # logistic parameters, based on model type
+init_index_sel <- lapply(1:use_n_indices, function(x) c(0.5, 0.5, 0.5, 1, 1, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5))
+
+# Setup fixed parameters
+fix_fleet_sel <- lapply(1:asap3$dat$n_fleets, function(x) NA) 
+# fix_index_sel <- lapply(1:use_n_indices, function(x) 4) # Fix age 4 for both indices,  NA means do not fix 
+
+fix_index_sel[[1]] <- c(4,5) # Fix age 4 & 5 for for index 1
+fix_index_sel[[2]][1] <- 4 # Fix age 4 for for index 2
+
+# Setup random effect by selectivity block (here: fleet, index1, index2)
+randeffect <- c(rep("ar1_y", asap3$dat$n_fleet_sel_blocks), rep("ar1_y", use_n_indices))
+
+# Setup selectivity list
+sel_list <- list(model = modelsetup, # list selectivity model for each fleet and index
+                 re = randeffect,
+                 initial_pars = c(init_fleet_sel, init_index_sel),
+                 fix_pars = c(fix_fleet_sel, fix_index_sel))
+
+input <- prepare_wham_input(asap3, selectivity = sel_list, model_name = "WHAM_Run24") 
+```
+
+### Fit model, check convergence, and run diagnostics
+```{r}
+WHAM_Run24 <- fit_wham(input, MakeADFun.silent = TRUE) 
+check_convergence(WHAM_Run24)
+print(paste("Number of parameters", length(WHAM_Run24$par), sep=" "))
+
+plot_wham_output(mod=WHAM_Run24, out.type='html')
+# plot_wham_output(mod=WHAM_Run24, out.type='png', dir.main = paste(here::here(), "WHAM_Run24", sep="/"))
+```
+
+### Save input & output
+```{r}
+# Save model data input
+saveRDS(input, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run24_SelRandEffect-ar1_y", "WHAM_Run24_input.rds", sep="/"))
+
+# Save fitted model
+saveRDS(WHAM_Run24, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run24_SelRandEffect-ar1_y", "WHAM_Run24_model.rds", sep="/"))
+```
+
+## Comment
+Age comp residuals for fleet and indices are a bit larger than for run 23. There are also larger retrospective patterns than run 23. Recruitment CV at the end of the timeseries is higher than run 23, and full F estimates in the mid-1990s were much higher for some years than in run 23. 
+
