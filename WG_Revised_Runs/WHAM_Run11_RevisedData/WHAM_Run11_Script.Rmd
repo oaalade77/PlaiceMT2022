@@ -8,7 +8,7 @@ date: '2022-02-28'
 
 This run is similar to [run 1B](https://github.com/ahart1/PlaiceWG2021/blob/main/Plaice_Baseline_UpdatedData_Runs.Rmd) and uses revised WHAM data but revert to the maturity and natural mortality used in the VPA (0.2). The maturity in 2019 was assumed to be the same as in 2018 (the final year of the VPA data).  The run uses the model as specified in the ASAP-style .dat input file.
 
-Major differences from run 1B include: revised discard data (estimated rather than imputed) and an 11+ group in the NEFSC spring and fall surveys (with selectivity of ages 10-11+ initially set at 1).
+Major differences from run 1B include: revised discard data (estimated rather than imputed) and an 11+ group in the NEFSC spring and fall surveys (with selectivity of ages 10-11+ initially set at 1). Total catch was also corrected to be biomass rather than numbers. 
 
 ### Load R packages
 ```{r, echo=FALSE}
@@ -50,5 +50,5 @@ saveRDS(WHAM_Run11, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run11_Revi
 ```
 
 ## Comments
-Run 11 had similar diagnostic issues to run 9 and 10 which is not unexpected since selectivity at all ages was set to 1 and is not expected to be correctly specified. Similar patterns in SSB, F, and Recruitment timeseries were observed across these three runs with run 11 more closely resembling run 10. This suggests that the updated maturity-at-age assumptions have little impact on the scale of estimates, although differences in SSB and CV for SSB were larger than for F or R. In contrast, updating M to 0.3 as in run 9 changed the scale of estimates.
+Run 11 had similar diagnostic issues to run 9 and 10 which is not unexpected since selectivity at all ages was set to 1 and is not expected to be correctly specified. Similar patterns in SSB, F, and Recruitment timeseries were observed across these three runs with the scale of run 11 more closely resembling run 10. This suggests that the updated maturity-at-age assumptions have little impact on the scale of estimates, although differences between runs were larger for SSB and CV than than for F or R and their CVs. In contrast, updating M to 0.3 as in run 9 changed the scale of estimates.
 
