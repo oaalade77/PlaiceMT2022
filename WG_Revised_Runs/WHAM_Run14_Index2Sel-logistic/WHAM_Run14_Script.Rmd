@@ -5,7 +5,7 @@ date: '2022-02-28'
 ---
 
 ## Model description
-This run is the same as run 13, but changes the selectivity of index 2 (NEFSC fall) to logistic selectivity.
+This run is the same as run 13 (revised data, fixed selectivity at intermediate ages, logistic fleet selectivity, age-specific index 1 selectivity), but changes the selectivity of index 2 (NEFSC fall) to logistic selectivity.
 
 ### Load R packages
 ```{r, echo=FALSE}
