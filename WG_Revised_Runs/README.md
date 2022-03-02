@@ -10,6 +10,7 @@ Each run folder contains the following information:
 -   A Rdata object containing the input data used to fith the WHAM model
 -   A Rdata object containing the fitted model output
 -   An html document with all model diagnostics
+-   A folder containing all model diagnostic plots as png files
 
 ### WHAM runs based on revised data
 
@@ -29,6 +30,8 @@ Each run folder contains the following information:
 | WHAM_Run20_2SelBlock_dir-mult-agecomp | WG run similar to run 16 but a dirichlet-multinomial age comp model implemented. Hessian not invertible.  | 
 | WHAM_Run21_2SelBlock_dir-mult-agecomp_Index2Sel-logistic | WG similar to run 20 but NEFSC fall survey switched to logistic selectivity. Model did not converge. |
 | WHAM_Run22_2SelBlock_changeESS | WG run similar to run 16, but effective sample size changed to 30 as was done in ASAP run 12. | 
+| WHAM_Run23_SelRandEffect-iid | WG run similar to run 13, but incorporates an iid random effect for selectivity. |
+| WHAM_Run24_SelRandEffect-ar1_y | WG run similar to run 23, but includes an AR1 random effect for annually correlated selectivity instead of iid. | 
 
 ### Other files
 
