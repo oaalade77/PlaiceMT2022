@@ -1,7 +1,7 @@
 ---
 title: "WHAM_Run19_2SelBlock_logistic-normal-agecomp_Index2Sel-logistic"
 output: html_document
-date: '2022-02-28'
+date: '2022-03-01'
 ---
 
 ## Model description
