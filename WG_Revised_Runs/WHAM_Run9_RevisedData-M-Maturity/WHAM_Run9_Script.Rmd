@@ -8,7 +8,7 @@ date: '2022-02-28'
 
 This run is similar to [run 1](https://github.com/ahart1/PlaiceWG2021/blob/main/Plaice_Baseline_UpdatedData_Runs.Rmd) and uses revised WHAM data, updated M, and updated maturity as an input. The run uses the model as specified in the ASAP-style .dat input file.
 
-Major differences from run 1 include: revised discard data (estimated rather than imputed) and an 11+ group in the NEFSC spring and fall surveys (with selectivity of ages 10-11+ initially set at 1).
+Major differences from run 1 include: revised discard data (estimated rather than imputed) and an 11+ group in the NEFSC spring and fall surveys (with selectivity of ages 10-11+ initially set at 1). Total catch was also corrected to be biomass rather than numbers. 
 
 ### Load R packages
 ```{r, echo=FALSE}
