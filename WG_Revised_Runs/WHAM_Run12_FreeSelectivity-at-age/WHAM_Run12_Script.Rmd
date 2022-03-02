@@ -7,7 +7,7 @@ date: '2022-02-28'
 ## Model description
 This run is similar to [run 2](https://github.com/ahart1/PlaiceWG2021/blob/main/Plaice_Baseline_UpdatedData_Runs.Rmd) and uses revised WHAM, updated maturity and natural mortality. Selectivity is freely estimated for all fleets and ages. Commercial fleet selectivity is assumed to be logistic, while survey age-specific selectivity was estimated. 
 
-Major differences from run 2 include: revised discard data (estimated rather than imputed) and an 11+ group in the NEFSC spring and fall surveys.
+Major differences from run 2 include: revised discard data (estimated rather than imputed) and an 11+ group in the NEFSC spring and fall surveys. Total catch was also corrected to be biomass rather than numbers. 
 
 ### Load R packages
 ```{r, echo=FALSE}
