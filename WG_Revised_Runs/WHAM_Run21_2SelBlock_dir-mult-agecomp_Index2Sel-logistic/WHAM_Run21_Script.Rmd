@@ -1,11 +1,11 @@
 ---
 title: "WHAM_Run21_2SelBlock_dir-mult-agecomp_Index2Sel-logistic"
 output: html_document
-date: '2022-02-28'
+date: '2022-03-01'
 ---
 
 ## Model description
-This run is the same as run 20, with dir-mult age composition which applies a dirichlet-multinomial model to esimate effective sample size, but selectivity for index 2 (NEFSC fall) is logistic.
+This run is the same as run 20 (revised data, fixed selectivity at intermediate ages, logistic fleet selectivity, age-specific index selectivity, two selectivity blocks, one from 1980-1999 and another from 2000-2019, and dir-mult age composition which applies a dirichlet-multinomial model to esimate effective sample size), but selectivity for index 2 (NEFSC fall) is logistic.
 
 ### Load R packages
 ```{r, echo=FALSE}
