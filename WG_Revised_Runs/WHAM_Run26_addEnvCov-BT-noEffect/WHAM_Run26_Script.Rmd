@@ -36,7 +36,7 @@ NAA_re$recruit_pars = exp(10) #initial guess for mean recruitment
   ecov <- list(
     label = "BT",
     mean = as.matrix(annualBT$mean_bt),
-    logsigma = as.matrix(log(annualBT$CV)),
+    logsigma = as.matrix(log(annualBT$standard_err_bt)),
     year = as.numeric(annualBT$Year),
     use_obs = matrix(1, ncol = 1, nrow=nrow(annualBT)), # use all obs = 1
     lag = 1, # BT in year t impact R in year t+1
