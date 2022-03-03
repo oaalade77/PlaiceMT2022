@@ -1,0 +1,77 @@
+---
+title: "WHAM_Run25_RRandEffect-randMean"
+output: html_document
+date: '2022-03-03'
+---
+
+## Model description
+This run is similar to run 23 (revised data, fixed selectivity at intermediate ages, logistic fleet selectivity, age-specific index selectivity, with an iid random effect for selectivity), but also includes a random effect on recruitment that is random about the mean.
+
+### Load R packages
+```{r, echo=FALSE}
+library(tidyverse)
+library(wham)
+library(readxl)
+library(DataExplorer)
+```
+
+### Load data
+```{r}
+asap3 <- read_asap3_dat(paste(here::here(), "data", "PlaiceWHAM-2019_revised_NEFSC-LW-WAA.DAT", sep="/"))
+```
+
+### Prepare model input
+```{r}
+# iid random effects for recruitment only 
+NAA_re = list(sigma = "rec") 
+NAA_re$recruit_model = 2 # random effects with a constant mean
+NAA_re$recruit_pars = exp(10) #initial guess for mean recruitment
+
+# Setup initial selectivity model and parameters
+use_n_indices = 2
+modelsetup <- c(rep("logistic", asap3$dat$n_fleet_sel_blocks), rep("age-specific", use_n_indices))
+
+init_fleet_sel <- list(c(2,0.4)) # logistic parameters, based on model type
+init_index_sel <- lapply(1:use_n_indices, function(x) c(0.5, 0.5, 0.5, 1, 1, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5))
+
+# Setup fixed parameters
+fix_fleet_sel <- lapply(1:asap3$dat$n_fleets, function(x) NA) 
+# fix_index_sel <- lapply(1:use_n_indices, function(x) 4) # Fix age 4 for both indices,  NA means do not fix 
+
+fix_index_sel[[1]] <- c(4,5) # Fix age 4 & 5 for for index 1
+fix_index_sel[[2]][1] <- 4 # Fix age 4 for for index 2
+
+# Setup random effect by selectivity block (here: fleet, index1, index2)
+randeffect <- c(rep("iid", asap3$dat$n_fleet_sel_blocks), rep("iid", use_n_indices))
+
+# Setup selectivity list
+sel_list <- list(model = modelsetup, # list selectivity model for each fleet and index
+                 re = randeffect,
+                 initial_pars = c(init_fleet_sel, init_index_sel),
+                 fix_pars = c(fix_fleet_sel, fix_index_sel))
+
+input <- prepare_wham_input(asap3, NAA_re = NAA_re, selectivity = sel_list, model_name = "WHAM_Run25") 
+```
+
+### Fit model, check convergence, and run diagnostics
+```{r}
+WHAM_Run25 <- fit_wham(input, MakeADFun.silent = TRUE) 
+check_convergence(WHAM_Run25)
+print(paste("Number of parameters", length(WHAM_Run25$par), sep=" "))
+
+plot_wham_output(mod=WHAM_Run25, out.type='html')
+# plot_wham_output(mod=WHAM_Run25, out.type='png', dir.main = paste(here::here(), "WHAM_Run25", sep="/"))
+```
+
+### Save input & output
+```{r}
+# Save model data input
+saveRDS(input, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run25_RRandEffect-randMean", "WHAM_Run25_input.rds", sep="/"))
+
+# Save fitted model
+saveRDS(WHAM_Run25, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run25_RRandEffect-randMean", "WHAM_Run25_model.rds", sep="/"))
+```
+
+## Comment
+Recruitment CV at the end of the timeseries is smaller than in run 23. Catch and index age comp residuals are very similar to run 23. Recruitment residuals at the end of the timeseries are large and negative. Fleet OSA residuals appear more normally distributed, but OSA residuals for both indices appear about as normally distributed as run 23.
+
