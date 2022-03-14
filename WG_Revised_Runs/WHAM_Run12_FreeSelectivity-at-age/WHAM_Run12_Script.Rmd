@@ -43,6 +43,12 @@ sel_list <- list(model = modelsetup, # list selectivity model for each fleet and
 input <- prepare_wham_input(asap3, selectivity = sel_list, model_name = "WHAM_Run12") 
 ```
 
+### Save input
+```{r}
+# Save model data input
+saveRDS(input, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run12_FreeSelectivity-at-age", "WHAM_Run12_input.rds", sep="/"))
+```
+
 ### Fit model, check convergence, and run diagnostics
 ```{r}
 WHAM_Run12 <- fit_wham(input, MakeADFun.silent = TRUE) 
@@ -53,13 +59,20 @@ plot_wham_output(mod=WHAM_Run12, out.type='html')
 # plot_wham_output(mod=WHAM_Run12, out.type='png', dir.main = paste(here::here(), "WHAM_Run12", sep="/"))
 ```
 
-### Save input & output
+### Save output
 ```{r}
-# Save model data input
-saveRDS(input, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run12_FreeSelectivity-at-age", "WHAM_Run12_input.rds", sep="/"))
-
 # Save fitted model
 saveRDS(WHAM_Run12, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run12_FreeSelectivity-at-age", "WHAM_Run12_model.rds", sep="/"))
+```
+
+### Rerun model using saved input data
+Load data from saved input RData and rerun model
+```{r}
+inputRerun <- readRDS(paste(here::here(), "WG_Revised_Runs",
+                     "WHAM_Run12_FreeSelectivity-at-age/WHAM_Run12_input.rds", sep="/"))
+
+# Rerun data
+Rerun12 <- fit_wham(input = inputRerun, MakeADFun.silent = TRUE)
 ```
 
 ## Comments
