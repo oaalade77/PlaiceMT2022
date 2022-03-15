@@ -1,0 +1,83 @@
+---
+title: "WHAM_Run16A_2SelBlock_logisticSel"
+output: html_document
+date: '2022-03-15'
+---
+
+## Model description
+This run is the same as run 16 (revised data, fixed selectivity at intermediate ages, logistic fleet selectivity, two selectivity blocks) but assumes logistic selectivity for both indices.
+
+### Load R packages
+```{r, echo=FALSE}
+library(tidyverse)
+library(wham)
+library(readxl)
+library(DataExplorer)
+```
+
+### Load data
+```{r}
+asap3 <- read_asap3_dat(paste(here::here(), "data", "PlaiceWHAM-2019_revised_NEFSC-LW-WAA_2SelBlock.DAT", sep="/"))
+```
+
+### Prepare model input
+```{r}
+# Setup initial selectivity model and parameters
+use_n_indices = 2
+use_n_selBlocks = 2
+modelsetup <- c(rep("logistic", asap3$dat$n_fleet_sel_blocks), rep("logistic", use_n_indices))
+
+init_fleet_sel <- list(c(2,0.4), c(2,0.4)) # logistic parameters for each selectivity block, based on model type
+
+init_index_sel <- lapply(1:use_n_indices, function(x) c(2,0.4))
+
+# Setup fixed parameters
+fix_fleet_sel <- lapply(1:(asap3$dat$n_fleets*use_n_selBlocks), function(x) NA) 
+# fix_index_sel <- lapply(1:use_n_indices, function(x) NA) # Uncomment and run to setup structure if an error encountered then run lines 38/39
+
+fix_index_sel[[1]] <- c(4,5) # Fix age 4 & 5 for for index 1
+fix_index_sel[[2]][1] <- 4 # Fix age 4 for for index 2
+
+# Setup selectivity list
+sel_list <- list(model = modelsetup, # list selectivity model for each fleet and index
+                 initial_pars = c(init_fleet_sel, init_index_sel),
+                 fix_pars = c(fix_fleet_sel, fix_index_sel))
+
+input <- prepare_wham_input(asap3, selectivity = sel_list, model_name = "WHAM_Run16A") 
+```
+
+### Save input
+```{r}
+# Save model data input
+saveRDS(input, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run16A_2SelBlock_logisticSel", "WHAM_Run16A_input.rds", sep="/"))
+```
+
+### Fit model, check convergence, and run diagnostics
+```{r}
+WHAM_Run16A <- fit_wham(input, MakeADFun.silent = TRUE) 
+check_convergence(WHAM_Run16A)
+print(paste("Number of parameters", length(WHAM_Run16A$par), sep=" "))
+
+plot_wham_output(mod=WHAM_Run16A, out.type='html')
+# plot_wham_output(mod=WHAM_Run16A, out.type='png', dir.main = paste(here::here(), "WHAM_Run16A", sep="/"))
+```
+
+### Save output
+```{r}
+# Save fitted model
+saveRDS(WHAM_Run16A, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run16A_2SelBlock_logisticSel", "WHAM_Run16A_model.rds", sep="/"))
+```
+
+### Rerun model using saved input data
+Load data from saved input RData and rerun model
+```{r}
+inputRerun <- readRDS(paste(here::here(), "WG_Revised_Runs",
+                     "WHAM_Run16A_2SelBlock_logisticSel/WHAM_Run16A_input.rds", sep="/"))
+
+# Rerun data
+ReRun16AA <- fit_wham(input = inputRerun, MakeADFun.silent = TRUE)
+```
+
+## Comment
+Catch residual pattern is stronger, likelihood contributions are a bit higher except for fleet age comp contribution, and AIC is higher than Run16. Fleet OSA residuals are more normally distributed than Run16, but index residuals are similar. Scale of SSB, F, and Recruitment were similar between runs but Run16A tended to have lower CV for SSB and F, and lower SSB and higher F expectations than Run16.
+
