@@ -68,5 +68,5 @@ saveRDS(WHAM_Run24, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run24_SelR
 ```
 
 ## Comment
-Age comp residuals for fleet and indices are a bit larger than for run 23. There are also larger retrospective patterns than run 23. Recruitment CV at the end of the timeseries is higher than run 23, and full F estimates in the mid-1990s were much higher for some years than in run 23. 
+Age comp residuals for fleet and indices are a bit larger than for run 23. There are also larger retrospective patterns than run 23. Recruitment CV at the end of the timeseries is higher than run 23, and full F estimates in the mid-1990s were much higher for some years than in run 23. OSA residuals may be a bit more normally distributed thatn those for run 23.
 

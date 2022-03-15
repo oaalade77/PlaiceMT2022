@@ -31,7 +31,7 @@ init_index_sel <- lapply(1:use_n_indices, function(x) c(0.5, 0.5, 0.5, 1, 1, 0.5
 
 # Setup fixed parameters
 fix_fleet_sel <- lapply(1:asap3$dat$n_fleets, function(x) NA) 
-# fix_index_sel <- lapply(1:use_n_indices, function(x) 4) # Fix age 4 for both indices,  NA means do not fix 
+# fix_index_sel <- lapply(1:use_n_indices, function(x) NA) # NA means do not fix RUN THIS LINE IF YOU GET AN ERROR THAT fix_index_sel can't be found then run the below to overwrite the correctly specified object with ages you want to fix!!!
 
 fix_index_sel[[1]] <- c(4,5) # Fix age 4 & 5 for for index 1
 fix_index_sel[[2]][1] <- 4 # Fix age 4 for for index 2
