@@ -49,6 +49,12 @@ age_comp <- "dir-mult"
 input <- prepare_wham_input(asap3, selectivity = sel_list, age_comp = age_comp, model_name = "WHAM_Run20") 
 ```
 
+### Save input
+```{r}
+# Save model data input
+saveRDS(input, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run20_2SelBlock_dir-mult-agecomp", "WHAM_Run20_input.rds", sep="/"))
+```
+
 ### Fit model, check convergence, and run diagnostics
 ```{r}
 WHAM_Run20 <- fit_wham(input, MakeADFun.silent = TRUE) 
@@ -59,14 +65,20 @@ plot_wham_output(mod=WHAM_Run20, out.type='html')
 # plot_wham_output(mod=WHAM_Run20, out.type='png', dir.main = paste(here::here(), "WHAM_Run20", sep="/"))
 ```
 
-
-### Save input & output
+### Save output
 ```{r}
-# Save model data input
-saveRDS(input, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run20_2SelBlock_dir-mult-agecomp", "WHAM_Run20_input.rds", sep="/"))
-
 # Save fitted model
 saveRDS(WHAM_Run20, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run20_2SelBlock_dir-mult-agecomp", "WHAM_Run20_model.rds", sep="/"))
+```
+
+### Rerun model using saved input data
+Load data from saved input RData and rerun model
+```{r}
+inputRerun <- readRDS(paste(here::here(), "WG_Revised_Runs",
+                     "WHAM_Run20_2SelBlock_dir-mult-agecomp/WHAM_Run20_input.rds", sep="/"))
+
+# Rerun data
+Rerun20 <- fit_wham(input = inputRerun, MakeADFun.silent = TRUE)
 ```
 
 ## Comment

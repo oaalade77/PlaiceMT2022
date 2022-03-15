@@ -37,9 +37,11 @@ NAA_re$recruit_pars = exp(10) #initial guess for mean recruitment
     label = "BT",
     mean = as.matrix(annualBT$mean_bt),
     logsigma = as.matrix(log(annualBT$standard_err_bt)),
-    year = as.numeric(annualBT$Year),
+    logsigma = as.matrix(log(10*annualBT$standard_err_bt)),
+    #year = as.numeric(annualBT$Year),
     use_obs = matrix(1, ncol = 1, nrow=nrow(annualBT)), # use all obs = 1
     lag = 1, # BT in year t impact R in year t+1
+    #process_model = "ar1",
     process_model = "rw",
     where = "none",
     how = 0 # 1 for controlling, 4 for masking
@@ -50,14 +52,19 @@ use_n_indices = 2
 modelsetup <- c(rep("logistic", asap3$dat$n_fleet_sel_blocks), rep("age-specific", use_n_indices))
 
 init_fleet_sel <- list(c(2,0.4)) # logistic parameters, based on model type
-init_index_sel <- lapply(1:use_n_indices, function(x) c(0.5, 0.5, 0.5, 1, 1, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5))
+#init_index_sel <- lapply(1:use_n_indices, function(x) c(0.5, 0.5, 0.5, 1, 1, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5))
+init_index_sel <- list(
+  c(0.5, 0.5, 0.5, 1, 1, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5),
+  c(0.5, 0.5, 0.5, 1, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5))
 
 # Setup fixed parameters
 fix_fleet_sel <- lapply(1:asap3$dat$n_fleets, function(x) NA) 
 # fix_index_sel <- lapply(1:use_n_indices, function(x) 4) # Fix age 4 for both indices,  NA means do not fix 
 
+fix_index_sel = list()
 fix_index_sel[[1]] <- c(4,5) # Fix age 4 & 5 for for index 1
-fix_index_sel[[2]][1] <- 4 # Fix age 4 for for index 2
+#fix_index_sel[[2]][1] <- 4 # Fix age 4 for for index 2
+fix_index_sel[[2]] <- 4 # Fix age 4 for for index 2
 
 # Setup random effect by selectivity block (here: fleet, index1, index2)
 randeffect <- c(rep("iid", asap3$dat$n_fleet_sel_blocks), rep("iid", use_n_indices))
@@ -71,9 +78,23 @@ sel_list <- list(model = modelsetup, # list selectivity model for each fleet and
 input <- prepare_wham_input(asap3, NAA_re = NAA_re, selectivity = sel_list, ecov=ecov, model_name = "WHAM_Run26") 
 ```
 
+### Save input
+```{r}
+# Save model data input
+saveRDS(input, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run26_addEnvCov-BT-noEffect", "WHAM_Run26_input.rds", sep="/"))
+```
+
 ### Fit model, check convergence, and run diagnostics
 ```{r}
-WHAM_Run26 <- fit_wham(input, MakeADFun.silent = TRUE) 
+#input <- prepare_wham_input(asap3, NAA_re = NAA_re, ecov=ecov, model_name = "WHAM_Run26") 
+
+WHAM_Run26 <- fit_wham(input, do.fit = F)
+WHAM_Run26$fn()
+#x = WHAM_Run26$report()
+#lapply(x[grep('nll', names(x))],sum)
+
+#input <- prepare_wham_input(asap3, NAA_re = NAA_re, selectivity = sel_list, model_name = "WHAM_Run26") 
+WHAM_Run26 <- fit_wham(input, do.osa =F, do.retro = F) 
 check_convergence(WHAM_Run26)
 print(paste("Number of parameters", length(WHAM_Run26$par), sep=" "))
 
@@ -81,13 +102,20 @@ plot_wham_output(mod=WHAM_Run26, out.type='html')
 # plot_wham_output(mod=WHAM_Run26, out.type='png', dir.main = paste(here::here(), "WHAM_Run26", sep="/"))
 ```
 
-### Save input & output
+### Save output
 ```{r}
-# Save model data input
-saveRDS(input, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run26_addEnvCov-BT-noEffect", "WHAM_Run26_input.rds", sep="/"))
-
 # Save fitted model
 saveRDS(WHAM_Run26, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run26_addEnvCov-BT-noEffect", "WHAM_Run26_model.rds", sep="/"))
+```
+
+### Rerun model using saved input data
+Load data from saved input RData and rerun model
+```{r}
+inputRerun <- readRDS(paste(here::here(), "WG_Revised_Runs",
+                     "WHAM_Run26_addEnvCov-BT-noEffect/WHAM_Run26_input.rds", sep="/"))
+
+# Rerun data
+Rerun26 <- fit_wham(input = inputRerun, MakeADFun.silent = TRUE)
 ```
 
 ## Comment

@@ -51,6 +51,12 @@ sel_list <- list(model = modelsetup, # list selectivity model for each fleet and
 input <- prepare_wham_input(asap3, NAA_re = NAA_re, selectivity = sel_list, recruit_model = 2, model_name = "WHAM_Run17") 
 ```
 
+### Save input
+```{r}
+# Save model data input
+saveRDS(input, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run17_2SelBlock_Rrand-mean", "WHAM_Run17_input.rds", sep="/"))
+```
+
 ### Fit model, check convergence, and run diagnostics
 ```{r}
 WHAM_Run17 <- fit_wham(input, MakeADFun.silent = TRUE) 
@@ -61,13 +67,20 @@ plot_wham_output(mod=WHAM_Run17, out.type='html')
 # plot_wham_output(mod=WHAM_Run17, out.type='png', dir.main = paste(here::here(), "WHAM_Run17", sep="/"))
 ```
 
-### Save input & output
+### Save output
 ```{r}
-# Save model data input
-saveRDS(input, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run17_2SelBlock_Rrand-mean", "WHAM_Run17_input.rds", sep="/"))
-
 # Save fitted model
 saveRDS(WHAM_Run17, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run17_2SelBlock_Rrand-mean", "WHAM_Run17_model.rds", sep="/"))
+```
+
+### Rerun model using saved input data
+Load data from saved input RData and rerun model
+```{r}
+inputRerun <- readRDS(paste(here::here(), "WG_Revised_Runs",
+                     "WHAM_Run17_2SelBlock_Rrand-mean/WHAM_Run17_input.rds", sep="/"))
+
+# Rerun data
+Rerun17 <- fit_wham(input = inputRerun, MakeADFun.silent = TRUE)
 ```
 
 ## Comment
