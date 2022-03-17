@@ -1,7 +1,7 @@
 ---
 title: "WHAM_Run25_RRandEffect-randMean"
 output: html_document
-date: '2022-03-16'
+date: '2022-03-17'
 ---
 
 ## Model description
@@ -22,11 +22,10 @@ asap3 <- read_asap3_dat(paste(here::here(), "data", "PlaiceWHAM-2019_revised_NEF
 
 ### Prepare model input
 ```{r}
-# Specify recruitment model
-recruit_model = 2 # random effects with a constant mean
-
 # iid random effects for recruitment only 
 NAA_re = list(sigma = "rec") 
+NAA_re$cor = "iid" # iid random effects
+NAA_re$recruit_model = 2 # recruitment is random about the mean
 NAA_re$recruit_pars = exp(10) #initial guess for mean recruitment
 
 # Setup initial selectivity model and parameters
@@ -88,4 +87,4 @@ Rerun25 <- fit_wham(input = inputRerun, MakeADFun.silent = TRUE)
 ```
 
 ## Comment
-Run 25 maximum fleet age comp residuals were slightly larger, index catch likelihood contributions were slighltyl higher and other liklihood contributions were slightly smaller than Run 23. Recruitment residuals at the end of the timeseries are large and negative. Fleet OSA residuals appear more normally distributed, but OSA residuals for both indices appear about as normally distributed as run 23. Recruitment CV at the end of the timeseries is smaller than in run 23.
+Run 25 maximum fleet age comp residuals were slightly larger, index catch likelihood contributions were slightly higher and other liklihood contributions were slightly smaller than Run 23. Recruitment residuals at the end of the time series are large and negative. Fleet OSA residuals appear more normally distributed, but OSA residuals for both indices appear about as normally distributed as run 23. Recruitment CV at the end of the time series is smaller than in run 23.

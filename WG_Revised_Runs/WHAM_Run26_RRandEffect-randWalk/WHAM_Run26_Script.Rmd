@@ -1,11 +1,11 @@
 ---
 title: "WHAM_Run26_RRandEffect-randWalk"
 output: html_document
-date: '2022-03-16'
+date: '2022-03-17'
 ---
 
 ## Model description
-This run is similar to run 25 (revised data, fixed selectivity at intermediate ages, logistic fleet selectivity, age-specific index selectivity, with an iid random effect for selectivity), but includes a random effect on recruitment that is treated as a random walk.
+This run is similar to run 25 (revised data, fixed selectivity at intermediate ages, logistic fleet selectivity, age-specific index selectivity, with an iid random effect for selectivity), but includes an "ar1_y" random effect on recruitment that is random about the mean.
 
 ### Load R packages
 ```{r, echo=FALSE}
@@ -22,11 +22,11 @@ asap3 <- read_asap3_dat(paste(here::here(), "data", "PlaiceWHAM-2019_revised_NEF
 
 ### Prepare model input
 ```{r}
-# Specify recruitment model
-recruit_model = 1 # random effects with random walk
-
-# iid random effects for recruitment only 
+# ar1_y random effects for recruitment only 
 NAA_re = list(sigma = "rec") 
+NAA_re$cor = "ar1_y" # ar1_y random effects
+NAA_re$recruit_model = 2 # recruitment is random about the mean
+NAA_re$recruit_pars = exp(10) #initial guess for mean recruitment
 
 # Setup initial selectivity model and parameters
 use_n_indices = 2
@@ -87,4 +87,4 @@ ReRun26 <- fit_wham(input = inputRerun, MakeADFun.silent = TRUE)
 ```
 
 ## Comment
-Likelihood contributions, model diagnostics, and model trends are very similar to Run25. Recruitment residuals are more evenly distributed around zero than Run25, but there are still some large negative residuals toward the end of the timeseries. OSA residuals for the indices may be slightly more normally distributed than Run25. Run26 AIC was larger than Run25, but Mohn's rho for R, SSB and Fbar are slightly smaller than for Run25.
+Likelihood contributions, model diagnostics, and model trends are very similar to Run25. NAA likelihood contributions were slightly smaller for Run25 than Run26. OSA residuals for the indices may be slightly more normally distributed than Run25. Run26 AIC was slightly smaller (9330.0) than Run25 (9332.1) and Mohn's rho for SSB and Fbar are slightly smaller than for Run25.

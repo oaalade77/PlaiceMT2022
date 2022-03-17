@@ -1,7 +1,7 @@
 ---
 title: "WHAM_Run27_Full-State-Space"
 output: html_document
-date: '2022-03-16'
+date: '2022-03-17'
 ---
 
 ## Model description
@@ -22,13 +22,11 @@ asap3 <- read_asap3_dat(paste(here::here(), "data", "PlaiceWHAM-2019_revised_NEF
 
 ### Prepare model input
 ```{r}
-# Specify recruitment model
-recruit_model = 2 # random effects with a constant mean
-
 # iid random effects for recruitment only 
-NAA_re = list(sigma = "rec+1") 
+NAA_re = list(sigma = "rec+1") # Full state-space model
+NAA_re$cor = "iid" # iid random effects
+NAA_re$recruit_model = 2 # recruitment is random about the mean
 NAA_re$recruit_pars = exp(10) #initial guess for mean recruitment
-NAA_re$cor = "iid" # iid random effects are the default
 
 # Setup initial selectivity model and parameters
 use_n_indices = 2
@@ -89,7 +87,6 @@ ReRun27 <- fit_wham(input = inputRerun, MakeADFun.silent = TRUE)
 ```
 
 ## Comment
-Run27 has a smaller AIC and smaller Mohn's rho for R, SSB, and Fbar compared to Run25 and Run26. Recruitment CVs were much higher than those in Run25, and SSB and Full F CVs were slightly higher. The fleet's Full F followed a similar trend but the scale differed slightly from Run25. Selectivity for index 2 (NEFSC fall) was less variable than in Run25. Selectivity for the index plus group (11+) was lower than that in Run25. Catch residuals were smaller and were slightly more evenly distributed around zero. Fleet and index fit to annual age comps appear to be a bit better and age comp residuals were generally smaller. Likelihood contributions were generally smaller than those in Run25, except for the NAA likelihood contribution which was larger. 
+Run27 has a smaller AIC and smaller Mohn's rho for R, SSB, and Fbar compared to Run25 and Run26. Recruitment CVs were much higher than those in Run25, and SSB and Full F CVs were slightly higher. The fleet's Full F followed a similar trend but the scale differed slightly from Run25 in some years. Selectivity for index 2 (NEFSC fall) was less variable than in Run25 and Run26. Selectivity for the index plus group (11+) was higher than that in Run25 and Run26. General patterns of positive and negative catch residuals remained fairly consistent across runs although the magnitude differed. Catch residuals were smaller and were slightly more evenly distributed around zero in Run27. Fleet and index fit to annual age comps appear to be a bit better and age comp residuals were generally smaller. Index 2 (NEFSC fall) age 1 residuals were larger than those in Run25 and Run26 for some years. Likelihood contributions were generally smaller than those in Run25, except for the NAA likelihood contribution which was larger. 
  
-Age 2 residuals were largely positive with negative residuals in the last ~15 years, age 3 residuals were evenly distributed about zero until the last ~15 years of the timeseries which were biased negatively. Age 4 had larger negative residuals and again were biased negatively over the last ~15 years. Age 5 and 6 had more evenly distributed residuals, but ages 8-11 had more negatively biased residuals for the later half of the timeseries. OSA residuals are slightly more normally distributed than Run25. 
-
+Age 2 residuals were largely positive with negative residuals in the last ~15 years, age 3 residuals were evenly distributed about zero until the last ~15 years of the timeseries which were biased negatively. Age 4 had larger negative residuals and again were biased negatively over the last ~15 years. Age 5, 6, and 7 had more evenly distributed residuals, but ages 8-11 had more negatively biased residuals for the later half of the timeseries. OSA residuals are slightly more normally distributed than Run25 for the fleet and index 1, but index 2 is roughly the same. 
