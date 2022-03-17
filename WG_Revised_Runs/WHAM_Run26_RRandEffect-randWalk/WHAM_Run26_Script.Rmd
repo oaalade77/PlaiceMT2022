@@ -1,0 +1,90 @@
+---
+title: "WHAM_Run26_RRandEffect-randWalk"
+output: html_document
+date: '2022-03-16'
+---
+
+## Model description
+This run is similar to run 25 (revised data, fixed selectivity at intermediate ages, logistic fleet selectivity, age-specific index selectivity, with an iid random effect for selectivity), but includes a random effect on recruitment that is treated as a random walk.
+
+### Load R packages
+```{r, echo=FALSE}
+library(tidyverse)
+library(wham)
+library(readxl)
+library(DataExplorer)
+```
+
+### Load data
+```{r}
+asap3 <- read_asap3_dat(paste(here::here(), "data", "PlaiceWHAM-2019_revised_NEFSC-LW-WAA.DAT", sep="/"))
+```
+
+### Prepare model input
+```{r}
+# Specify recruitment model
+recruit_model = 1 # random effects with random walk
+
+# iid random effects for recruitment only 
+NAA_re = list(sigma = "rec") 
+
+# Setup initial selectivity model and parameters
+use_n_indices = 2
+modelsetup <- c(rep("logistic", asap3$dat$n_fleet_sel_blocks), rep("age-specific", use_n_indices))
+
+init_fleet_sel <- list(c(2,0.4)) # logistic parameters, based on model type
+init_index_sel <- lapply(1:use_n_indices, function(x) c(0.5, 0.5, 0.5, 1, 1, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5))
+
+# Setup fixed parameters
+fix_fleet_sel <- lapply(1:asap3$dat$n_fleets, function(x) NA) 
+# fix_index_sel <- lapply(1:use_n_indices, function(x) 4) # Fix age 4 for both indices,  NA means do not fix 
+
+fix_index_sel[[1]] <- c(4,5) # Fix age 4 & 5 for for index 1
+fix_index_sel[[2]][1] <- 4 # Fix age 4 for for index 2
+
+# Setup random effect by selectivity block (here: fleet, index1, index2)
+randeffect <- c(rep("iid", asap3$dat$n_fleet_sel_blocks), rep("iid", use_n_indices))
+
+# Setup selectivity list
+sel_list <- list(model = modelsetup, # list selectivity model for each fleet and index
+                 re = randeffect,
+                 initial_pars = c(init_fleet_sel, init_index_sel),
+                 fix_pars = c(fix_fleet_sel, fix_index_sel))
+
+input <- prepare_wham_input(asap3, recruit_model = recruit_model, NAA_re = NAA_re, selectivity = sel_list, model_name = "WHAM_Run26") 
+```
+
+### Save input
+```{r}
+# Save model data input
+saveRDS(input, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run26_RRandEffect-randWalk", "WHAM_Run26_input.rds", sep="/"))
+```
+
+### Fit model, check convergence, and run diagnostics
+```{r}
+WHAM_Run26 <- fit_wham(input, MakeADFun.silent = TRUE) 
+check_convergence(WHAM_Run26)
+print(paste("Number of parameters", length(WHAM_Run26$par), sep=" "))
+
+plot_wham_output(mod=WHAM_Run26, out.type='html')
+# plot_wham_output(mod=WHAM_Run26, out.type='png', dir.main = paste(here::here(), "WHAM_Run26", sep="/"))
+```
+
+### Save output
+```{r}
+# Save fitted model
+saveRDS(WHAM_Run26, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run26_RRandEffect-randWalk", "WHAM_Run26_model.rds", sep="/"))
+```
+
+### Rerun model using saved input data
+Load data from saved input RData and rerun model
+```{r}
+inputRerun <- readRDS(paste(here::here(), "WG_Revised_Runs",
+                     "WHAM_Run26_RRandEffect-randWalk/WHAM_Run26_input.rds", sep="/"))
+
+# Rerun data
+ReRun26 <- fit_wham(input = inputRerun, MakeADFun.silent = TRUE)
+```
+
+## Comment
+Likelihood contributions, model diagnostics, and model trends are very similar to Run25. Recruitment residuals are more evenly distributed around zero than Run25, but there are still some large negative residuals toward the end of the timeseries. OSA residuals for the indices may be slightly more normally distributed than Run25. Run26 AIC was larger than Run25, but Mohn's rho for R, SSB and Fbar are slightly smaller than for Run25.
