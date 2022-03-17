@@ -32,6 +32,9 @@ Each run folder contains the following information:
 | WHAM_Run22_2SelBlock_changeESS | WG run similar to run 16, but effective sample size changed to 30 as was done in ASAP run 12. | 
 | WHAM_Run23_SelRandEffect-iid | WG run similar to run 13, but incorporates an iid random effect for selectivity. |
 | WHAM_Run24_SelRandEffect-ar1_y | WG run similar to run 23, but includes an AR1 random effect for annually correlated selectivity instead of iid. | 
+| WHAM_Run25_RRandEffect-randMean | WG run similar to run 23, but includes a recruitment random effect that is random about the mean. |
+| WHAM_Run26_RRandEffect-randWalk | WG run simlar to run 25, but recruitment random effect is treated as a random walk. |
+| WHAM_Run27_Full-State-Space | WG run similar to run 25, but implements a full state-space model with random effects for all NAA. | 
 
 ### Other files
 
