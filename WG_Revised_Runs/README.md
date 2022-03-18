@@ -32,11 +32,12 @@ Each run folder contains the following information:
 | WHAM_Run21_2SelBlock_dir-mult-agecomp_Index2Sel-logistic | WG similar to run 20 but NEFSC fall survey switched to logistic selectivity. Model did not converge. |
 | WHAM_Run22_2SelBlock_changeESS | WG run similar to run 16, but effective sample size changed to 30 as was done in ASAP run 12. | 
 | WHAM_Run23_SelRandEffect-iid | WG run similar to run 13, but incorporates an iid random effect for selectivity. |
-| WHAM_Run23A_SelRandEffect-iidFleetOnly | WG run identical to run 23, but iid random effect for selectivity is only applied to the fleet (indices have fixed selectivity over time) as a point of comparison to Run23. |
+| WHAM_Run23A_SelRandEffect-iidFleetOnly | WG run identical to run 23, but iid random effect for selectivity is only applied to the fleet (indices have fixed selectivity over time) as a point of comparison to run 23. |
 | WHAM_Run24_SelRandEffect-ar1_y | WG run similar to run 23, but includes an AR1 random effect for annually correlated selectivity instead of iid. | 
-| WHAM_Run25_RRandEffect-randMean | WG run similar to run 23, but includes a recruitment random effect that is random about the mean. |
-| WHAM_Run26_RRandEffect-randWalk | WG run simlar to run 25, but recruitment random effect is treated as a random walk. |
+| WHAM_Run25_RRandEffect-randMean | WG run similar to run 23, but includes an iid recruitment random effect that is random about the mean. |
+| WHAM_Run26_RRandEffect-randWalk | WG run simlar to run 25, but applies an ar1_y recruitment random effect. |
 | WHAM_Run27_Full-State-Space | WG run similar to run 25, but implements a full state-space model with random effects for all NAA. | 
+| WHAM_Run28_Extended-Catch1960 | WG run structured the same as run 25 but fit to an extended data set with catch going back to 1960 and several additional years of survey data (without age comps). | 
 
 ### Other files
 
