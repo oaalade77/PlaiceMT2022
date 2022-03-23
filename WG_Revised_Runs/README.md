@@ -38,6 +38,7 @@ Each run folder contains the following information:
 | WHAM_Run26_RRandEffect-randWalk | WG run simlar to run 25, but applies an ar1_y recruitment random effect. |
 | WHAM_Run27_Full-State-Space | WG run similar to run 25, but implements a full state-space model with random effects for all NAA. | 
 | WHAM_Run28_Extended-Catch1960 | WG run structured the same as run 25 but fit to an extended data set with catch going back to 1960 and several additional years of survey data (without age comps). | 
+| WHAM_Run29_splitNEFSC | WG run with full state-space model and split Albatross (1980-2008)/Bigelow (2009-2019) surveys. As of 3/22/22 hessian not invertible. | 
 
 ### Other files
 
