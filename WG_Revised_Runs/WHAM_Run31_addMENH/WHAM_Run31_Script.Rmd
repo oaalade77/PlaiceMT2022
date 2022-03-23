@@ -31,26 +31,29 @@ asap3$dat$use_index[13:14] <- 1 # use indices 13-14 (MENH)
 ### Prepare model input
 ```{r}
 # iid random effects for recruitment only 
-NAA_re = list(sigma = "rec+1") # Full state-space model
+NAA_re = list(sigma = "rec") # Full state-space model
 NAA_re$cor = "iid" # iid random effects
 NAA_re$recruit_model = 2 # recruitment is random about the mean
 NAA_re$recruit_pars = exp(10) #initial guess for mean recruitment
 
 # Setup initial selectivity model and parameters
-use_n_indices = 2
+use_n_indices = 4
 modelsetup <- c(rep("logistic", asap3$dat$n_fleet_sel_blocks), rep("age-specific", use_n_indices))
 
 init_fleet_sel <- list(c(2,0.4)) # logistic parameters, based on model type
-init_index_sel <- lapply(1:use_n_indices, function(x) c(0.5, 0.5, 0.5, 1, 1, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5))
+init_index_sel <- list(c(0.5, 0.5, 0.5, 1, 1, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5), # NEFSC spring
+                       c(0.5, 0.5, 0.5, 1, 1, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5), # NEFSC fall
+                       c(0.5, 1, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.1, 0.1), # MENH spring
+                       c(1, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.1, 0.1)) # MENH fall
 
 # Setup fixed parameters
 fix_fleet_sel <- lapply(1:asap3$dat$n_fleets, function(x) NA) 
-# fix_index_sel <- lapply(1:use_n_indices, function(x) 4) # Fix age 4 for both indices,  NA means do not fix 
+fix_index_sel <- lapply(1:use_n_indices, function(x) NA) # Set up index selectivity fix object
 
-fix_index_sel[[1]] <- c(4,5) # Fix age 4 & 5 for for index 1
-fix_index_sel[[2]][1] <- 4 # Fix age 4 for for index 2
-#fix_index_sel[[3]][1] <- 3 # Fix age 3 for for index 3
-#fix_index_sel[[4]][1] <- 2 # Fix 
+fix_index_sel[[1]] <- c(4,5) # Fix age 4 & 5 for index 1 NEFSC spring
+fix_index_sel[[2]][1] <- 4 # Fix age 4 for index 2 NEFSC fall
+fix_index_sel[[3]][1] <- 2 # Fix age 2 for index 3 MENH spring
+fix_index_sel[[4]][1] <- 1 # Fix age 1 for index 4 MENH fall
 
 # Setup random effect by selectivity block (here: fleet, index1, index2)
 randeffect <- c(rep("iid", asap3$dat$n_fleet_sel_blocks), rep("iid", use_n_indices))
@@ -61,7 +64,7 @@ sel_list <- list(model = modelsetup, # list selectivity model for each fleet and
                  initial_pars = c(init_fleet_sel, init_index_sel),
                  fix_pars = c(fix_fleet_sel, fix_index_sel))
 
-input <- prepare_wham_input(asap3, recruit_model = recruit_model, NAA_re = NAA_re, selectivity = sel_list, model_name = "WHAM_Run31") 
+input <- prepare_wham_input(asap3, NAA_re = NAA_re, selectivity = sel_list, model_name = "WHAM_Run31") 
 ```
 
 ### Save input
@@ -97,5 +100,5 @@ ReRun31 <- fit_wham(input = inputRerun, MakeADFun.silent = TRUE)
 ```
 
 ## Comment
-
+Without fixed selectivity at 1 for MENH indices model converges but doesn't have invertible hessian, based on results try fixing at 1 for ages 1 (looks like age 2-3 for spring MENH may also be high). Fixing age 1 at full selectivity converged but did not have an invertible hessian  (spring estimates age 2 at full selectivity, fall doesn't but has high selectivity so going to try fixing full selectivity for age 2 - still not invertible hessian). Try fixing full selectivity for age 2 in spring and age 1 in fall, only recruitment random effect, weird spike in selectivity for age 10 fish in both seasons, change age 10 and 11+ starting parameters to 0.1. - this option converged and had an invertible hessian. 
 
