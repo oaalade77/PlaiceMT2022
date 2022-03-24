@@ -39,6 +39,13 @@ Each run folder contains the following information:
 | WHAM_Run27_Full-State-Space | WG run similar to run 25, but implements a full state-space model with random effects for all NAA. | 
 | WHAM_Run28_Extended-Catch1960 | WG run structured the same as run 25 but fit to an extended data set with catch going back to 1960 and several additional years of survey data (without age comps). | 
 | WHAM_Run29_splitNEFSC | WG run with full state-space model and split Albatross (1980-2008)/Bigelow (2009-2019) surveys. As of 3/22/22 hessian not invertible. | 
+| WHAM_Run30_addMADMF | WG run with iid recruitment random effects as in run 25, adds MADMF spring and fall indices in addition to NEFSC. |
+| WHAM_Run31_addMENH | WG run with iid recruitment random effects as in run 25, adds MENH spring and fall indices in addition to NEFSC. | 
+| WHAM_Run32_allIndices | WG run fit to MENH, MADMF, and NEFSC spring and fall indices. |
+| WHAM_Run33_VAST_All | WG run fit to integrated VAST all spring and fall. |
+| WHAM_Run34_VAST_NEFSC | WG run fit to VAST model-based NEFSC spring and fall indices. | 
+| WHAM_Run35_VAST_addMADMF | WG run fit to VAST model-based NEFSC and MADMF indices. |
+| WHAM_Run36_VAST_addMENH | WG run fit to VAST model-based NEFSC and MENH indices. |
 
 ### Other files
 
