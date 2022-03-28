@@ -19,17 +19,17 @@ Each run folder contains the following information:
 | WHAM_Run9_RevisedData-M-Maturity | WG run similar to run 1 with updated M and maturity expectations, but using revised data and 11+ group for NEFSC surveys. |
 | WHAM_Run10_RevisedData-Maturity | WG run similar to run 1A with updated maturity and VPA M expectations, but using revised data and an 11+ group for NEFSC surveys. |
 | WHAM_Run11_RevisedData | WG run similar to run 1B with VPA maturity and M expectations, but using revised data and an 11+ group for NEFSC surveys. |
-| WHAM_Run12_FreeSelectivity-at-age | WG run similar to run 2 with freely estimated selectivity for all ages/fleets/indices,but using revised data and an 11+ group for NEFSC surveys. Hessian not invertible. |
+| WHAM_Run12_FreeSelectivity-at-age | WG run similar to run 2 with freely estimated selectivity for all ages/fleets/indices,but using revised data and an 11+ group for NEFSC surveys. Hessian not invertible. Need to fix q at sufficiently large values. Even still, logistic selectivity pars for fleet are problematic. Suggest changing fleet selectivity to age-specific.|
 | WHAM_Run13_FixSelectivity-at-age | WG run similar to run 3 but NEFSC spring selecitivty at ages 4 & 5 fixed, age 4 fixed for NEFSC fall, model fit to revised data and an 11+ group for NEFSC surveys. |
 | WHAM_Run14_Index2Sel-logistic | WG run similar to run 13 but NEFSC fall survey switched to logistic selectivity. |
 | WHAM_Run15_Index2Sel-doublelogistic | WG run similar to run 14 but NEFSC fall survey switched to double-logistic selectivity. |
 | WHAM_Run16_FixSelectivity-at-age_2SelBlock | WG run similar to run 13 but two selectivity blocks (1980-1999, 2000-2019) included for the fleet. |
 | WHAM_Run16A_2SelBlock_logisticSel | WG run identical to run 16, but logistic selectivity is assumed for the two indices as a point of comparison to Run16. | 
 | WHAM_Run17_2SelBlock_Rrand-mean | WG run similar to run 16 but a recruitment random effect was added.| 
-| WHAM_Run18_2SelBlock_logistic-normal-agecomp | WG run similar to run 16 but logistic normal age comp model implemented. Hessian not invertible. |
+| WHAM_Run18_2SelBlock_logistic-normal-agecomp | WG run similar to run 16 but logistic normal age comp model implemented. Hessian not invertible. age 11 selectivity for second survey is going to 1. suggest fixing this selectivity at 1. OR redo free selectivity exercise with this age comp likelihood.|
 | WHAM_Run19_2SelBlock_logistic-normal-agecomp_Index2Sel-logistic | WG run similar to run 18 but NEFSC fall survey switched to logistic selectivity. |
-| WHAM_Run20_2SelBlock_dir-mult-agecomp | WG run similar to run 16 but a dirichlet-multinomial age comp model implemented. Hessian not invertible.  | 
-| WHAM_Run21_2SelBlock_dir-mult-agecomp_Index2Sel-logistic | WG similar to run 20 but NEFSC fall survey switched to logistic selectivity. Model did not converge. |
+| WHAM_Run20_2SelBlock_dir-mult-agecomp | WG run similar to run 16 but a dirichlet-multinomial age comp model implemented. Hessian not invertible.  age 5 selectivity for second survey is going to 1. suggest fixing this selectivity at 1. OR redo free selectivity exercise with this age comp likelihood.| 
+| WHAM_Run21_2SelBlock_dir-mult-agecomp_Index2Sel-logistic | WG similar to run 20 but NEFSC fall survey switched to logistic selectivity. Model did not converge. Dir-mult dispersion parameters are not estimable. |
 | WHAM_Run22_2SelBlock_changeESS | WG run similar to run 16, but effective sample size changed to 30 as was done in ASAP run 12. | 
 | WHAM_Run23_SelRandEffect-iid | WG run similar to run 13, but incorporates an iid random effect for selectivity. |
 | WHAM_Run23A_SelRandEffect-iidFleetOnly | WG run identical to run 23, but iid random effect for selectivity is only applied to the fleet (indices have fixed selectivity over time) as a point of comparison to run 23. |
@@ -38,7 +38,7 @@ Each run folder contains the following information:
 | WHAM_Run26_RRandEffect-randWalk | WG run simlar to run 25, but applies an ar1_y recruitment random effect. |
 | WHAM_Run27_Full-State-Space | WG run similar to run 25, but implements a full state-space model with random effects for all NAA. | 
 | WHAM_Run28_Extended-Catch1960 | WG run structured the same as run 25 but fit to an extended data set with catch going back to 1960 and several additional years of survey data (without age comps). | 
-| WHAM_Run29_splitNEFSC | WG run with full state-space model and split Albatross (1980-2008)/Bigelow (2009-2019) surveys. As of 3/22/22 hessian not invertible. | 
+| WHAM_Run29_splitNEFSC | WG run with full state-space model and split Albatross (1980-2008)/Bigelow (2009-2019) surveys. As of 3/22/22 hessian not invertible. Variance of selectivity random effects for first three surveys goes to zero. Try removing these random effects. | 
 | WHAM_Run30_addMADMF | WG run with iid recruitment random effects as in run 25, adds MADMF spring and fall indices in addition to NEFSC. |
 | WHAM_Run31_addMENH | WG run with iid recruitment random effects as in run 25, adds MENH spring and fall indices in addition to NEFSC. | 
 | WHAM_Run32_allIndices | WG run fit to MENH, MADMF, and NEFSC spring and fall indices. |

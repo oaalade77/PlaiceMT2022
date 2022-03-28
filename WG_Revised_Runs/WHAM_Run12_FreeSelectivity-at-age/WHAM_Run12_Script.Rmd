@@ -40,7 +40,11 @@ sel_list <- list(model = modelsetup, # list selectivity model for each fleet and
                  initial_pars = c(init_fleet_sel, init_index_sel),
                  fix_pars = c(fix_fleet_sel, fix_index_sel))
 
-input <- prepare_wham_input(asap3, selectivity = sel_list, model_name = "WHAM_Run12") 
+input <- prepare_wham_input(asap3, selectivity = sel_list, model_name = "WHAM_Run12")
+#need to fix q parameters for convergence to be possible.
+input$par$logit_q = wham:::gen.logit(2,input$data$q_lower,input$data$q_upper)
+input$map$logit_q = factor(rep(NA,input$data$n_indices))
+
 ```
 
 ### Save input
@@ -51,6 +55,15 @@ saveRDS(input, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run12_FreeSelec
 
 ### Fit model, check convergence, and run diagnostics
 ```{r}
+WHAM_Run12 <- fit_wham(input, do.osa=F,do.retro=F) 
+WHAM_Run12$parList$logit_selpars #note large logistic selectivity parameter for first row (fleet)
+#selectivity is greatest for last age class in fleet and indices.
+#fleet selectivity
+WHAM_Run12$rep$selAA[[1]][1,]
+#first survey
+WHAM_Run12$rep$selAA[[2]][1,]/max(WHAM_Run12$rep$selAA[[2]][1,])
+#second survey
+WHAM_Run12$rep$selAA[[3]][1,]/max(WHAM_Run12$rep$selAA[[3]][1,])
 WHAM_Run12 <- fit_wham(input, MakeADFun.silent = TRUE) 
 check_convergence(WHAM_Run12)
 print(paste("Number of parameters", length(WHAM_Run12$par), sep=" "))

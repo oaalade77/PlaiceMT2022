@@ -57,6 +57,10 @@ saveRDS(input, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run18_2SelBlock
 
 ### Fit model, check convergence, and run diagnostics
 ```{r}
+WHAM_Run18 <- fit_wham(input, do.osa=F,do.retro=F) 
+#age 11 selectivity for second survey is going to 1
+WHAM_Run18$parList$logit_selpars #[2,11]
+#suggest fixing this selectivity at 1. OR redo free selectivity exercise with this age comp likelihood.
 WHAM_Run18 <- fit_wham(input, MakeADFun.silent = TRUE) 
 check_convergence(WHAM_Run18)
 print(paste("Number of parameters", length(WHAM_Run18$par), sep=" "))
