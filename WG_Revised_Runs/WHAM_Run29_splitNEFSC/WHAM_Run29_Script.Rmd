@@ -54,7 +54,7 @@ sel_list <- list(model = modelsetup, # list selectivity model for each fleet and
                  initial_pars = c(init_fleet_sel, init_index_sel),
                  fix_pars = c(fix_fleet_sel, fix_index_sel))
 
-input <- prepare_wham_input(asap3, recruit_model = recruit_model, NAA_re = NAA_re, selectivity = sel_list, model_name = "WHAM_Run29") 
+input <- prepare_wham_input(asap3, NAA_re = NAA_re, selectivity = sel_list, model_name = "WHAM_Run29") 
 ```
 
 ### Save input
@@ -65,8 +65,11 @@ saveRDS(input, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run29_splitNEFS
 
 ### Fit model, check convergence, and run diagnostics
 ```{r}
+WHAM_Run29 <- fit_wham(input, do.osa=F,do.retro=F) 
 WHAM_Run29 <- fit_wham(input, MakeADFun.silent = TRUE) 
 check_convergence(WHAM_Run29)
+WHAM_Run29$parList$sel_repars #variance of selectivity random effects -> 0 for (last 3) surveys except first (Albatross Spring?) 
+# I suspect that the increased flexibility in the random effects for numbers at age negates the need for selectivity RE for these surveys. So, perhaps try removing the selectivity re for at least the last 3 surveys.
 print(paste("Number of parameters", length(WHAM_Run29$par), sep=" "))
 
 plot_wham_output(mod=WHAM_Run29, out.type='html')

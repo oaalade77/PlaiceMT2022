@@ -57,6 +57,9 @@ saveRDS(input, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run21_2SelBlock
 
 ### Fit model, check convergence, and run diagnostics
 ```{r}
+WHAM_Run21 <- fit_wham(input, do.osa=F,do.retro=F)
+WHAM_Run21$sdrep
+#Dir-mult dispersion parameters for indices ("index_paa_pars") are going to Infinity (not estimable). 
 WHAM_Run21 <- fit_wham(input, MakeADFun.silent = TRUE) 
 check_convergence(WHAM_Run21)
 print(paste("Number of parameters", length(WHAM_Run21$par), sep=" "))

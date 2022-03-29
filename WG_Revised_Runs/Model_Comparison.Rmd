@@ -24,7 +24,7 @@ models <- lapply(modelRuns, readRDS)
 names(models) <- paste("Run", c(9:14), sep="")
 
 # Generate comparative diagnostics
-compare_wham_models(models, do.plot = TRUE, do.table=TRUE, fdir=paste(here::here(), "WG_Revised_Runs", "Comparison_Output", sep="/"))
+wham::compare_wham_models(models, do.plot = TRUE, do.table=TRUE, fdir=paste(here::here(), "WG_Revised_Runs", "Comparison_Output", sep="/"))
 ```
 # Compare models with two fishery selectivity blocks
 ```{r}
