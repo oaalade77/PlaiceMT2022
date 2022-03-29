@@ -95,7 +95,7 @@ names(models) <- paste("Run", c(9,13,14,16,17,19,22,23), sep="")
 compare_wham_models(models, do.plot = TRUE, do.table=FALSE, fdir=paste(here::here(), "WG_Revised_Runs", "Comparison_Output", sep="/"), plot.opts=list(which = 10)) # Summary plots 1, 2, 8, 9
 ```
 
-# Compare impact of updating M and maturity expectations
+# Compare impact of updating M and maturity expectations (scaling runs)
 ```{r}
 modelRuns <- paste(here::here(), "WG_Revised_Runs", c("WHAM_Run9_RevisedData-M-Maturity/WHAM_Run9_model.rds",
                      "WHAM_Run10_RevisedData-Maturity/WHAM_Run10_model.rds",
@@ -104,6 +104,7 @@ modelRuns <- paste(here::here(), "WG_Revised_Runs", c("WHAM_Run9_RevisedData-M-M
 # Read in model Rdata
 models <- lapply(modelRuns, readRDS)
 names(models) <- paste("Run", c(9,10, 11), sep="")
+# names(models) <- c("All-updated", "VPA-M", "VPA-M-and-Mat")
 
 # Generate comparative diagnostics
 compare_wham_models(models, do.plot = TRUE, do.table=TRUE, fdir=paste(here::here(), "WG_Revised_Runs", "Comparison_Output", sep="/"))
@@ -167,4 +168,18 @@ names(models) <- paste("Run", c(23, 25:27), sep="")
 
 # Generate comparative diagnostics
 compare_wham_models(models, do.plot = TRUE, do.table=TRUE, fdir=paste(here::here(), "WG_Revised_Runs", "Comparison_Output", sep="/")) # plot.opts=list(which = 1) argument generates only the first plot
+```
+
+### Compare run 25 (R rand effect iid) and 28 (longer timeseries)
+```{r}
+# File path
+modelRuns <- paste(here::here(), "WG_Revised_Runs",
+c("WHAM_Run25_RRandEffect-randMean/WHAM_Run25_model.rds", "WHAM_Run28_Extended-Catch1960/WHAM_Run28_model.rds"), sep="/")
+
+# Read in model Rdata
+models <- lapply(modelRuns, readRDS)
+names(models) <- paste("Run", c(25, 28), sep="")
+
+# Generate comparative diagnostics
+compare_wham_models(models, do.plot = TRUE, do.table=TRUE, fdir=paste(here::here(), "WG_Revised_Runs", "Comparison_Output", sep="/"), plot.opts=list(which = 1)) # plot.opts=list(which = 1) argument generates only the first plot - here looked at plots 1,2,6,7,8,9,10
 ```
