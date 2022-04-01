@@ -5,7 +5,7 @@ date: '2022-04-01'
 ---
 
 ## Model description
-Full state-space model as in run 27 (revised data, fixed selectivity at intermediate ages, logistic fleet selectivity, age-specific index selectivity, with an iid random effect for selectivity, recruitment that is random about the mean), with additional MADMF spring and fall indices (index 3 and 4 respectively). Prior data files excluded age comp data for these indices.
+Full state-space model as in run 27 (revised data, fixed selectivity at intermediate ages, logistic fleet selectivity, age-specific index selectivity, recruitment that is random about the mean), except with an iid random effect only for fleet selectivity, and added additional MADMF spring and fall indices (index 3 and 4 respectively). Prior data files excluded age comp data for these indices.
 
 MADMF spring data was pulled from MADMF_Spr_Survey Age Composition_11Plus (1980-2019).xlsx with CVs pulled from Indices.csv
 
@@ -52,8 +52,8 @@ fix_index_sel <- lapply(1:use_n_indices, function(x) NA) # Set up index selectiv
 
 fix_index_sel[[1]] <- c(4,5) # Fix age 4 & 5 for for index 1
 fix_index_sel[[2]][1] <- 4 # Fix age 4 for for index 2
-fix_index_sel[[3]][1] <- 3 # Fix age 3 for for index 3
-fix_index_sel[[4]][1] <- 3 # Fix age 3 for for index 4
+fix_index_sel[[3]][1] <- 3 # Fix age 3 for for index 3 MADMF spring
+fix_index_sel[[4]][1] <- 2 # Fix age 2 for for index 4 MADMF fall
 
 # Setup random effect by selectivity block (here: fleet, index1, index2)
 randeffect <- c(rep("iid", asap3$dat$n_fleet_sel_blocks), rep("none", use_n_indices))
@@ -64,7 +64,7 @@ sel_list <- list(model = modelsetup, # list selectivity model for each fleet and
                  initial_pars = c(init_fleet_sel, init_index_sel),
                  fix_pars = c(fix_fleet_sel, fix_index_sel))
 
-input <- prepare_wham_input(asap3, recruit_model = recruit_model, NAA_re = NAA_re, selectivity = sel_list, model_name = "WHAM_Run30") 
+input <- prepare_wham_input(asap3, NAA_re = NAA_re, selectivity = sel_list, model_name = "WHAM_Run30") 
 ```
 
 ### Save input
@@ -116,7 +116,7 @@ ReRun30 <- fit_wham(input = inputRerun, MakeADFun.silent = TRUE)
 ```
 
 ## Comment
-Model converged with an invertible hessian when selectivity random effects were included for the fleet but no indices. The model never converged when random effects were included for the survey indices. 
+Model converged with an invertible hessian when selectivity random effects were included for the fleet but no indices. The model never converged when random effects were included for the survey indices in the full state-space model. 
 
 Both index 3 (MADMF spring) and index 4 (MADMF fall) had dome shaped selectivity patterns with peaks at younger ages than the NEFSC indices (MADMF age 3 in spring, 2 & 3 in fall). Age comp residuals for these indices were larger than for the NEFSC indices, particularly age 1 in the MADMF fall. 
 
