@@ -1,7 +1,7 @@
 ---
 title: "WHAM_Run31_addMENH"
 output: html_document
-date: '2022-03-18'
+date: '2022-03-31'
 ---
 
 ## Model description
@@ -30,8 +30,8 @@ asap3$dat$use_index[13:14] <- 1 # use indices 13-14 (MENH)
 
 ### Prepare model input
 ```{r}
-# iid random effects for recruitment only 
-NAA_re = list(sigma = "rec") # Full state-space model
+# iid random effects 
+NAA_re = list(sigma = "rec+1") # Full state-space model
 NAA_re$cor = "iid" # iid random effects
 NAA_re$recruit_model = 2 # recruitment is random about the mean
 NAA_re$recruit_pars = exp(10) #initial guess for mean recruitment
