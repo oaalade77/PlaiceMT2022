@@ -127,3 +127,12 @@ ReRun35 <- fit_wham(input = inputRerun, MakeADFun.silent = TRUE)
 ## Comment
 Model converged with an invertible hessian after reverting to only recruitment random effects and imposing survey selectivity random effects only for the fleet and LPUE index. The hessian was not invertible for a full state-space run with no survey selectivity random effects (issue with LPUE selectivity estimates). 
 
+Catch residuals were more normally distributed about zero but had larger extremes than Run25. Residuals for index 1 and 2 (NEFSC spring and fall) were similar to Run 25 but are largely positive near the end of the time series while indices 3 and 4 (MADMF spring and fall) have negative residuals during these years. 
+
+Fits to annual age comp data for index 3 (MADMF spring) and 4 (MADMF fall) particularly at young ages (1-5) varied more than fits for the NEFSC indices. Age comp residuals for were larger for the NEFSC indices at younger ages than in Run 25. MADMF age comp residuals were generally larger than NEFSC index residuals, particularly for ages 1-3. 
+
+OSA age comp residuals have large residuals for ages 1-3 in some years but are generally evenly distributed around 0 for any age class. Index 2 (NEFSC fall) has trends of larger negative residuals for age 1-6 with more positive residuals for older ages and earlier in the time-series. Indices 3 and 4 (MADFM spring and fall) are more evenly distributed around 0 at young ages, and are largely positive for older ages (5-11+).
+Fleet OSA residuals were more normally distributed while index 1 and 2 (NEFSC) residuals were similarly distributed.
+
+The CV for recruitment estimates were smaller than those in Run 25. NEFSC index selectivity for older ages (6-11+) was lower than in Run 25 and SSB estimates were lower towards the end of the time series (2014-2019). 
+
