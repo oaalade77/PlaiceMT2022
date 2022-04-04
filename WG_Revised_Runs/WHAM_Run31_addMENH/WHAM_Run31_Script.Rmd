@@ -81,6 +81,9 @@ print(paste("Number of parameters", length(WHAM_Run31$par), sep=" "))
 
 plot_wham_output(mod=WHAM_Run31, out.type='html')
 # plot_wham_output(mod=WHAM_Run31, out.type='png', dir.main = paste(here::here(), "WHAM_Run31", sep="/"))
+beep()
+beep()
+beep()
 ```
 
 ### Save output
