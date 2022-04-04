@@ -1,0 +1,132 @@
+---
+title: "WHAM_Run34_addMENH-LPUE"
+output: html_document
+date: '2022-04-01'
+---
+
+## Model description
+Recruitment random effects as in run 25 (revised data, fixed selectivity at intermediate ages, logistic fleet selectivity, age-specific index selectivity, with an iid random effect for selectivity, recruitment that is random about the mean), with additional MENH spring and fall indices (index 3 and 4 respectively) and an LPUE index (index 5).
+
+MENH spring data was pulled from AMP_MENH_Spring_Survey_AgeComp_2000-2019_11Plus.xlsx with CVs pulled from Americanplaice_indices_MEDMR.xlsx
+
+MENH fall data was pulled from AMP_MENH_Fall_Survey_AgeComp_2000-2019_11Plus.xlsx with CVs pulled from Americanplaice_indices_MEDMR.xlsx
+
+LPUE index and CV pulled from Plaice_LPUE_Standardization_Index_01242022.lxsx
+
+
+### Load R packages
+```{r, echo=FALSE}
+library(tidyverse)
+library(wham)
+library(readxl)
+library(DataExplorer)
+```
+
+### Load data
+```{r}
+asap3 <- read_asap3_dat(paste(here::here(), "data", "PlaiceWHAM-2019_revised_NEFSC-LW-WAA_StateIndices.DAT", sep="/"))
+
+# Overwrite settings to use the MENH indices
+asap3$dat$use_index_acomp[13:14] <- 1 # use index age comp
+asap3$dat$use_index[13:14] <- 1 # use indices 13-14 (MENH)
+
+# Overwrite settings to use the LPUE indicex in addition to NEFSC
+asap3$dat$use_index_acomp[15] <- 0 # No age comp for this index 
+asap3$dat$use_index[15] <- 1 # use indicex 15 (LPUE)
+```
+
+### Prepare model input
+```{r}
+# iid random effects for recruitment only 
+NAA_re = list(sigma = "rec") # Full state space model
+NAA_re$cor = "iid" # iid random effects
+NAA_re$recruit_model = 2 # recruitment is random about the mean
+NAA_re$recruit_pars = exp(10) #initial guess for mean recruitment
+
+# Setup initial selectivity model and parameters
+use_n_indices = 5
+modelsetup <- c(rep("logistic", asap3$dat$n_fleet_sel_blocks), rep("age-specific", 4), "logistic") # LPUE assumed logistic selectivity
+
+init_fleet_sel <- list(c(2,0.4)) # logistic parameters, based on model type
+init_index_sel <- list(c(0.5, 0.5, 0.5, 1, 1, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5), # NEFSC spring
+                       c(0.5, 0.5, 0.5, 1, 1, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5), # NEFSC fall
+                       c(0.5, 1, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.1, 0.1), # MENH spring
+                       c(1, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.1, 0.1), # MENH fall
+                       c(2,0.4)) # LPUE
+
+# Setup fixed parameters
+fix_fleet_sel <- lapply(1:asap3$dat$n_fleets, function(x) NA) 
+fix_index_sel <- lapply(1:use_n_indices, function(x) NA) # Set up index selectivity fix object
+
+fix_index_sel[[1]] <- c(4,5) # Fix age 4 & 5 for index 1 NEFSC spring
+fix_index_sel[[2]][1] <- 4 # Fix age 4 for index 2 NEFSC fall
+fix_index_sel[[3]][1] <- 2 # Fix age 2 for index 3 MENH spring
+fix_index_sel[[4]][1] <- 1 # Fix age 1 for index 4 MENH fall
+# Don't fix LPUE parameters
+
+# Setup random effect by selectivity block 
+randeffect <- c(rep("iid", asap3$dat$n_fleet_sel_blocks), rep("iid", use_n_indices))
+
+# Setup selectivity list
+sel_list <- list(model = modelsetup, # list selectivity model for each fleet and index
+                 re = randeffect,
+                 initial_pars = c(init_fleet_sel, init_index_sel),
+                 fix_pars = c(fix_fleet_sel, fix_index_sel))
+
+input <- prepare_wham_input(asap3, NAA_re = NAA_re, selectivity = sel_list, model_name = "WHAM_Run34") 
+```
+
+### Save input
+```{r}
+# Save model data input
+saveRDS(input, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run34_addMENH-LPUE", "WHAM_Run34_input.rds", sep="/"))
+```
+
+### Fit model, check convergence, and run diagnostics
+```{r}
+WHAM_Run34 <- fit_wham(input, MakeADFun.silent = TRUE, do.osa =TRUE) 
+check_convergence(WHAM_Run34)
+print(paste("Number of parameters", length(WHAM_Run34$par), sep=" "))
+
+plot_wham_output(mod=WHAM_Run34, out.type='html')
+# plot_wham_output(mod=WHAM_Run34, out.type='png', dir.main = paste(here::here(), "WHAM_Run34", sep="/"))
+beep()
+beep()
+beep()
+```
+
+### Save output
+```{r}
+# Save fitted model
+saveRDS(WHAM_Run34, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run34_addMENH-LPUE", "WHAM_Run34_model.rds", sep="/"))
+```
+
+### Debug
+```{r}
+# Look at parameter list
+WHAM_Run34$parList
+WHAM_Run34$rep$logit_selpars
+
+# Look at parameter estimates
+WHAM_Run34$sdrep
+
+# debug NA/NaN
+WHAM_Run34A <- fit_wham(input, do.fit=F)
+therep = WHAM_Run34A$report()
+names(therep)
+sapply(grep("nll",names(therep),value=T), function(x) sum(therep[[x]]))
+```
+
+### Rerun model using saved input data
+Load data from saved input RData and rerun model
+```{r}
+inputRerun <- readRDS(paste(here::here(), "WG_Revised_Runs",
+                     "WHAM_Run34_addMENH-LPUE/WHAM_Run34_input.rds", sep="/"))
+
+# Rerun data
+ReRun34 <- fit_wham(input = inputRerun, MakeADFun.silent = TRUE)
+```
+
+## Comment
+Model converged with an invertible hessian after reverting to only recruitment random effects with iid selectivity random effects for all surveys (model did not converge with invertible hessian when no survey selectivity random effects implemented). 
+
