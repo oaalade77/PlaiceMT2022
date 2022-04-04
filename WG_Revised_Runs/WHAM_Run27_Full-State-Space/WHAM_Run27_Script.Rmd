@@ -1,7 +1,7 @@
 ---
 title: "WHAM_Run27_Full-State-Space"
 output: html_document
-date: '2022-03-17'
+date: '2022-04-04'
 ---
 
 ## Model description
@@ -37,7 +37,7 @@ init_index_sel <- lapply(1:use_n_indices, function(x) c(0.5, 0.5, 0.5, 1, 1, 0.5
 
 # Setup fixed parameters
 fix_fleet_sel <- lapply(1:asap3$dat$n_fleets, function(x) NA) 
-# fix_index_sel <- lapply(1:use_n_indices, function(x) 4) # Fix age 4 for both indices,  NA means do not fix 
+fix_index_sel <- lapply(1:use_n_indices, function(x) NA) # NA means do not fix, sets up storage object for correct number of indices
 
 fix_index_sel[[1]] <- c(4,5) # Fix age 4 & 5 for for index 1
 fix_index_sel[[2]][1] <- 4 # Fix age 4 for for index 2
@@ -51,7 +51,7 @@ sel_list <- list(model = modelsetup, # list selectivity model for each fleet and
                  initial_pars = c(init_fleet_sel, init_index_sel),
                  fix_pars = c(fix_fleet_sel, fix_index_sel))
 
-input <- prepare_wham_input(asap3, recruit_model = recruit_model, NAA_re = NAA_re, selectivity = sel_list, model_name = "WHAM_Run27") 
+input <- prepare_wham_input(asap3, NAA_re = NAA_re, selectivity = sel_list, model_name = "WHAM_Run27") 
 ```
 
 ### Save input
