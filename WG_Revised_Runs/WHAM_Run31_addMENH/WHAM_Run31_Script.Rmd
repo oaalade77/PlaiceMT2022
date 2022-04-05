@@ -103,5 +103,11 @@ ReRun31 <- fit_wham(input = inputRerun, MakeADFun.silent = TRUE)
 ```
 
 ## Comment
-Without fixed selectivity at 1 for MENH indices model converges but doesn't have invertible hessian, based on results try fixing at 1 for ages 1 (looks like age 2-3 for spring MENH may also be high). Fixing age 1 at full selectivity converged but did not have an invertible hessian  (spring estimates age 2 at full selectivity, fall doesn't but has high selectivity so going to try fixing full selectivity for age 2 - still not invertible hessian). Try fixing full selectivity for age 2 in spring and age 1 in fall, only recruitment random effect, weird spike in selectivity for age 10 fish in both seasons, change age 10 and 11+ starting parameters to 0.1. - this option converged and had an invertible hessian. 
+Fixing full selectivity for MENH age 2 in spring and age 1 in fall, and changing starting selectivity estimates for age 10 and 11+ to 0.1 resulted in a model that converged with an invertible hessian. 
+
+Fleet residuals follow similar patterns in runs 27 and 31. Residuals or index 1 and 2 were similar across runs 27 and 31, index 3 and 4 had more negative residuals towards the end of the time series. Fleet OSA residuals are similar in both runs but the maximum residual is slighlty smaller for run 31. Index 1 and 2 (NEFSC spring and fall) have larger residuals in run 31 (also seen in observed-predicted residuals), particularly for ages 1-3 but were more evenly positive and negative while age 1 in run 27 index 1 had largely negative residuals and index 2 for this run had largely positive residuals.
+
+Fleet and index 1 and 2 age comp likelihood contributions were larger in run 31 than 27. The distribution of OSA residuals were similar for the fleet and indices 1 and 2 across runs, this includes age comp OSA residual distributions.
+
+CV around recruitment estimates was higher early in the time series and lower towards the end of the time series, opposite the pattern observed in run 27. More variability in index 2 (NEFSC fall) was estimated in run 31 than 27,  particularly for ages 1-3. Selectivity for index 3 and 4 (MENH spring and fall) increased for age 10 over that estimated for age 9 and 11+. 
 

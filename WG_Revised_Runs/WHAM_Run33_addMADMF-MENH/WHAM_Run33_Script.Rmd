@@ -131,15 +131,15 @@ ReRun33 <- fit_wham(input = inputRerun, MakeADFun.silent = TRUE)
 ```
 
 ## Comment
-Model converged with an invertible hessian after removing survey selectivity random effects (only include fleet selectivity random effects. The model never converged when random effects were included for the survey indices in the full state-space model.
+Model converged with an invertible hessian after removing survey selectivity random effects (only include fleet selectivity random effects). The model never converged when selectivity random effects were included for the survey indices in the full state-space model.
 
-CV of recruitment estimates were lower towards the end of the timeseries than in Run25. NEFSC spring and fall selectivity at older ages (6-11+) was slightly higher than in Run25, selectivity patterns for the spring and fall MADMF indices were similar to Run30, but the fall index had lower estimates for selectivity at age 3. Similarly, the selectivity patterns for spring and fall MENH indices were similar to Run31, including a higher estimate of selectivity for age 10 than for ages 9 or 11+. 
+Extreme catch residuals have a smaller magnitude and are more evenly distributed around zero near the end of the time series than in run 27. Index 1 and 2 (NEFSC) residuals are positive at the end of the time series while MADMF (index 3 and 4) and index 5 and 6 (MENH) have generally negative residuals during the same time period.
 
-The fit to catch data was slightly worse than in Run25, with larger residuals. Fits to the NEFSC indices were similar to Run25, but residuals toward the end of the time series were largely positive while residuals for MADMF and MENH indices in the same years were mostly negative. 
+Fleet age comp, and index 1 and 2 age comp likelihood were larger than for run 27, but the NAA likelihood contribution was smaller. Recruitment residuals were more consistently negative near the end of the time series than in run 27. NEFSC selectivity at ages 6-11+ was lower than for run 27. 
 
-Fleet age comp residuals were larger in some years and ages (particularly age 11+ near the end of the time series and age 4). Age comp residuals for both spring and fall NEFSC indices were slightly larger in many years, especially near the end of the time series and for ages 1-4. MADMF and MENH indices had much larger age comp residuals, particularly for ages 1-2. 
+Fits to annual age comp data for index 3 and 4 (MADMF spring and fall) and index 5 and 6 (MENH spring and fall) were often worse (larger observed-predicted residuals) for age 1 and 2 than for older ages.  Fleet observed-predicted residuals are comparable to run 27, but index 1 (NEFSC spring) had larger residuals towards the end of the time series, particularly for age 2. Similarly residuals for index 2 (NEFSC fall) were larger for age 1 and 2 for run 33.  Index 3 (MADMF spring) consistently had larger residuals for age 2, index 4 (MADMF fall) had large residuals for age 1 and 2 in the final years of the time series. Indices 5 and 6 (MENH spring and fall) had large residuals for ages 1-3 but were a mix of positive and negative residuals. OSA age comp residuals for the fleet, and indices 1 and 2 had higher max residuals that were very evident for ages 1-3. 
 
-Fleet and NEFSC index age comp likelihood contributions were higher than in Run25. 
+Fleet OSA residuals were slightly less normally distributed than in run 27, as were index 1 (NEFSC spring) OSA residuals. Index 2 (NEFSC fall) OSA residuals were similar to run 27. Index 3 and 4 (MADMF) had OSA residuals that did not have particularly normal distributions, while index 5 and 6 (MENH) were normally distributed. OSA age comp residuals were more normally distributed for the fleet and index 2 in run 33 than in run 27.
 
-Comments on full state-space attempt and exploration of freely estimating selectivity while developing this model: Unidentifiable parameters when full state-space model implemented. Freely estimating all selectivity parameters allowed the model to converge but with selectivity estimated at 0 for MADMF fall and both spring and fall MENH indices. 
+CV of recruitment estimates were lower and did not increase toward the end of the time series as in run 27. 
 
