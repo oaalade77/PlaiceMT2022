@@ -5,7 +5,7 @@ date: '2022-03-18'
 ---
 
 ## Model description
-Recruitment random effects as in Run25 (the full state space model returned an error when tried), but catch timeseries was extended back to 1960 to take full advantage of available fleet data. ASAP file was expanded to include longer catch timeseries as in ASAP run 14 and several additional years of NEFSC spring and fall survey data. Discard total CV and effective sample size set to 0 for 1960-1979, Recruitment CV was also set very small for the first 10 years (1960-1970) of the timeseries. 
+Recruitment random effects as in Run25 (the full state space model returned an error when tried) including iid selectivity random effects, but catch time series was extended back to 1960 to take full advantage of available fleet data. ASAP file was expanded to include longer catch time series as in ASAP run 14 and several additional years of NEFSC spring and fall survey data. Discard total CV and effective sample size set to 0 for 1960-1979, Recruitment CV was also set very small for the first 10 years (1960-1970) of the time series. 
 
 Earlier iterations of this model tried:
 
