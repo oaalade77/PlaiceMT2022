@@ -1,0 +1,108 @@
+---
+title: "WHAM_Run37A_VAST_ALL-randSel"
+output: html_document
+date: '2022-04-04'
+---
+
+## Model description
+A full state-space model was implemented as in run 37 (logistic fleet selectivity, age-specific index selectivity, recruitment about the mean, fit to VAST index that combines all observed indices), but an implement an iid random effect for fleet and both index selectivities. 
+
+VAST numbers at age 1-9+ were taken from:
+SPRING
+- VAST Spatiotemporal survey index -> Age Runs -> Spring -> NumbersAtAgeSpring.csv
+FALL
+- VAST Spatiotemporal survey index -> Age Runs -> Fall -> NumbersAtAgeFall.csv
+
+### Load R packages
+```{r, echo=FALSE}
+library(tidyverse)
+library(wham)
+library(readxl)
+library(DataExplorer)
+```
+
+### Load data
+```{r}
+asap3 <- read_asap3_dat(paste(here::here(), "data", "PlaiceWHAM-2019_revised_NEFSC-LW-WAA_StateVASTIndices.DAT", sep="/"))
+
+# Overwrite settings to stop using design-based NEFSC indices
+asap3$dat$use_index_acomp[1:2] <- 0 # don't use index age comp
+asap3$dat$use_index[1:2] <- 0 # don't use design-based NEFSC spring and fall indices
+
+# Overwrite to use VAST index that integrates all available surveys (except LPUE index)
+asap3$dat$use_index_acomp[11:12] <- 1 # use index age comp
+asap3$dat$use_index[11:12] <- 1 # Use VAST model-based spring and fall indices
+
+```
+
+### Prepare model input
+```{r}
+NAA_re = list(sigma = "rec+1") # Full state space
+NAA_re$cor = "iid" # iid random effects
+NAA_re$recruit_model = 2 # recruitment is random about the mean
+NAA_re$recruit_pars = exp(10) #initial guess for mean recruitment
+
+# Setup initial selectivity model and parameters
+use_n_indices = 2
+modelsetup <- c(rep("logistic", asap3$dat$n_fleet_sel_blocks), rep("age-specific", use_n_indices))
+
+init_fleet_sel <- list(c(2,0.4)) # logistic parameters, based on model type
+init_index_sel <- list(c(0.5, 1, 1, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0, 0), # all VAST spring
+                       c(1, 1, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0, 0)) # all VAST fall
+
+# Setup fixed parameters
+fix_fleet_sel <- lapply(1:asap3$dat$n_fleets, function(x) NA) 
+fix_index_sel <- lapply(1:use_n_indices, function(x) NA) # Setup storage object to populate 
+
+fix_index_sel[[1]] <- c(2,3) # Fix age 3 & 4 for for index 1 all VAST spring
+fix_index_sel[[2]] <- c(1,2) # Fix age 5 for for index 2 all VAST fall
+
+# Setup random effect by selectivity block (here: fleet, index1, index2)
+randeffect <- c(rep("iid", asap3$dat$n_fleet_sel_blocks), rep("iid", use_n_indices))
+
+# Setup selectivity list
+sel_list <- list(model = modelsetup, # list selectivity model for each fleet and index
+                 re = randeffect,
+                 initial_pars = c(init_fleet_sel, init_index_sel),
+                 fix_pars = c(fix_fleet_sel, fix_index_sel))
+
+input <- prepare_wham_input(asap3, NAA_re = NAA_re, selectivity = sel_list, model_name = "WHAM_Run37A") 
+```
+
+### Save input
+```{r}
+# Save model data input
+saveRDS(input, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run37A_VAST_ALL-randSel", "WHAM_Run37A_input.rds", sep="/"))
+```
+
+### Fit model, check convergence, and run diagnostics
+```{r}
+WHAM_Run37A <- fit_wham(input, MakeADFun.silent = TRUE, do.osa=FALSE) 
+check_convergence(WHAM_Run37A)
+print(paste("Number of parameters", length(WHAM_Run37A$par), sep=" "))
+
+plot_wham_output(mod=WHAM_Run37A, out.type='html')
+# plot_wham_output(mod=WHAM_Run37A, out.type='png', dir.main = paste(here::here(), "WHAM_Run37A", sep="/"))
+```
+
+### Save output
+```{r}
+# Save fitted model
+saveRDS(WHAM_Run37A, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run37A_VAST_ALL-randSel", "WHAM_Run37A_model.rds", sep="/"))
+```
+
+### Rerun model using saved input data
+Load data from saved input RData and rerun model
+```{r}
+inputRerun <- readRDS(paste(here::here(), "WG_Revised_Runs",
+                     "WHAM_Run37A_VAST_ALL-randSel/WHAM_Run37A_input.rds", sep="/"))
+
+# Rerun data
+ReRun37A <- fit_wham(input = inputRerun, MakeADFun.silent = TRUE)
+```
+
+## Comment
+
+Adding iid selectivity random effects impacted the fleet but had little to no effect on the indices (minor variation in age 1 of index 1). Fit to index 1 is still poor with large positive residuals for most of the time series, but fit to index 2 has more evenly distributed residuals. Estimates appear to follow the same pattern as the fleet (same peaks). Full selection in the spring was fixed at older ages than in the fall, as was the case in model runs fit to observation-based indices.
+
+This model had a smaller AIC and Mohn's rho patterns than Run37 (AIC isn't perfectly comparable since different selectivity likelihood contribution). 
