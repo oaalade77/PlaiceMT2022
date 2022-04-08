@@ -75,6 +75,7 @@ saveRDS(input, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run29A_splitNEF
 # print(paste("Number of parameters", length(WHAM_Run29$par), sep=" "))
 
 # Run with OSA residuals
+WHAM_Run29 <- fit_wham(input, MakeADFun.silent = TRUE, do.retro = FALSE, do.osa=FALSE) 
 WHAM_Run29 <- fit_wham(input, MakeADFun.silent = TRUE, do.osa=FALSE) 
 check_convergence(WHAM_Run29)
 print(paste("Number of parameters", length(WHAM_Run29$par), sep=" "))
