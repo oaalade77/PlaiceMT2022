@@ -1,0 +1,113 @@
+---
+title: "WHAM_Run29B_splitNEFSC-BigUnits-noSurvRandSel"
+output: html_document
+date: '2022-04-08'
+---
+
+## Model description
+Full state-space model as in run 29A (revised data, fixed selectivity at intermediate ages, logistic fleet selectivity, age-specific index selectivity, recruitment that is random about the mean), with NEFSC bottom trawl surveys split into Albatross (1980-2008, indices 1 and 3 for spring/fall) and Bigelow (2009-2019, indices 2 and 4 for spring/fall) time series, with NEFSC data is in Albatross AND Bigelow units, rather than using only Albatross units as in run 29. The aggregate index for this run was also in biomass units rather than abundance. The only difference from run 29A is the iid selectivity random effect was applied only for the fleet (not applied to index 1: Albatross spring). 
+
+### Load R packages
+```{r, echo=FALSE}
+library(tidyverse)
+library(wham)
+library(readxl)
+library(DataExplorer)
+```
+
+### Load data
+```{r}
+asap3 <- read_asap3_dat(paste(here::here(), "data", "PlaiceWHAM-2019_revised_NEFSC-LW-WAA_splitNEFSC-BigUnit.DAT", sep="/"))
+```
+
+### Prepare model input
+```{r}
+NAA_re = list(sigma = "rec+1") # Full state-space model
+NAA_re$cor = "iid" # iid random effects
+NAA_re$recruit_model = 2 # recruitment is random about the mean
+NAA_re$recruit_pars = exp(10) #initial guess for mean recruitment
+
+# Setup initial selectivity model and parameters
+use_n_indices = 4
+modelsetup <- c(rep("logistic", asap3$dat$n_fleet_sel_blocks), rep("age-specific", use_n_indices))
+
+init_fleet_sel <- list(c(2,0.4)) # logistic parameters, based on model type
+init_index_sel <- lapply(1:use_n_indices, function(x) c(0.5, 0.5, 0.5, 1, 1, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5))
+
+# Setup fixed parameters
+fix_fleet_sel <- lapply(1:asap3$dat$n_fleets, function(x) NA) 
+fix_index_sel <- lapply(1:use_n_indices, function(x) NA) # Set up index object
+
+fix_index_sel[[1]] <- c(4,5) # Fix age 4 & 5 for for index 1 (NEFSC spring Albatross)
+fix_index_sel[[2]][1] <- 5 # Fix age  5 for for index 2 (NEFSC spring Bigelow)
+fix_index_sel[[3]][1] <- 4 # Fix age 4 for for index 3 (NEFSC fall Albatross)
+fix_index_sel[[4]] <- c(4,5) # Fix age 4 for for index 4 (NEFSC fall Bigelow)
+
+# Setup random effect by selectivity block (here: fleet, index1, index2, index3, index4)
+randeffect <- c(rep("iid", asap3$dat$n_fleet_sel_blocks), rep("none", 4)) # Don't include selectivity random effects for any surveys 
+
+# Setup selectivity list
+sel_list <- list(model = modelsetup, # list selectivity model for each fleet and index
+                 re = randeffect,
+                 initial_pars = c(init_fleet_sel, init_index_sel),
+                 fix_pars = c(fix_fleet_sel, fix_index_sel))
+
+input <- prepare_wham_input(asap3, NAA_re = NAA_re, selectivity = sel_list, model_name = "WHAM_Run29B") 
+```
+
+### Save input
+```{r}
+# Save model data input
+saveRDS(input, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run29B_splitNEFSC-BigUnits-noSurvRandSel", "WHAM_Run29B_input.rds", sep="/"))
+```
+
+### Fit model, check convergence, and run diagnostics
+```{r}
+# WHAM_Run29B <- fit_wham(input, do.osa=F,do.retro=F) 
+# check_convergence(WHAM_Run29B)
+# WHAM_Run29B$parList$sel_repars #variance of selectivity random effects -> 0 for (last 3) surveys except first (Albatross Spring?) 
+# # I suspect that the increased flexibility in the random effects for numbers at age negates the need for selectivity RE for these surveys. So, perhaps try removing the selectivity re for at least the last 3 surveys.
+# print(paste("Number of parameters", length(WHAM_Run29B$par), sep=" "))
+
+# Run with OSA residuals
+WHAM_Run29B <- fit_wham(input, MakeADFun.silent = TRUE) 
+check_convergence(WHAM_Run29B)
+print(paste("Number of parameters", length(WHAM_Run29B$par), sep=" "))
+
+plot_wham_output(mod=WHAM_Run29B, out.type='html')
+# plot_wham_output(mod=WHAM_Run29B, out.type='png', dir.main = paste(here::here(), "WHAM_Run29B", sep="/"))
+```
+
+### Save output
+```{r}
+# Save fitted model
+saveRDS(WHAM_Run29B, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run29B_splitNEFSC-BigUnits-noSurvRandSel", "WHAM_Run29B_model.rds", sep="/"))
+```
+
+### Rerun model using saved input data
+Load data from saved input RData and rerun model
+```{r}
+inputRerun <- readRDS(paste(here::here(), "WG_Revised_Runs",
+                     "WHAM_Run29B_splitNEFSC-BigUnits-noSurvRandSel/WHAM_Run29B_input.rds", sep="/"))
+
+# Rerun data
+ReRun29B <- fit_wham(input = inputRerun, MakeADFun.silent = TRUE)
+```
+
+### Compare AIC and Mohn's rho values & model estimates to run 29A (iid selectivity random effect for Albatross spring index + fleet) 
+```{r}
+modelRuns <- paste(here::here(), "WG_Revised_Runs",
+                   c("WHAM_Run29A_splitNEFSC-BigUnits/WHAM_Run29A_model.rds",
+                     "WHAM_Run29B_splitNEFSC-BigUnits-noSurvRandSel/WHAM_Run29B_model.rds"), sep="/")
+
+# Read in model Rdata
+models <- lapply(modelRuns, readRDS)
+names(models) <- paste("Run", c("29A", "29B"), sep="")
+
+# Generate comparative diagnostics
+compare_wham_models(models, do.plot = TRUE, do.table=TRUE, fdir=paste(here::here(), "WG_Revised_Runs", "Comparison_Output", sep="/"))
+```
+
+## Comment
+Run 29A had less variability in the annual selectivity estimates for the Albatross spring index than in run 29 so this run explored excluding the selectivity random effect for this index. Model diagnostics were very similar to run 29A. Mohn's rho values for recruitment and Rbar were slightly smaller (improved) while the value for SSB was slightly larger. However, the delta AIC values were < 2 so these models should be considered equivalent, so the simpler model (run 29B) with selectivity random effects only for the fleet would be the proposed model moving forward. 
+
