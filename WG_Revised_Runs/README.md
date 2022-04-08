@@ -38,22 +38,20 @@ Each run folder contains the following information:
 | WHAM_Run26_RRandEffect-randWalk | WG run simlar to run 25, but applies an ar1_y recruitment random effect. |
 | WHAM_Run27_Full-State-Space | WG run similar to run 25, but implements a full state-space model with random effects for all NAA. | 
 | WHAM_Run28_Extended-Catch1960 | WG run structured the same as run 25 but fit to an extended data set with catch going back to 1960 and several additional years of survey data (without age comps). | 
-| WHAM_Run29_splitNEFSC | WG run with full state-space model and split Albatross (1980-2008)/Bigelow (2009-2019) surveys. As of 3/22/22 hessian not invertible. Variance of selectivity random effects for first three surveys goes to zero. Try removing these random effects. | 
+| WHAM_Run29_splitNEFSC | WG run with full state-space model and split Albatross (1980-2008)/Bigelow (2009-2019) surveys. An iid selectivity random effect was implemented for the fleet and index 1 (Albatross spring). | 
+| WHAM_Run29A_splitNEFSC-BigUnits | WG run fit to data in biomass bigelow units rather than abundance albatross units for the NEFSC split as done in run 29. An iid selectivity random effect was implemented for the fleet and index 1 (Albatross spring). |
+| WHAM_Run29B_splitNEFSC-BigUnits-noSurvRandSel | WG run identical to run 29A but no iid selectivity random effect implemented for index 1 (Albatross spring). AIC suggests this model is equivalent to run 29A, but simpler structure so prefered as a candidate model. |
+| WHAM_Run29C_splitNEFSC-biomass | WG run identical to run 29, but fit to biomass Albatross/Bigelow indices instead of abundance. Verifies that the improved selectivity pattern for the Bigelow fall index in runs 29A and 29B was do to the switch to Bigelow units NOT the switch to biomass units. |
 | WHAM_Run30_addMADMF | WG run with full state space model as in run 27 except selectivity random effect only implemented for the fleet, adds MADMF spring and fall indices in addition to NEFSC. FROM THIS RUN ON OSA RESIDUALS CALCULATED FOR FIT TO AGE COMP DATA! |
 | WHAM_Run31_addMENH | WG run with full state space model as in run 27, adds MENH spring and fall indices in addition to NEFSC. | 
 | WHAM_Run32_addLPUE | WG run with iid recruitment random effects as in run 25, adds LPUE index in addition to NEFSC. |
 | WHAM_Run33_addMADMF-MENH | WG run with full state space model as in run 27, but a selectivity random effect was implemented for only the fleet, adds both MADMF and MENH spring and fall indices. |
 | WHAM_Run34_addMENH-LPUE | WG run with iid recruitment random effects as in run 25 including selectivity random effects for the fleet and all indices, and adds both MENH and LPUE indices. |
 | WHAM_Run35_addMADMF-LPUE | WG run with iid recruitment random effects as in run 25 including selectivity random effects for the fleet and LPUE index only, and adds both MADMF and LPUE indices. |
+| WHAM_Run36_allIndices | WG run fit to MENH, MADMF, NEFSC spring and fall indices and an LPUE index with only recruitment random effects and selectivity random effects for the fleet and LPUE index. As of 4/4/22 does not converge with invertible hessian|
+| WHAM_Run37_VAST_All | WG run fit to integrated VAST index that combines NEFSC, MADMF, and MENH for spring and fall. Implements a full state space model with no selectivity random effects and a plus group set to 9+. |
+| WHAM_Run37A_VAST_All | WG run fit to integrated VAST index as in run 37 (implements a full state space model fit to VAST spring and fall idnices and a plus group set to 9+), but also includes selectivity random effects for the fleet and both indices. |
 
-Still in progress
-| Folder | Description                   |
-|--------|-------------------------------|
-| WHAM_Run36_allIndices | WG run fit to MENH, MADMF, and NEFSC spring and fall indices. |
-| WHAM_Run??_VAST_All | WG run fit to integrated VAST all spring and fall. |
-| WHAM_Run??_VAST_NEFSC | WG run fit to VAST model-based NEFSC spring and fall indices. | 
-| WHAM_Run??_VAST_NEFSC-addMADMF | WG run fit to VAST model-based NEFSC and MADMF indices. |
-| WHAM_Run??_VAST_NEFSC-addMENH | WG run fit to VAST model-based NEFSC and MENH indices. |
 
 ### Other files
 

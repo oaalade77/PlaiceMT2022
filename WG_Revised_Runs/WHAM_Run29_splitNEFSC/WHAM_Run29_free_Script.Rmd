@@ -1,0 +1,164 @@
+---
+title: "WHAM_Run29_splitNEFSC"
+output: html_document
+date: '2022-04-05'
+---
+
+## Model description
+Full state-space model as in run 27 (revised data, fixed selectivity at intermediate ages, logistic fleet selectivity, age-specific index selectivity, recruitment that is random about the mean), with NEFSC bottom trawl surveys split into Albatross (1980-2008, indices 1 and 3 for spring/fall) and Bigelow (2009-2019, indices 2 and 4 for spring/fall) timeseries. An iid random effect for selectivity was implemented for the fleet and index 1 (Albatross spring).
+
+### Load R packages
+```{r, echo=FALSE}
+library(tidyverse)
+library(wham)
+library(readxl)
+library(DataExplorer)
+```
+
+### Load data
+```{r}
+asap3 <- read_asap3_dat(paste(here::here(), "data", "PlaiceWHAM-2019_revised_NEFSC-LW-WAA_splitNEFSC.DAT", sep="/"))
+```
+
+### Prepare model input
+```{r}
+# iid random effects for recruitment only 
+NAA_re = list(sigma = "rec+1") # Full state-space model
+NAA_re$cor = "iid" # iid random effects
+NAA_re$recruit_model = 2 # recruitment is random about the mean
+NAA_re$recruit_pars = exp(10) #initial guess for mean recruitment
+
+# Setup initial selectivity model and parameters
+use_n_indices = 4
+modelsetup <- c(rep("logistic", asap3$dat$n_fleet_sel_blocks), rep("age-specific", use_n_indices))
+
+init_fleet_sel <- list(c(2,0.4)) # logistic parameters, based on model type
+#init_index_sel <- lapply(1:use_n_indices, function(x) c(0.5, 0.5, 0.5, 1, 1, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5))
+init_index_sel <- lapply(1:use_n_indices, function(x) c(0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5))
+
+# Setup fixed parameters
+fix_fleet_sel <- lapply(1:asap3$dat$n_fleets, function(x) NA) 
+fix_index_sel <- lapply(1:use_n_indices, function(x) NA) # Set up index object
+
+randeffect <- c(rep("none", asap3$dat$n_fleet_sel_blocks),  "none", rep("none", 3)) # Don't include 
+
+# Setup selectivity list
+sel_list <- list(model = modelsetup, # list selectivity model for each fleet and index
+                 re = randeffect,
+                 initial_pars = c(init_fleet_sel, init_index_sel),
+                 fix_pars = c(fix_fleet_sel, fix_index_sel))
+catchability <- list(
+  initial_q = rep(2,use_n_indices))
+input <- prepare_wham_input(asap3, NAA_re = NAA_re, selectivity = sel_list, 
+  catchability = catchability, model_name = "WHAM_Run29", age_comp = "logistic-normal-miss0")
+input$map$logit_q = factor(rep(NA,use_n_indices)) #don't estimate q
+#input$data$selpars_lower[] = 1e-6
+WHAM_Run29a_free <- fit_wham(input, do.osa=F, do.retro=F) 
+check_convergence(WHAM_Run29a_free)
+q_sel = t(sapply(1:4, function(x) {
+  sel = WHAM_Run29a_free$rep$QAA[1,x,]
+  q = max(sel)
+  sel = sel/q
+  return(c(q,sel))
+}))
+q_sel[1:2,1]/q_sel[3:4,1]
+q_sel[,-1]
+q_sel[,1]
+# Tried running with the following 4 lines commented to freely estimate all survey selectivities-at-age and no survey selectivity random effect (line 51) - all Bigelow fix age 4 and 5 at 1
+#fix_index_sel[[1]] <- 4 # Fix age 4 & 5 for for index 1 (NEFSC spring Albatross)
+#init_index_sel[[1]][4] <- 1
+fix_index_sel[[1]] <- c(4) # Fix age 4 & 5 for for index 1 (NEFSC spring Albatross)
+fix_index_sel[[2]] <- 4:5 # Fix age 4 & 5 for for index 2 (NEFSC spring Bigelow)
+fix_index_sel[[3]] <- c(4:5,11) # Fix age 4 for for index 2 (NEFSC fall Albatross)
+fix_index_sel[[4]] <- 4 # Fix age 4 & 5 for for index 2 (NEFSC spring Bigelow)
+init_index_sel <- lapply(1:use_n_indices, function(x) c(0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5))
+for(i in 1:4) init_index_sel[[i]][fix_index_sel[[i]]] <- 1
+
+randeffect <- c(rep("iid", asap3$dat$n_fleet_sel_blocks),  "iid", rep("none", 3)) # Don't include 
+sel_list <- list(model = modelsetup, # list selectivity model for each fleet and index
+                 re = randeffect,
+                 initial_pars = c(init_fleet_sel, init_index_sel),
+                 fix_pars = c(fix_fleet_sel, fix_index_sel))
+
+input <- prepare_wham_input(asap3, NAA_re = NAA_re, selectivity = sel_list, 
+  model_name = "WHAM_Run29a_ln_acomp", age_comp = "logistic-normal-miss0")
+WHAM_Run29a_ln_acomp <- fit_wham(input, do.osa=F, do.retro = F, MakeADFun.silent = TRUE) 
+
+q_sel = t(sapply(1:4, function(x) {
+  sel = WHAM_Run29a_ln_acomp$rep$QAA[1,x,]
+  q = max(sel)
+  sel = sel/q
+  return(c(q,sel))
+}))
+q_sel[1:2,1]/q_sel[3:4,1]
+q_sel[,-1]
+q_sel[,1]
+
+# Setup random effect by selectivity block (here: fleet, index1, index2, index3, index4)
+# selectivity random effects for surveys, use to freely estimate selectivity for fleets
+# randeffect <- c(rep("iid", asap3$dat$n_fleet_sel_blocks),  rep("none", use_n_indices)) # Don't include selectivity random effects for surveys, use to freely estimate selectivity for fleets
+```
+
+### Save input
+```{r}
+# Save model data input
+saveRDS(input, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run29_splitNEFSC", "WHAM_Run29a_ln_acomp_input.rds", sep="/"))
+```
+
+### Fit model, check convergence, and run diagnostics
+```{r}
+# WHAM_Run29 <- fit_wham(input, do.osa=F,do.retro=F) 
+# check_convergence(WHAM_Run29)
+# WHAM_Run29$parList$sel_repars #variance of selectivity random effects -> 0 for (last 3) surveys except first (Albatross Spring?) 
+# # I suspect that the increased flexibility in the random effects for numbers at age negates the need for selectivity RE for these surveys. So, perhaps try removing the selectivity re for at least the last 3 surveys.
+# print(paste("Number of parameters", length(WHAM_Run29$par), sep=" "))
+
+# Run with OSA residuals
+input$par = WHAM_Run29a_ln_acomp$parList
+WHAM_Run29a_ln_acomp <- fit_wham(input, MakeADFun.silent = TRUE) 
+check_convergence(WHAM_Run29a_ln_acomp)
+print(paste("Number of parameters", length(WHAM_Run29$par), sep=" "))
+
+plot_wham_output(mod=WHAM_Run29a_ln_acomp, out.type='html')
+# plot_wham_output(mod=WHAM_Run29, out.type='png', dir.main = paste(here::here(), "WHAM_Run29", sep="/"))
+```
+
+### Debug
+```{r}
+# debug NA/NaN
+WHAM_Run29 <- fit_wham(input, do.fit=F)
+therep = WHAM_Run29$report()
+names(therep)
+sapply(grep("nll",names(therep),value=T), function(x) sum(therep[[x]]))
+
+# Look at parameter estimates
+WHAM_Run29$sdrep
+```
+
+### Save output
+```{r}
+# Save fitted model
+saveRDS(WHAM_Run29, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run29_splitNEFSC", "WHAM_Run29_model.rds", sep="/"))
+```
+
+### Rerun model using saved input data
+Load data from saved input RData and rerun model
+```{r}
+inputRerun <- readRDS(paste(here::here(), "WG_Revised_Runs",
+                     "WHAM_Run29_splitNEFSC/WHAM_Run29_input.rds", sep="/"))
+
+# Rerun data
+ReRun29 <- fit_wham(input = inputRerun, MakeADFun.silent = TRUE)
+```
+
+## Comment
+Model converged with an invertible hessian after selectivity random effects were turned off for indices 2-4 and selectivity for ages 4 and 5 were fixed at 1 for index 4 (Bigelow fall) which differs from fixing only age 4 for the combined NEFSC fall index in Run27. Albatross and Bigelow spring indices (1 and 2 respectively) had similar selectivity patterns although the Bigelow index had a faster increase in selectivity for ages 1-3 and lower selectivities at ages 6-11+ than the Albatross index. Albatross and Bigelow fall indices (3 and 4 respectively) also had similar selectivity patterns but age 4 and 5 were fixed at 1 (based on a run with no index selectivity random effects and freely estimated age-specific selectivities that didn't converge, see note on line 42), selectivities at ages 1-3 were higher for index 4 (Bigelow fall) and selectivity for age 11+ was higher for index 3 (Albatross fall). 
+
+Catch residuals were slightly smaller in some years and were more evenly distributed about zero near the end of the timeseries than in Run27. Fleet age comp residuals had minor differences (e.g. slightly larger negative residuals for age 11+ in 2015/19) but followed similar patterns. Index 1 (Albatross spring) age comp residuals were similar to those in Run27 which fit to the unsplit NEFSC spring index, but residuals for index 2 (Bigelow spring) were larger than those observed when fit to the unsplit index. Patterns of positive and negative age comp residuals were similar to Run27 for the fall indices, but index 3 (Albatross fall) had a larger maximum residual, and age comp residuals for index 4 (Bigelow fall) appeared to have variable responses particularly in ages 1-3 where some residuals increased (e.g. age 1 2016-2018) and others decreased slightly (e.g. age 1 2014). Index residual patterns were similar to those in Run27.
+
+The fleet age comp likelihood contribution was larger than in Run27 but the fleet catch contribution was the same. NAA likelihood contributions were larger than in Run27. Age 2-4 residuals are more evenly distributed around 0 particularly at the end of the time series, ages 5-11+ have similar residual patterns to Run27.
+
+Fleet OSA residuals are less normally distributed than in Run27. OSA residuals for indices 1, 2, and 4 (Albatross spring, Bigelow spring, Bigelow fall) were fairly normally distributed, with idnex 3 (Albatross fall) less normally distributed
+
+CVs around recruitment estimates were slightly smaller than in Run27 (full state-space model), while the CV around SSB estimates towards the end of the time series was slightly higher. SSB estimates where higher towards the end of the time series than in Run27, with lower F estimates during the same years. Run29 had consistently higher R estimates than Run27. 
+
