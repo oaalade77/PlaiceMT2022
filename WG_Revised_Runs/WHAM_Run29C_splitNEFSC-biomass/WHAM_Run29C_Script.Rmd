@@ -105,6 +105,6 @@ Catchability estimates for index 3 (Albatross fall) were higher than for the oth
 
 Selectivity random effects for index 1 (Albatross spring) were smaller than in run 29 and could probably be turned off before this run would be considered a reasonable candidate (run 29B still appears to be a bit better). Selectivity estimates for age 11+ in both fall indices (3 and 4) are still higher than for age 10 so the improvement in this pattern for index 4 (Bigelow fall) appears to be due to the switch to Bigelow units in runs 29A and 29B. 
 
-Catch residuals more evenly distributed around zero early in the time series as was also seen in run 29A and 29B. 
+Catch residuals more evenly distributed around zero early in the time series as was also seen in run 29A and 29B but not in run 29. This suggests that this improvement is due to the switch to biomass units NOT to the switch to Bigelow units. 
 
 OSA age comp residuals for the fleet and spring indices had similar patterns but larger maximum values compared to run 29. The fall indices followed similar patterns but had slightly smaller maximum values. The patterns and magnitude of these residuals were very similar to those in run 29B. 
