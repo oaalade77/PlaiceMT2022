@@ -5,7 +5,7 @@ date: '2022-04-04'
 ---
 
 ## Model description
-A full state-space model was implemented as in run 37 (logistic fleet selectivity, age-specific index selectivity, recruitment about the mean, fit to VAST index that combines all observed indices), but an implement an iid random effect for fleet and both index selectivities. 
+A full state-space model was implemented as in run 37 (logistic fleet selectivity, age-specific index selectivity, recruitment about the mean, fit to VAST index that combines all observed indices), but an implement a selectivity iid random effect for fleet and both indices. 
 
 VAST numbers at age 1-9+ were taken from:
 SPRING
@@ -105,4 +105,4 @@ ReRun37A <- fit_wham(input = inputRerun, MakeADFun.silent = TRUE)
 
 Adding iid selectivity random effects impacted the fleet but had little to no effect on the indices (minor variation in age 1 of index 1). Fit to index 1 is still poor with large positive residuals for most of the time series, but fit to index 2 has more evenly distributed residuals. Estimates appear to follow the same pattern as the fleet (same peaks). Full selection in the spring was fixed at older ages than in the fall, as was the case in model runs fit to observation-based indices.
 
-This model had a smaller AIC and Mohn's rho patterns than Run37 (AIC isn't perfectly comparable since different selectivity likelihood contribution). 
+This model had a smaller AIC and Mohn's rho patterns than Run37 (AIC isn't really comparable since different selectivity likelihood contribution). 

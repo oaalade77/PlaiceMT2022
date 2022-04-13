@@ -5,7 +5,7 @@ date: '2022-04-04'
 ---
 
 ## Model description
-A full state-space model was implemented as in run 27 (logistic fleet selectivity, age-specific index selectivity and recruitment about the mean), but fit to spring and fall VAST model-based indices that integrates over all design-based indices except LPUE rather than fitting to design-based NEFSC, MADMF, MENH spring and fall indices. and no iid random effect for selectivity, 
+A full state-space model was implemented as in run 27 (logistic fleet selectivity, age-specific index selectivity and recruitment about the mean), but fit to spring and fall VAST model-based indices that integrates over all design-based indices except LPUE rather than fitting to design-based NEFSC, MADMF, MENH spring and fall indices. No iid random effect for selectivity was included.
 
 VAST numbers at age 1-9+ were taken from:
 SPRING
@@ -118,6 +118,4 @@ ReRun37 <- fit_wham(input = inputRerun, MakeADFun.silent = TRUE)
 ```
 
 ## Comment
-
-
 Poor fit to index 1 (all VAST spring).
