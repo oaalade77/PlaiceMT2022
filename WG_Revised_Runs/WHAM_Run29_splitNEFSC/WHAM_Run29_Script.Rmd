@@ -1,7 +1,7 @@
 ---
 title: "WHAM_Run29_splitNEFSC"
 output: html_document
-date: '2022-04-05'
+date: '2022-04-11'
 ---
 
 ## Model description
@@ -116,7 +116,7 @@ Catch residuals were slightly smaller in some years and were more evenly distrib
 
 The fleet age comp likelihood contribution was larger than in Run27 but the fleet catch contribution was the same. NAA likelihood contributions were larger than in Run27. Age 2-4 residuals are more evenly distributed around 0 particularly at the end of the time series, ages 5-11+ have similar residual patterns to Run27.
 
-Fleet OSA residuals are less normally distributed than in Run27. OSA residuals for indices 1, 2, and 4 (Albatross spring, Bigelow spring, Bigelow fall) were fairly normally distributed, with idnex 3 (Albatross fall) less normally distributed
+Fleet OSA residuals are less normally distributed than in Run27. OSA residuals for indices 1, 2, and 4 (Albatross spring, Bigelow spring, Bigelow fall) were fairly normally distributed, with index 3 (Albatross fall) less normally distributed
 
 CVs around recruitment estimates were slightly smaller than in Run27 (full state-space model), while the CV around SSB estimates towards the end of the time series was slightly higher. SSB estimates where higher towards the end of the time series than in Run27, with lower F estimates during the same years. Run29 had consistently higher R estimates than Run27. 
 
