@@ -105,7 +105,7 @@ ReRun31 <- fit_wham(input = inputRerun, MakeADFun.silent = TRUE)
 ## Comment
 Fixing full selectivity for MENH age 2 in spring and age 1 in fall, and changing starting selectivity estimates for age 10 and 11+ to 0.1 resulted in a model that converged with an invertible hessian. 
 
-Fleet residuals follow similar patterns in runs 27 and 31. Residuals or index 1 and 2 were similar across runs 27 and 31, index 3 and 4 had more negative residuals towards the end of the time series. Fleet OSA residuals are similar in both runs but the maximum residual is slighlty smaller for run 31. Index 1 and 2 (NEFSC spring and fall) have larger residuals in run 31 (also seen in observed-predicted residuals), particularly for ages 1-3 but were more evenly positive and negative while age 1 in run 27 index 1 had largely negative residuals and index 2 for this run had largely positive residuals.
+Fleet residuals follow similar patterns in runs 27 and 31. Residuals or index 1 and 2 were similar across runs 27 and 31, index 3 and 4 had more negative residuals towards the end of the time series. Fleet age comp OSA residuals are similar in both runs but the maximum residual is slightly smaller for run 31. Index 1 and 2 (NEFSC spring and fall) have larger residuals in run 31 (also seen in observed-predicted residuals), particularly for ages 1-3 but were more evenly positive and negative while age 1 in run 27 index 1 had largely negative residuals and index 2 for this run had largely positive residuals.
 
 Fleet and index 1 and 2 age comp likelihood contributions were larger in run 31 than 27. The distribution of OSA residuals were similar for the fleet and indices 1 and 2 across runs, this includes age comp OSA residual distributions.
 
