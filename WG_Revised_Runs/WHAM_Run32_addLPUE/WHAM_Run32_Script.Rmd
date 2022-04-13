@@ -1,11 +1,11 @@
 ---
 title: "WHAM_Run32_addLPUE"
 output: html_document
-date: '2022-04-01'
+date: '2022-04-11'
 ---
 
 ## Model description
-Recruitment random effects as in run 25 (revised data, fixed selectivity at intermediate ages, logistic fleet selectivity, age-specific index selectivity, with an iid random effect for selectivity, recruitment that is random about the mean), with additional LPUE index (index 3).
+Recruitment random effects as in run 25 (revised data, fixed selectivity at intermediate ages, logistic fleet selectivity, age-specific index selectivity, with an iid random effect for selectivity, recruitment that is random about the mean), with additional LPUE index (index 3). The selectivity for the LPUE index was set to mirror that estimated for the fleet. 
 
 LPUE index and CV pulled from Plaice_LPUE_Standardization_Index_01242022.lxsx
 
@@ -21,7 +21,7 @@ library(DataExplorer)
 ```{r}
 asap3 <- read_asap3_dat(paste(here::here(), "data", "PlaiceWHAM-2019_revised_NEFSC-LW-WAA_StateIndices.DAT", sep="/"))
 
-# Overwrite settings to use the LPUE indicex in addition to NEFSC
+# Overwrite settings to use the LPUE index in addition to NEFSC
 asap3$dat$use_index_acomp[15] <- 0 # No age comp for this index 
 asap3$dat$use_index[15] <- 1 # use indicex 15 (LPUE)
 ```
@@ -29,7 +29,7 @@ asap3$dat$use_index[15] <- 1 # use indicex 15 (LPUE)
 ### Prepare model input
 ```{r}
 # iid random effects for recruitment only 
-NAA_re = list(sigma = "rec") # Full state space
+NAA_re = list(sigma = "rec") 
 NAA_re$cor = "iid" # iid random effects
 NAA_re$recruit_model = 2 # recruitment is random about the mean
 NAA_re$recruit_pars = exp(10) #initial guess for mean recruitment
@@ -50,7 +50,7 @@ fix_index_sel[[3]] = 1:2 #fix logistic selectivity pars for third index because 
 fix_index_sel[[1]] <- c(4,5) # Fix age 4 & 5 for for index 1
 fix_index_sel[[2]][1] <- 4 # Fix age 4 for for index 2
 
-# Setup random effect by selectivity block (here: fleet, index1, index2) #index 3 selectivity will be the same as the fleet
+# Setup random effect by selectivity block - index 3 (LPUE) selectivity will be the same as the fleet
 randeffect <- c(rep("iid", 3), "none")#, asap3$dat$n_fleet_sel_blocks), rep("iid", use_n_indices))
 
 # Setup selectivity list
@@ -72,16 +72,13 @@ saveRDS(input, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run32_addLPUE",
 
 ### Fit model, check convergence, and run diagnostics
 ```{r}
-WHAM_Run32 <- fit_wham(input, do.osa =F, do.retro=F) 
+# WHAM_Run32 <- fit_wham(input, do.osa =F, do.retro=F) # Run without OSA and retro calculations
 WHAM_Run32 <- fit_wham(input, MakeADFun.silent = TRUE) 
 check_convergence(WHAM_Run32)
 print(paste("Number of parameters", length(WHAM_Run32$par), sep=" "))
 
 plot_wham_output(mod=WHAM_Run32, out.type='html')
 # plot_wham_output(mod=WHAM_Run32, out.type='png', dir.main = paste(here::here(), "WHAM_Run32", sep="/"))
-beep()
-beep()
-beep()
 ```
 
 ### Save output
