@@ -101,10 +101,10 @@ ReRun29C <- fit_wham(input = inputRerun, MakeADFun.silent = TRUE)
 ## Comment
 This run (Albatross and biomass units) was conducted to identify if improvement in selectivity patterns between run 29 (Albatross and abundance units) and run 29A (Bigelow and biomass units) was due to the switch to Bigelow units or biomass units, or both.
 
-Catchability estimates for index 3 (Albatross fall) were higher than for the other indices with index 1 (Albatross spring) and 4 (Bigelow fall) more similar than in run 29.
+Catchability estimates for index 3 (Albatross fall) were higher than for the other indices with index 1 (Albatross spring) and 4 (Bigelow fall) estimates more similar than in run 29.
 
-Selectivity random effects for index 1 (Albatross spring) were smaller than in run 29 and could probably be turned off before this run would be considered a reasonable candidate (run 29B still appears to be a bit better). Selectivity estimates for age 11+ in both fall indices (3 and 4) are still higher than for age 10 so the improvement in this pattern for index 4 (Bigelow fall) in runs 29A and B appears to be due to the switch to Bigelow units in runs 29A and 29B. 
+Selectivity random effects for index 1 (Albatross spring) were smaller than in run 29 and could probably be turned off before this run would be considered a reasonable candidate (run 29B excludes this random effect and appears to be a bit better). Selectivity estimates for age 11+ in both fall indices (3 and 4) are still higher than for age 10 so the improvement in this pattern for index 4 (Bigelow fall) in runs 29A and 29B appears to be due to the switch to Bigelow units in runs 29A and 29B. 
 
 Catch residuals more evenly distributed around zero early in the time series as was also seen in run 29A and 29B but not in run 29. This suggests that this improvement is due to the switch to biomass units NOT to the switch to Bigelow units. 
 
-OSA age comp residuals for the fleet and spring indices had similar patterns but larger maximum values compared to run 29. The fall indices followed similar patterns but had slightly smaller maximum values. The patterns and magnitude of these residuals were very similar to those in run 29B. 
+OSA age comp residuals for the fleet and all indices had similar patterns to run 29A. The fall indices followed similar patterns but had slightly smaller maximum values. The distribution of OSA residuals for the fleet and all indices were very similar between run 29A and 29C. 
