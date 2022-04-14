@@ -1,13 +1,13 @@
 ---
 title: "WHAM_Run29C_splitNEFSC-biomass"
 output: html_document
-date: '2022-04-07'
+date: '2022-04-13'
 ---
 
 ## Model description
 Full state-space model as in run 29 (revised data, fixed selectivity at intermediate ages, logistic fleet selectivity, age-specific index selectivity, recruitment that is random about the mean), with NEFSC bottom trawl surveys split into Albatross (1980-2008, indices 1 and 3 for spring/fall) and Bigelow (2009-2019, indices 2 and 4 for spring/fall) time series in Albatross units, but NEFSC data is biomass units rather than abundance. 
 
-An initial run was conducted to freely estimate selectivity-at-age for the fleet and with a selectivity random effect implemented for all indices (see comment on line 44 for details and WHAM_Run29C_input_FreeSelEstimate.rds for data used in this run). Although this run did not converge, it suggested that ages 4-5 for Albatross spring (index 1), age 5 for Bigelow spring (index 2), age 4 for Albatross spring (index 3), and ages 4-5 for Bigelow fall (index 4) were fully selected so selectivity was fixed at 1 for these ages in the converged run below, and only Albatross spring had variable selectivity so a random effect was only included for this index in the full run below. 
+An initial run was conducted to freely estimate selectivity-at-age for the fleet and with a selectivity random effect implemented for all indices (see comment on line 44 for details and WHAM_Run29C_input_FreeSelEstimate.rds for data used in this run). Although this run did not converge with an invertible hessian, it suggested that ages 4-5 for Albatross spring (index 1), age 5 for Bigelow spring (index 2), age 4 for Albatross spring (index 3), and ages 4-5 for Bigelow fall (index 4) were fully selected so selectivity was fixed at 1 for these ages in the converged run below, and only Albatross spring had variable selectivity so a random effect was only included for this index in the full run below. 
 
 ### Load R packages
 ```{r, echo=FALSE}
