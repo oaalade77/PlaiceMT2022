@@ -117,5 +117,10 @@ ReRun34A <- fit_wham(input = inputRerun, MakeADFun.silent = TRUE)
 ```
 
 ## Comment
+Run 34 has similar selectivity estimates to run 31 (only fit to NEFSC + MENH). Estimates of q for the MENH spring and fall indices were less similar in run 34. 
 
+Catch residuals were generally larger in magnitude and had more of a pattern in run 34. Catch OSA residuals were less normally distributed than in run 31. NEFSC spring had slightly more normally distributed residuals, NEFSC fall had a similar distribution, MENH spring had a similar distribution but MENH fall residuals were less normally distributed than run 31. the LPUE OSA residuals were not very normally distributed.
 
+Catch age comp OSA residuals were slightly less normally distributed than run 31. NEFSC spring age comp OSA residuals were slightly more normally distributed, NEFSC fall was slightly less normally distributed, MENH spring was similarly distributed, and MENH fall were slightly less normally distributed compared to run 31. 
+
+Age comp OSA residuals followed similar patterns for the fleet, NEFSC and MENH indices but there were generally more years with larger residuals in run 34 than run 31. 

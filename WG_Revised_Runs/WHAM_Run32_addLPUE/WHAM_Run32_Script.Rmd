@@ -98,6 +98,8 @@ ReRun32 <- fit_wham(input = inputRerun, MakeADFun.silent = TRUE)
 ```
 
 ## Comment
-Model didn't converge when full state-space model implemented, even after survey selectivity random effects were removed. Model did converge with an invertible hessian when only recruitment random effects were included, and survey selectivity random effects were implemented.
+Model didn't converge when full state-space model implemented, but did converge with an invertible hessian when only recruitment random effects were included, and survey selectivity random effects were implemented (except for the LPUE index with selectivity mirroring the fleet).
 
-Fit to catch data has slightly larger negative residuals than Run25 at the end of the timeseries, but the fleet age comp likelihood contribution is slightly smaller. Other likelihood contributions are similar to Run25. OSA age comp residuals for index 1 (NEFSC spring) were largely negative while for index 2 these were largely positive. Observed-predicted residuals were similar for the fleet and indices 1 and 2 across runs 25 and 32. Fleet OSA residuals are slightly more normally distributed, NEFSC index OSA residuals are similar across runs, and LPUE index 3 OSA residuals are normally distributed.
+Fit to catch data has larger negative residuals than Run25 in the middle of the time series. OSA residuals for the fleet were less normally distributed than in run 25, but were similarly distributed for the NEFSC indices. 
+
+Age comp OSA residuals for the fleet and NEFSC spring index had similar patterns to run 25. The NEFSC fall index had more differences in residual magnitude, particularly for ages 4-7 (generally smaller in earlier years but very large positive residuals at the end of the time series in run 32). Fleet OSA age comp residuals and the NEFSC indices age comp residuals are similar or slightly less normally distributed than in run 25.
