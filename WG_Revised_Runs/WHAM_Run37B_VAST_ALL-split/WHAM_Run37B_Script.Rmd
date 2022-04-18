@@ -1,11 +1,11 @@
 ---
 title: "WHAM_Run37B_VAST_ALL-split"
 output: html_document
-date: '2022-04-14'
+date: '2022-04-18'
 ---
 
 ## Model description
-A full state-space model was implemented as in run 37! (logistic fleet selectivity, age-specific index selectivity, recruitment about the mean, fit to VAST index that combines all observed indices, selectivity iid random effect for all indices), but indices (in Albatross units) were split into Albatross (1980-2008) and Bigelow years (2009-2019). 
+A full state-space model was implemented as in run 37A (logistic fleet selectivity, age-specific index selectivity, recruitment about the mean, fit to VAST index that combines all observed indices, selectivity iid random effect for all indices), but indices (in Albatross units) were split into Albatross (1980-2008) and Bigelow years (2009-2019). 
 
 VAST numbers at age 1-9+ were taken from:
 SPRING
@@ -46,20 +46,22 @@ use_n_indices = 4
 modelsetup <- c(rep("logistic", asap3$dat$n_fleet_sel_blocks), rep("age-specific", use_n_indices))
 
 init_fleet_sel <- list(c(2,0.4)) # logistic parameters, based on model type
-init_index_sel <- list(c(0.5, 1, 1, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0, 0), # all VAST Albatross spring
+init_index_sel <- list(c(0.5, 1, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0, 0), # all VAST Albatross spring
                        c(0.5, 1, 1, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0, 0), # all VAST Bigelow spring
-                       c(1, 1, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0, 0), # all VAST Albatross fall
-                       c(1, 1, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0, 0)) # all VAST Bigelow fall
+                       c(1, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0, 0), # all VAST Albatross fall
+                       c(1, 05, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0, 0)) # all VAST Bigelow fall
 
 # Setup fixed parameters
 fix_fleet_sel <- lapply(1:asap3$dat$n_fleets, function(x) NA) 
 fix_index_sel <- lapply(1:use_n_indices, function(x) NA) # Setup storage object to populate 
 
-fix_index_sel[[1]] <- c(2,3) # Fix age 3 & 4 for for index 1 all VAST spring
-fix_index_sel[[2]] <- c(1,2) # Fix age 5 for for index 2 all VAST fall
+fix_index_sel[[1]] <- c(2) # Fix age 3 & 4 for for index 1 all VAST Albatross spring
+fix_index_sel[[2]] <- c(2,3) # VAST Bigelow spring
+fix_index_sel[[3]] <- c(1) # Fix age 5 for for index 2 all VAST Albatross fall
+fix_index_sel[[4]] <- c(1) # VAST Bigelow fall
 
 # Setup random effect by selectivity block (here: fleet, index1, index2)
-randeffect <- c(rep("iid", asap3$dat$n_fleet_sel_blocks), rep("iid", use_n_indices))
+randeffect <- c(rep("iid", asap3$dat$n_fleet_sel_blocks), "iid", rep("none", 3))
 
 # Setup selectivity list
 sel_list <- list(model = modelsetup, # list selectivity model for each fleet and index
@@ -103,4 +105,6 @@ ReRun37B <- fit_wham(input = inputRerun, MakeADFun.silent = TRUE)
 ```
 
 ## Comment
+Hessian not invertible when run with freely estimated selectivity for all indices, or when selectivity random effects implemented for all indices. A model did converge when a selectivity random effect was only implemented for the Albatross spring index. 
 
+The selectivity for the Albatross spring index was still not particularly variable in the converged run so run 37C explored excluding the selectivity random effects for all indices. Run 37B and 37C were equivalent according to AIC, but run 37C was more parsimonious and had the slightly smaller AIC value so run 37C is slightly preferred.
