@@ -61,7 +61,7 @@ catchability <- list(
 
 # Format input
 input <- prepare_wham_input(asap3, NAA_re = NAA_re, selectivity = sel_list, 
-  catchability = catchability, model_name = "WHAM_Run29", age_comp = "logistic-normal-miss0")
+  catchability = catchability, model_name = "WHAM_Run29D", age_comp = "logistic-normal-miss0")
 input$map$logit_q = factor(rep(NA,use_n_indices)) #don't estimate q
 #input$data$selpars_lower[] = 1e-6
 ```
@@ -89,7 +89,7 @@ q_sel[1:2,1]/q_sel[3:4,1]
 q_sel[,-1]
 q_sel[,1]
 
-#plot_wham_output(mod=WHAM_Run29D_free, out.type='html')
+plot_wham_output(mod=WHAM_Run29D_free, out.type='html')
 ```
 
 ### Run 29D: Save output
@@ -127,7 +127,7 @@ saveRDS(input, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run29DE_splitNE
 ```
 
 ### Fit model, check convergence, and run diagnostics
-Without OSA an retro
+Without OSA and retro
 ```{r}
 WHAM_Run29E_ln_acomp <- fit_wham(input, do.osa=F, do.retro = F, MakeADFun.silent = TRUE) 
 # Look at catchability results
