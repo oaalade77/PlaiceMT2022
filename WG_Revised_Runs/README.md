@@ -42,15 +42,21 @@ Each run folder contains the following information:
 | WHAM_Run29A_splitNEFSC-BigUnits | WG run fit to data in biomass bigelow units rather than abundance albatross units for the NEFSC split as done in run 29. An iid selectivity random effect was implemented for the fleet and index 1 (Albatross spring). |
 | WHAM_Run29B_splitNEFSC-BigUnits-noSurvRandSel | WG run identical to run 29A but no iid selectivity random effect implemented for index 1 (Albatross spring). AIC suggests this model is equivalent to run 29A, but simpler structure so prefered as a candidate model. |
 | WHAM_Run29C_splitNEFSC-biomass | WG run identical to run 29, but fit to biomass Albatross/Bigelow indices instead of abundance. Verifies that the improved selectivity pattern for the Bigelow fall index in runs 29A and 29B was do to the switch to Bigelow units NOT the switch to biomass units. |
+| WHAM_Run29DE_splitNEFSC-FreeSel-nlAgeComp | WG exploratory run to freely estimate selectivity (see also description at start of run 29A/C/F scripts) and explore logistic normal age composition likelihood (see run 29F for more thurough implementation). | 
+| WHAM_Run29F_splitNEFSC-BigUnits-nlAgeComp | WG run as in run 29B (split Albatross/Bigelow indices in Bigelow and biomass units) but with a logistic normal age composition model that treats zeros as missing and with a wider range of ages fixed at full selectivity in order to obtain model convergence. |
 | WHAM_Run30_addMADMF | WG run with full state space model as in run 27 except selectivity random effect only implemented for the fleet, adds MADMF spring and fall indices in addition to NEFSC. FROM THIS RUN ON OSA RESIDUALS CALCULATED FOR FIT TO AGE COMP DATA! |
 | WHAM_Run31_addMENH | WG run with full state space model as in run 27, adds MENH spring and fall indices in addition to NEFSC. | 
 | WHAM_Run32_addLPUE | WG run with iid recruitment random effects as in run 25, adds LPUE index in addition to NEFSC. Iid selectivity random effects were implemented for the fleet and NEFSC indices, but selectivity for the LPUE index was assumed to mirror the fleet. |
 | WHAM_Run33_addMADMF-MENH | WG run with full state space model as in run 27, but a selectivity random effect was implemented for only the fleet, adds both MADMF and MENH spring and fall indices. |
 | WHAM_Run34_addMENH-LPUE | WG run with iid recruitment random effects as in run 25 including selectivity random effects for the fleet and all indices, and adds both MENH and LPUE indices. Selectivity for the LPUE index was estimated independent of the fleet. |
+| WHAM_Run34A_addMENH-LPUE_mirrorLPUE | WG run identical to run 34 but the selectivity for the LPUE index was specified to mirror the fleet estimated selectivity-at-age. | 
 | WHAM_Run35_addMADMF-LPUE | WG run with iid recruitment random effects as in run 25 including selectivity random effects for the fleet and LPUE index only, and adds both MADMF and LPUE indices. Selectivity for the LPUE index was estimated independent of the fleet. |
-| WHAM_Run36_allIndices | WG run fit to MENH, MADMF, NEFSC spring and fall indices and an LPUE index with only recruitment random effects and selectivity random effects for the fleet and LPUE index. As of 4/4/22 does not converge with invertible hessian|
+| WHAM_Run35A_addMADMF-LPUE_mirrorLPUE | WG run identical to run 35 but the selectivity for the LPUE index was specified to mirror the fleet estimated selectivity-at-age. |
+| WHAM_Run36_allIndices | WG run fit to MENH, MADMF, NEFSC spring and fall indices and an LPUE index with only recruitment random effects and selectivity random effects for the fleet and LPUE index. As of 4/4/22 does not converge with invertible hessian - treat only as exploratory run. |
 | WHAM_Run37_VAST_All | WG run fit to integrated VAST index that combines NEFSC, MADMF, and MENH for spring and fall. Implements a full state space model with no selectivity random effects and a plus group set to 9+. |
 | WHAM_Run37A_VAST_All | WG run fit to integrated VAST index as in run 37 (implements a full state space model fit to VAST spring and fall idnices and a plus group set to 9+), but also includes selectivity random effects for the fleet and both indices. |
+| WHAM_Run37B_VAST_ALL-split | WG run fit to integrated VAST index as in run 37A but both spring and fall indices split into Albatross (1980-2008) and Bigelow years (2009-2019) and selectivity random effects were only implemented for the fleet and VAST Albatross spring index. |
+| WHAM_Run37C_VAST_ALL-split-noRand | WG run fit to split VAST indices as in run 37B but no index selectivity random effects were implemented. |
 
 ### ASAP re-runs for easy comparison with WHAM
 The following use data files from ASAP runs and re-run in WHAM so they can be easily compared and plotted with WHAM runs. Run numbering is inherited from the ASAP run for consistency.
@@ -64,3 +70,4 @@ The following use data files from ASAP runs and re-run in WHAM so they can be ea
 | File                 | Description                                                                 |
 |---------------------------|---------------------------------------------|
 | Model_Comparison.Rmd | A script that reads in fitted model objects and generates comparison plots. |
+| Comparison_Output | A folder containing comparison plots that will be overwritten by any call to compare_wham_models() in Model_Comparison.Rmd, included here so any part of this script can be run to quickly regenerate plots as long as repo is cloned locally. | 
