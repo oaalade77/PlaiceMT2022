@@ -5,7 +5,7 @@ date: '2022-04-04'
 ---
 
 ## Model description
-A full state-space model was implemented as in run 37 (logistic fleet selectivity, age-specific index selectivity, recruitment about the mean, fit to VAST index that combines all observed indices), but an implement a selectivity iid random effect for fleet and both indices. 
+A full state-space model was implemented as in run 37 (logistic fleet selectivity, age-specific index selectivity, recruitment about the mean, fit to VAST index that combines all observed state indices), but an implemented a selectivity iid random effect for fleet and both indices. 
 
 VAST numbers at age 1-9+ were taken from:
 SPRING
