@@ -1,0 +1,248 @@
+---
+title: "WHAM_Run29B_EffectiveSampleSize"
+output: html_document
+date: '2022-04-18'
+---
+
+## Description
+This script fits a series of models specified like run 29B but with effective sample size varied from 10-100 in increments of 10 to evaluate the sensitivity of this model to different assumed effective sample size. The model did not converge with an invertible hessian when the effective sample size was set to 10. 
+
+ 
+### Load R packages
+```{r, echo=FALSE}
+library(tidyverse)
+library(wham)
+library(readxl)
+library(DataExplorer)
+```
+
+## Indices
+### Loop over effective sample size settings for indices
+```{r}
+### Load data
+asap3 <- read_asap3_dat(paste(here::here(), "data", "PlaiceWHAM-2019_revised_NEFSC-LW-WAA_splitNEFSC-BigUnit.DAT", sep="/"))
+
+
+### Prepare model input
+NAA_re = list(sigma = "rec+1") # Full state-space model
+NAA_re$cor = "iid" # iid random effects
+NAA_re$recruit_model = 2 # recruitment is random about the mean
+NAA_re$recruit_pars = exp(10) #initial guess for mean recruitment
+
+# Setup initial selectivity model and parameters
+use_n_indices = 4
+modelsetup <- c(rep("logistic", asap3$dat$n_fleet_sel_blocks), rep("age-specific", use_n_indices))
+
+init_fleet_sel <- list(c(2,0.4)) # logistic parameters, based on model type
+init_index_sel <- lapply(1:use_n_indices, function(x) c(0.5, 0.5, 0.5, 1, 1, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5))
+
+# Setup fixed parameters
+fix_fleet_sel <- lapply(1:asap3$dat$n_fleets, function(x) NA) 
+fix_index_sel <- lapply(1:use_n_indices, function(x) NA) # Set up index object
+
+fix_index_sel[[1]] <- c(4,5) # Fix age 4 & 5 for for index 1 (NEFSC spring Albatross)
+fix_index_sel[[2]][1] <- 5 # Fix age  5 for for index 2 (NEFSC spring Bigelow)
+fix_index_sel[[3]][1] <- 4 # Fix age 4 for for index 3 (NEFSC fall Albatross)
+fix_index_sel[[4]] <- c(4,5) # Fix age 4 for for index 4 (NEFSC fall Bigelow)
+
+# Setup random effect by selectivity block (here: fleet, index1, index2, index3, index4)
+randeffect <- c(rep("iid", asap3$dat$n_fleet_sel_blocks), rep("none", 4)) # Don't include selectivity random effects for any surveys 
+
+# Setup selectivity list
+sel_list <- list(model = modelsetup, # list selectivity model for each fleet and index
+                 re = randeffect,
+                 initial_pars = c(init_fleet_sel, init_index_sel),
+                 fix_pars = c(fix_fleet_sel, fix_index_sel))
+
+input <- prepare_wham_input(asap3, NAA_re = NAA_re, selectivity = sel_list, model_name = "WHAM_Run29B") 
+
+### Loop over effective sample size options
+for(ieff in seq(10, 100, by = 10)){
+  ### Update effective sample size
+  # Catch 
+  # input$data$catch_Neff <- matrix(rep(ieff,40), ncol = 1)
+  # Indices
+  input$data$index_Neff[which(input$data$index_Neff != -999)] <- ieff
+  
+  ### Save input
+  saveRDS(input, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run29B_EffectiveSampleSize", paste("WHAM_Run29B_eff", ieff, "input.rds", sep="_"), sep="/"))
+  
+  ### Fit model
+  # Run without OSA residuals and retrospective analysis
+  WHAM_Run29B_eff <- fit_wham(input, MakeADFun.silent = TRUE, do.osa = FALSE) 
+  print(paste("EFF", ieff))
+  check_convergence(WHAM_Run29B_eff)
+  
+  ### Save output
+  saveRDS(WHAM_Run29B_eff, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run29B_EffectiveSampleSize", paste("WHAM_Run29B_eff", ieff, "model.rds", sep="_"), sep="/"))
+}
+
+```
+
+
+
+
+
+
+### Compare runs across index ESS values
+```{r}
+modelRuns <- paste(here::here(), "WG_Revised_Runs",
+                   c("WHAM_Run29B_EffectiveSampleSize/WHAM_Run29B_eff_20_model.rds",
+                     "WHAM_Run29B_EffectiveSampleSize/WHAM_Run29B_eff_30_model.rds",
+                     "WHAM_Run29B_EffectiveSampleSize/WHAM_Run29B_eff_40_model.rds",
+                     "WHAM_Run29B_EffectiveSampleSize/WHAM_Run29B_eff_50_model.rds",
+                     "WHAM_Run29B_EffectiveSampleSize/WHAM_Run29B_eff_60_model.rds",
+                     "WHAM_Run29B_EffectiveSampleSize/WHAM_Run29B_eff_70_model.rds",
+                     "WHAM_Run29B_EffectiveSampleSize/WHAM_Run29B_eff_80_model.rds",
+                     "WHAM_Run29B_EffectiveSampleSize/WHAM_Run29B_eff_90_model.rds",
+                     "WHAM_Run29B_EffectiveSampleSize/WHAM_Run29B_eff_100_model.rds"), sep="/")
+
+# Read in model Rdata
+models <- lapply(modelRuns, readRDS)
+names(models) <- paste("Eff", c(20, 30, 40, 50, 60, 70, 80, 90, 100), sep="")
+
+# Generate comparative diagnostics
+compare_wham_models(models, do.plot = TRUE, do.table=TRUE,  fdir=paste(here::here(), "WG_Revised_Runs", "WHAM_Run29B_EffectiveSampleSize", sep="/"), plot.opts=list(which = c(1, 2, 3, 4, 5, 6, 7, 8, 9)))
+```
+### Generate likelihood profiles for the above runs
+Borrowed lines 119-146 from plot.ll.table.fn()
+```{r}
+totalNLL <- rep(NA, 10) 
+names(totalNLL) <- c(paste("Run", seq(10,100,by=10), sep="_"))
+for(ieff in seq(20,100,by=10)){
+  ### Load fitted model results
+modelRuns <- paste(here::here(), "WG_Revised_Runs",
+                   c("WHAM_Run29_splitNEFSC/WHAM_Run29_model.rds",
+                   paste("WHAM_Run29B_EffectiveSampleSize/WHAM_Run29B_eff", ieff, "model.rds", sep="_")), sep="/")
+
+# Read in model Rdata
+models <- lapply(modelRuns, readRDS)
+names(models) <- c("Run29", "RunCalcNLL")
+
+mod <- models$RunCalcNLL
+
+### Calculate total negative log likelihood
+  npar <- length(mod$opt$par)
+  lls = mod$rep[c(grep("nll",names(mod$rep)), grep("lprior_b", names(mod$rep)))]
+  ll.names = names(lls)
+  #n.like <- length(lls)
+  n_fleets = mod$env$data$n_fleets
+  n_indices = mod$env$data$n_indices
+  obs.lls = lls[names(lls) %in% c("nll_agg_catch", "nll_catch_acomp", "nll_agg_indices", "nll_index_acomp")]
+  obs.lls = lapply(obs.lls, function(x) apply(x,2,sum))
+  names(obs.lls$nll_agg_catch) = paste0("Fleet ", 1:n_fleets, " Catch")
+  names(obs.lls$nll_catch_acomp) = paste0("Fleet ", 1:n_fleets, " Age Comp")
+  names(obs.lls$nll_agg_indices) = paste0("Index ", 1:n_indices, " Catch")
+  names(obs.lls$nll_index_acomp) = paste0("Index ", 1:n_indices, " Age Comp")
+  names(obs.lls) = NULL
+  obs.lls = unlist(obs.lls)
+  n.obs.ll = length(obs.lls)
+  obs.dists = character(n.obs.ll)
+  names(obs.dists) = names(obs.lls)
+  obs.dists[grep("Catch", names(obs.lls))] = "log(x) ~ Gaussian"
+  acm = c("Multinomial", "Dirichlet-multinomial", "Dirichlet (miss0)", "Dirichlet (pool0)","Logistic normal (miss0)",
+    "Logistic normal AR1 corr (miss0)", "Logistic normal (pool0)", "ZI-logistic normal(1)","ZI-logistic normal(2)")
+  obs.dists[paste0("Fleet ", 1:n_fleets, " Age Comp")] = paste0("x ~ ", acm[mod$env$data$age_comp_model_fleets])
+  obs.dists[paste0("Index ", 1:n_indices, " Age Comp")] = paste0("x ~ ", acm[mod$env$data$age_comp_model_fleets])
+  proc.lls = lls[names(lls) %in% c("nll_M", "nll_NAA", "nll_recruit", "lprior_b")]
+  names(proc.lls) = c("M", "NAA", "recruit", "W_b_M")[match(names(proc.lls),c("nll_M", "nll_NAA", "nll_recruit", "lprior_b"))]
+  proc.lls = unlist(lapply(proc.lls, sum))
+  n.proc.ll = length(proc.lls)
+  proc.dists = rep("log(x) ~ Gaussian", n.proc.ll)
+  likes = -c(obs.lls, proc.lls)
+  
+  ### Total NLL
+  totalNLL[ieff/10] <- sum(likes)
+}
+
+NLL <- data_frame(totalNLL = totalNLL[-1], Effective_Sample_Size = seq(20,100,by=10))
+ggplot() +
+  geom_line(data = NLL, aes(x=Effective_Sample_Size, y=totalNLL))
+ggsave(filename = paste(here::here(), "WG_Revised_Runs/WHAM_Run29B_EffectiveSampleSize/Likelihood_profile.png", sep="/"))
+
+```
+
+## Fleet
+### Loop over effective sample size settings for fleet
+```{r}
+### Load data
+asap3 <- read_asap3_dat(paste(here::here(), "data", "PlaiceWHAM-2019_revised_NEFSC-LW-WAA_splitNEFSC-BigUnit.DAT", sep="/"))
+
+
+### Prepare model input
+NAA_re = list(sigma = "rec+1") # Full state-space model
+NAA_re$cor = "iid" # iid random effects
+NAA_re$recruit_model = 2 # recruitment is random about the mean
+NAA_re$recruit_pars = exp(10) #initial guess for mean recruitment
+
+# Setup initial selectivity model and parameters
+use_n_indices = 4
+modelsetup <- c(rep("logistic", asap3$dat$n_fleet_sel_blocks), rep("age-specific", use_n_indices))
+
+init_fleet_sel <- list(c(2,0.4)) # logistic parameters, based on model type
+init_index_sel <- lapply(1:use_n_indices, function(x) c(0.5, 0.5, 0.5, 1, 1, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5))
+
+# Setup fixed parameters
+fix_fleet_sel <- lapply(1:asap3$dat$n_fleets, function(x) NA) 
+fix_index_sel <- lapply(1:use_n_indices, function(x) NA) # Set up index object
+
+fix_index_sel[[1]] <- c(4,5) # Fix age 4 & 5 for for index 1 (NEFSC spring Albatross)
+fix_index_sel[[2]][1] <- 5 # Fix age  5 for for index 2 (NEFSC spring Bigelow)
+fix_index_sel[[3]][1] <- 4 # Fix age 4 for for index 3 (NEFSC fall Albatross)
+fix_index_sel[[4]] <- c(4,5) # Fix age 4 for for index 4 (NEFSC fall Bigelow)
+
+# Setup random effect by selectivity block (here: fleet, index1, index2, index3, index4)
+randeffect <- c(rep("iid", asap3$dat$n_fleet_sel_blocks), rep("none", 4)) # Don't include selectivity random effects for any surveys 
+
+# Setup selectivity list
+sel_list <- list(model = modelsetup, # list selectivity model for each fleet and index
+                 re = randeffect,
+                 initial_pars = c(init_fleet_sel, init_index_sel),
+                 fix_pars = c(fix_fleet_sel, fix_index_sel))
+
+input <- prepare_wham_input(asap3, NAA_re = NAA_re, selectivity = sel_list, model_name = "WHAM_Run29B") 
+
+### Loop over effective sample size options
+for(ieff in seq(10, 100, by = 10)){
+  ### Update effective sample size
+  # Catch 
+  input$data$catch_Neff <- matrix(rep(ieff,40), ncol = 1)
+  # Indices
+  # input$data$index_Neff[which(input$data$index_Neff != -999)] <- ieff
+  
+  ### Save input
+  saveRDS(input, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run29B_EffectiveSampleSize", paste("WHAM_Run29B_eff", ieff, "fleet", "input.rds", sep="_"), sep="/"))
+  
+  ### Fit model
+  # Run without OSA residuals and retrospective analysis
+  WHAM_Run29B_eff <- fit_wham(input, MakeADFun.silent = TRUE, do.osa = FALSE) 
+  print(paste("EFF", ieff))
+  check_convergence(WHAM_Run29B_eff)
+  
+  ### Save output
+  saveRDS(WHAM_Run29B_eff, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run29B_EffectiveSampleSize", paste("WHAM_Run29B_eff", ieff, "fleet", "model.rds", sep="_"), sep="/"))
+}
+
+```
+
+### Compare runs across fleet ESS values
+```{r}
+modelRuns <- paste(here::here(), "WG_Revised_Runs",
+                   c("WHAM_Run29B_EffectiveSampleSize/WHAM_Run29B_eff_20_fleet_model.rds",
+                     "WHAM_Run29B_EffectiveSampleSize/WHAM_Run29B_eff_30_fleet_model.rds",
+                     "WHAM_Run29B_EffectiveSampleSize/WHAM_Run29B_eff_40_fleet_model.rds",
+                     "WHAM_Run29B_EffectiveSampleSize/WHAM_Run29B_eff_50_fleet_model.rds",
+                     "WHAM_Run29B_EffectiveSampleSize/WHAM_Run29B_eff_60_fleet_model.rds",
+                     "WHAM_Run29B_EffectiveSampleSize/WHAM_Run29B_eff_70_fleet_model.rds",
+                     "WHAM_Run29B_EffectiveSampleSize/WHAM_Run29B_eff_80_fleet_model.rds",
+                     "WHAM_Run29B_EffectiveSampleSize/WHAM_Run29B_eff_90_fleet_model.rds",
+                     "WHAM_Run29B_EffectiveSampleSize/WHAM_Run29B_eff_100_fleet_model.rds"), sep="/")
+
+# Read in model Rdata
+models <- lapply(modelRuns, readRDS)
+names(models) <- paste("Eff", c(20, 30, 40, 50, 60, 70, 80, 90, 100), sep="")
+
+# Generate comparative diagnostics
+compare_wham_models(models, do.plot = TRUE, do.table=TRUE,  fdir=paste(here::here(), "WG_Revised_Runs", "WHAM_Run29B_EffectiveSampleSize", sep="/"), plot.opts=list(which = c(1, 2, 3, 4, 5, 6, 7, 8, 9)))
+```
+
