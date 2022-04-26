@@ -6,7 +6,10 @@ date: '2022-04-18'
 
 ## Model description
 Full state-space model as in run 29B (revised data, fixed selectivity at intermediate ages, logistic fleet selectivity, age-specific index selectivity, recruitment that is random about the mean), with NEFSC bottom trawl surveys split into Albatross (1980-2008, indices 1 and 3 for spring/fall) and Bigelow (2009-2019, indices 2 and 4 for spring/fall) time series, with NEFSC data is in Albatross AND Bigelow units, rather than using only Albatross units as in run 29. The aggregate index for this run was also in biomass units rather than abundance. 
-The age composition likelihood was switched to "logistic-normal-miss0" as in run 29E but selectivity was specified as in run 29B.
+
+The only differences from run 29B was that the age composition likelihood was switched to "logistic-normal-miss0" (logistic normal age comp likelihood that treats 0s as missing) and the selectivity-at-age was as in run 29E but selectivity was specified as in run 29B.
+
+An initial run was conducted to freely estimate selectivity-at-age for the fleet and with a selectivity random effect implemented for only the fleet (see comment on line 48 for details). Although this run did not converge, it suggested that ages 4-6 for Albatross spring (index 1), age 4-5 for Bigelow spring (index 2), age 4 and 11 for Albatross spring (index 3), and ages 3-5 for Bigelow fall (index 4) were fully selected so selectivity was fixed at 1 for these ages in the converged run below. This fixes a wider range of ages at full selectivity than in run 29B and contributes to the less dome-shaped selectivity estimated for the fall indices in this run.
 
 ### Load R packages
 ```{r, echo=FALSE}
@@ -42,10 +45,11 @@ init_index_sel <- list(c(0.5, 0.5, 0.5, 1, 1, 1, 0.5, 0.5, 0.5, 0.5, 0.5),
 fix_fleet_sel <- lapply(1:asap3$dat$n_fleets, function(x) NA) 
 fix_index_sel <- lapply(1:use_n_indices, function(x) NA) # Set up index object
 
-fix_index_sel[[1]] <- c(4,5,6) # Fix age 4 & 5 for for index 1 (NEFSC spring Albatross)
-fix_index_sel[[2]] <- c(4,5) # Fix age  5 for for index 2 (NEFSC spring Bigelow)
-fix_index_sel[[3]] <- c(4,11) # Fix age 4 for for index 3 (NEFSC fall Albatross)
-fix_index_sel[[4]] <- c(3,4,5) # Fix age 4 for for index 4 (NEFSC fall Bigelow)
+# The following four lines were commented out to initially freely estimate selectivity-at-age
+fix_index_sel[[1]] <- c(4,5,6) # Fix age 4, 5 & 6 for for index 1 (NEFSC spring Albatross)
+fix_index_sel[[2]] <- c(4,5) # Fix age  4 & 5 for for index 2 (NEFSC spring Bigelow)
+fix_index_sel[[3]] <- c(4,11) # Fix age 4 & 11 for for index 3 (NEFSC fall Albatross)
+fix_index_sel[[4]] <- c(3,4,5) # Fix age 3, 4 & 5 for for index 4 (NEFSC fall Bigelow)
 
 # Setup random effect by selectivity block (here: fleet, index1, index2, index3, index4)
 randeffect <- c(rep("iid", asap3$dat$n_fleet_sel_blocks), rep("none", 4)) # Don't include selectivity random effects for any surveys 
@@ -98,4 +102,60 @@ inputRerun <- readRDS(paste(here::here(), "WG_Revised_Runs",
 ReRun29F <- fit_wham(input = inputRerun, MakeADFun.silent = TRUE)
 ```
 
+### Plot Bigelow:Albatross catchability for spring and fall indices
+Lines 110-123 borrowed from plot_q() function used to generate default q plots in WHAM
+```{r}
+mod <- WHAM_Run29F
+
+  if("sdrep" %in% names(mod)){
+    if("q_re" %in% mod$input$random){
+      se = as.list(mod$sdrep, "Std. Error", report=TRUE)$logit_q_mat
+    }else{
+      se = t(matrix(as.list(mod$sdrep, "Std. Error")$logit_q, nrow = NCOL(mod$rep$logit_q_mat), 
+      ncol = NROW(mod$rep$logit_q_mat)))
+    }
+    logit_q_lo = mod$rep$logit_q_mat - qnorm(0.975)*se
+    logit_q_hi = mod$rep$logit_q_mat + qnorm(0.975)*se
+    ### Retransform out of logit space
+    q = t(mod$input$data$q_lower + (mod$input$data$q_upper - mod$input$data$q_lower)/(1+exp(-t(mod$rep$logit_q_mat))))
+    q_lo = t(mod$input$data$q_lower + (mod$input$data$q_upper - mod$input$data$q_lower)/(1+exp(-t(logit_q_lo))))
+    q_hi = t(mod$input$data$q_lower + (mod$input$data$q_upper - mod$input$data$q_lower)/(1+exp(-t(logit_q_hi))))
+  }
+
+### Constant q over time series so pick first line and plot 2 ways:
+q <- q[1,]
+q_lo <- q_lo[1,]
+q_hi <- q_hi[1,]
+
+q_dat <- data.frame(q = q, q_lo = q_lo, q_hi = q_hi, index = c("Alb spring", "Big spring", "Alb fall", "Big fall"))
+
+# Plot q value with confidence bounds
+ggplot(q_dat) + 
+  geom_bar(aes(x=index, y=q), stat="identity") + 
+  scale_x_discrete(limits = c("Alb spring", "Big spring", "Alb fall", "Big fall")) + 
+  geom_errorbar(aes(index, ymin = q_lo, ymax = q_hi), width = 0.4, colour = "orange", size = 1.3) +
+  ylim(0,0.00022)
+ggsave(filename = paste(here::here(), "WG_Revised_Runs/WHAM_Run29F_splitNEFSC-BigUnits-nlAgeComp/plots_png/q_barplot.png", sep="/"))
+
+# Plot ratio of bigelow to albatross q values
+springRatio <- q_dat[which(q_dat$index == "Big spring"), "q"]/ q_dat[which(q_dat$index == "Alb spring"), "q"]
+fallRatio <- q_dat[which(q_dat$index == "Big fall"), "q"]/ q_dat[which(q_dat$index == "Alb fall"), "q"]
+
+qRatio <- data.frame(qRatio = c(springRatio, fallRatio), Season = c("Spring", "Fall"))
+
+ggplot() +
+  geom_bar(data = qRatio, aes(x=Season, y = qRatio), stat = "identity") +
+  ylim(0,1.5)
+ggsave(filename = paste(here::here(), "WG_Revised_Runs/WHAM_Run29F_splitNEFSC-BigUnits-nlAgeComp/plots_png/qRatio_barplot.png", sep="/"))
+```
+
 ## Comment
+In order for full state-space model to converge, a wider range of selectivities were fixed at 1 (compared to run 29B): Ages 4-6 Albatross spring (4-5 run 29B), 4-5 Bigelow spring (5 run 29B), 4 and 11+ Albatross fall (4 run 29B), 3-5 Bigelow fall (4-5 run 29B). The estimated fleet selectivity also had bigger changes between years than in run 29B. Albatross spring and Bigelow fall indices both have a secondary peak in selectivity estimates at age 10 that is higher than the estimates for ages 9 and 11+ and the Albatross fall index had fixed age 11+ at full selectivity in the converged model, which differs from the estimated value in run 29B. 
+
+CVs around Full F estimates were more variable over time and CVs around R estimates were consistently higher than in run 29B. The scale of Full F, SSB, and recruitment estimates also differed from run 29B although the general patterns were similar. F estimates tended to be lower than estimates from run 27 and other split runs (29-29C), and had a slightly different trajectory although most major peaks/valleys were generally captured. R estimates tracked the estimates from other runs fairly well and tended to be on the higher side of the range. SSB estimates were similar or slightly higher prior to 2000 but fell between the estimates for run 29 (on the higher end) and run 27 (on the lower end) 
+
+Catch residuals followed similar patterns but had smaller extremes than in run 29B. Fleet OSA residuals were similarly or slightly more normally distributed. Albatross and Bigelow spring indices were similarly or slightly more normally distributed than in run 29B. Albatross and Bigelow fall indices were similarly or slightly less normally distributed than run 29B. 
+
+Catch age comp OSA residuals were consistently larger across all ages, with similar patterns for ages 1 and 2 but more consistent age comp residual patterns by year in older ages. More residuals fell outside of +/-2 but the age comp residuals were more normally distributed.  Albatross and Bigelow spring OSA age comp residuals had fewer positive residuals for ages 5-11+ but had some years where residual patterns were more consistent across all ages. Residuals were similarly or slightly more normally distributed than in run 29B, with fewer residuals falling outside of +/- 2. The Albatross and Bigelow fall indices had generally larger residuals across all ages compared to run 29B, with consistent patterns across all ages in different years. The fall residuals were more normally distributed for both indices, but there were also more residuals that fell outside of the +/- 2 range. 
+
+This run estimates 5 additional parameters associated with data weighting for the proportion at age data (see WHAM_Run29F$sdrep paa_pars).

@@ -98,6 +98,53 @@ inputRerun <- readRDS(paste(here::here(), "WG_Revised_Runs",
 ReRun29C <- fit_wham(input = inputRerun, MakeADFun.silent = TRUE)
 ```
 
+### Plot Bigelow:Albatross catchability for spring and fall indices
+Lines 110-123 borrowed from plot_q() function used to generate default q plots in WHAM
+```{r}
+mod <- WHAM_Run29C
+
+  if("sdrep" %in% names(mod)){
+    if("q_re" %in% mod$input$random){
+      se = as.list(mod$sdrep, "Std. Error", report=TRUE)$logit_q_mat
+    }else{
+      se = t(matrix(as.list(mod$sdrep, "Std. Error")$logit_q, nrow = NCOL(mod$rep$logit_q_mat), 
+      ncol = NROW(mod$rep$logit_q_mat)))
+    }
+    logit_q_lo = mod$rep$logit_q_mat - qnorm(0.975)*se
+    logit_q_hi = mod$rep$logit_q_mat + qnorm(0.975)*se
+    ### Retransform out of logit space
+    q = t(mod$input$data$q_lower + (mod$input$data$q_upper - mod$input$data$q_lower)/(1+exp(-t(mod$rep$logit_q_mat))))
+    q_lo = t(mod$input$data$q_lower + (mod$input$data$q_upper - mod$input$data$q_lower)/(1+exp(-t(logit_q_lo))))
+    q_hi = t(mod$input$data$q_lower + (mod$input$data$q_upper - mod$input$data$q_lower)/(1+exp(-t(logit_q_hi))))
+  }
+
+### Constant q over time series so pick first line and plot 2 ways:
+q <- q[1,]
+q_lo <- q_lo[1,]
+q_hi <- q_hi[1,]
+
+q_dat <- data.frame(q = q, q_lo = q_lo, q_hi = q_hi, index = c("Alb spring", "Big spring", "Alb fall", "Big fall"))
+
+# Plot q value with confidence bounds
+ggplot(q_dat) + 
+  geom_bar(aes(x=index, y=q), stat="identity") + 
+  scale_x_discrete(limits = c("Alb spring", "Big spring", "Alb fall", "Big fall")) + 
+  geom_errorbar(aes(index, ymin = q_lo, ymax = q_hi), width = 0.4, colour = "orange", size = 1.3) +
+  ylim(0,0.00022)
+ggsave(filename = paste(here::here(), "WG_Revised_Runs/WHAM_Run29C_splitNEFSC-biomass/plots_png/q_barplot.png", sep="/"))
+
+# Plot ratio of bigelow to albatross q values
+springRatio <- q_dat[which(q_dat$index == "Big spring"), "q"]/ q_dat[which(q_dat$index == "Alb spring"), "q"]
+fallRatio <- q_dat[which(q_dat$index == "Big fall"), "q"]/ q_dat[which(q_dat$index == "Alb fall"), "q"]
+
+qRatio <- data.frame(qRatio = c(springRatio, fallRatio), Season = c("Spring", "Fall"))
+
+ggplot() +
+  geom_bar(data = qRatio, aes(x=Season, y = qRatio), stat = "identity") +
+  ylim(0,1.5)
+ggsave(filename = paste(here::here(), "WG_Revised_Runs/WHAM_Run29C_splitNEFSC-biomass/plots_png/qRatio_barplot.png", sep="/"))
+```
+
 ## Comment
 This run (Albatross and biomass units) was conducted to identify if improvement in selectivity patterns between run 29 (Albatross and abundance units) and run 29A (Bigelow and biomass units) was due to the switch to Bigelow units or biomass units, or both.
 
