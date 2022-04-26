@@ -1,3 +1,4 @@
+
 ---
 title: "Model_Comparison"
 output: html_document
@@ -74,12 +75,14 @@ modelRuns <- paste(here::here(), "WG_Revised_Runs",
                      "WHAM_Run25_RRandEffect-randMean/WHAM_Run25_model.rds",
                      "WHAM_Run26_RRandEffect-ar1_y/WHAM_Run26_model.rds",
                      "WHAM_Run27_Full-State-Space/WHAM_Run27_model.rds", 
+                     "WHAM_Run27A_Full-State-Space_biomassUnit/WHAM_Run27A_model.rds",
                      "WHAM_Run28_Extended-Catch1960/WHAM_Run28_model.rds",
                      "WHAM_Run29_splitNEFSC/WHAM_Run29_model.rds",
                      "WHAM_Run29A_splitNEFSC-BigUnits/WHAM_Run29A_model.rds",
                      "WHAM_Run29B_splitNEFSC-BigUnits-noSurvRandSel/WHAM_Run29B_model.rds",
                      "WHAM_Run29C_splitNEFSC-biomass/WHAM_Run29C_model.rds",
                      "WHAM_Run29DE_splitNEFSC-FreeSel-nlAgeComp/WHAM_Run29E_ln_acomp_model.rds", # Run 29D was exploratory so not included here
+                     "WHAM_Run29F_splitNEFSC-BigUnits-nlAgeComp/WHAM_Run29F_model.rds",
                      "WHAM_Run30_addMADMF/WHAM_Run30_model.rds",
                      "WHAM_Run31_addMENH/WHAM_Run31_model.rds",
                      "WHAM_Run32_addLPUE/WHAM_Run32_model.rds", 
@@ -87,15 +90,16 @@ modelRuns <- paste(here::here(), "WG_Revised_Runs",
                      "WHAM_Run34_addMENH-LPUE/WHAM_Run34_model.rds",
                      "WHAM_Run35_addMADMF-LPUE/WHAM_Run35_model.rds", 
                      "WHAM_Run37_VAST_ALL/WHAM_Run37_model.rds",
-                     "WHAM_Run37A_VAST_ALL-randSel/WHAM_Run37A_model.rds"), sep="/")
+                     "WHAM_Run37A_VAST_ALL-randSel/WHAM_Run37A_model.rds", "WHAM_Run37B_VAST_ALL-split/WHAM_Run37B_model.rds", "WHAM_Run37C_VAST_ALL-split-noRand/WHAM_Run37C_model.rds"), sep="/")
 
 # Read in model Rdata
 models <- lapply(modelRuns, readRDS)
-names(models) <- paste("Run", c(9, 10,11, 13,14,16, "16A",17,19,22, 23, "23A", 24, 25, 26, 27, 28, 29, "29A", "29B", "29C", "29E", 30:35, 37, "37A"), sep="")
+names(models) <- paste("Run", c(9, 10,11, 13,14,16, "16A",17,19,22, 23, "23A", 24, 25, 26, 27, "27A", 28, 29, "29A", "29B", "29C", "29E", "29F", 30:35, 37, "37A", "37B", "37C"), sep="")
 
 # Generate comparative diagnostics
 compare_wham_models(models, do.plot = FALSE, do.table=TRUE, fdir=paste(here::here(), "WG_Revised_Runs", "Comparison_Output", sep="/"))
 ```
+
 # Summary diagnostics for all except 10/11 (old data), 12 not invertible, 15 not working, 18/20/21 not invertible or not converged, 36 not converged with all indices
 ```{r}
 modelRuns <- modelRuns <- paste(here::here(), "WG_Revised_Runs",
@@ -133,7 +137,7 @@ models <- lapply(modelRuns, readRDS)
 names(models) <- paste("Run", c(9,13,14,16, "16A", 17,19,22,23, "23A", 24, 25, 26, 27, 28, 29,"29A", "29B", "29C", "29E", 30, 31, 32, 33, 34, 35, 37, "37A"), sep="")
 
 # Generate comparative diagnostics
-compare_wham_models(models, do.plot = TRUE, do.table=FALSE, fdir=paste(here::here(), "WG_Revised_Runs", "Comparison_Output", sep="/"), plot.opts=list(which = 1)) # Summary plots 1, 2, 8, 9
+compare_wham_models(models, do.plot = TRUE, do.table=FALSE, fdir=paste(here::here(), "WG_Revised_Runs", "Comparison_Output", sep="/"), plot.opts=list(which = c(1,2,8,9))) # Summary plots 1, 2, 8, 9
 ```
 
 # Compare impact of updating M and maturity expectations (scaling runs)
@@ -162,7 +166,7 @@ models <- lapply(modelRuns, readRDS)
 names(models) <- paste("Run", c(16, 23), sep="")
 
 # Generate comparative diagnostics
-compare_wham_models(models, do.plot = TRUE, do.table=TRUE, fdir=paste(here::here(), "WG_Revised_Runs", "Comparison_Output", sep="/"),  plot.opts=list(which = 1)) #  compared plots 1,2,5,6,7,8,9,10
+compare_wham_models(models, do.plot = TRUE, do.table=TRUE, fdir=paste(here::here(), "WG_Revised_Runs", "Comparison_Output", sep="/"),  plot.opts=list(which = c(1,2,5,6,7,8,9,10))) #  compared plots 1,2,5,6,7,8,9,10
 ```
 
 ### Compare dome vs. logistic selectivity (Runs 16 and 16A)
@@ -223,7 +227,7 @@ models <- lapply(modelRuns, readRDS)
 names(models) <- paste("Run", c(25, 28), sep="")
 
 # Generate comparative diagnostics
-compare_wham_models(models, do.plot = TRUE, do.table=TRUE, fdir=paste(here::here(), "WG_Revised_Runs", "Comparison_Output", sep="/"), plot.opts=list(which = 8)) # plot.opts=list(which = 1) argument generates only the first plot - here looked at plots 1,2,6,7,8,9,10
+compare_wham_models(models, do.plot = TRUE, do.table=TRUE, fdir=paste(here::here(), "WG_Revised_Runs", "Comparison_Output", sep="/"), plot.opts=list(which = c(1,2,6,7,8,9,10))) # plot.opts=list(which = 1) argument generates only the first plot - here looked at plots 1,2,6,7,8,9,10
 ```
 
 ### Compare run 25 (R rand effect iid) and 27 (full state-space)
@@ -237,25 +241,74 @@ models <- lapply(modelRuns, readRDS)
 names(models) <- paste("Run", c(25, 27), sep="")
 
 # Generate comparative diagnostics
-compare_wham_models(models, do.plot = TRUE, do.table=TRUE, fdir=paste(here::here(), "WG_Revised_Runs", "Comparison_Output", sep="/"), plot.opts=list(which = 1)) # plot.opts=list(which = 1) argument generates only the first plot - here looked at plots 1,2,6,7,8,9,10
+compare_wham_models(models, do.plot = TRUE, do.table=TRUE, fdir=paste(here::here(), "WG_Revised_Runs", "Comparison_Output", sep="/"), plot.opts=list(which = c(1,2,6,7,8,9,10))) # plot.opts=list(which = 1) argument generates only the first plot - here looked at plots 1,2,6,7,8,9,10
 ```
 
-### Compare run 27 (full NAA random effect) and 29A-C (NEFSC split into Albatross/Bigelow years)
+### Compare run 27 (full NAA random effect) and 29A-C,F (NEFSC split into Albatross/Bigelow years)
 ```{r}
 # File path
 modelRuns <- paste(here::here(), "WG_Revised_Runs",
 c("WHAM_Run27_Full-State-Space/WHAM_Run27_model.rds",
                      "WHAM_Run29_splitNEFSC/WHAM_Run29_model.rds","WHAM_Run29A_splitNEFSC-BigUnits/WHAM_Run29A_model.rds",
                      "WHAM_Run29B_splitNEFSC-BigUnits-noSurvRandSel/WHAM_Run29B_model.rds",
-                     "WHAM_Run29C_splitNEFSC-biomass/WHAM_Run29C_model.rds"), sep="/")
+                     "WHAM_Run29C_splitNEFSC-biomass/WHAM_Run29C_model.rds",
+  "WHAM_Run29F_splitNEFSC-BigUnits-nlAgeComp/WHAM_Run29F_model.rds"), sep="/")
                      # "WHAM_Run29DE_splitNEFSC-FreeSel-nlAgeComp/WHAM_Run29E_ln_acomp_model.rds" # Run 29D was exploratory so not included here
 
 # Read in model Rdata
 models <- lapply(modelRuns, readRDS)
-names(models) <- paste("Run", c(27, 29, "29A", "29B", "29C"), sep="")
+names(models) <- paste("Run", c(27, 29, "29A", "29B", "29C", "29F"), sep="")
 
 # Generate comparative diagnostics
-compare_wham_models(models, do.plot = TRUE, do.table=TRUE, fdir=paste(here::here(), "WG_Revised_Runs", "Comparison_Output", sep="/"), plot.opts=list(which = 9)) # plot.opts=list(which = 1) argument generates only the first plot - here looked at plots 1,2,6,7,8,9,10
+compare_wham_models(models, do.plot = TRUE, do.table=TRUE, fdir=paste(here::here(), "WG_Revised_Runs", "Comparison_Output", sep="/"), plot.opts=list(which = c(1,2,6,7,8,9,10))) # plot.opts=list(which = 1) argument generates only the first plot - here looked at plots 1,2,6,7,8,9,10 (mostly 1,2,8)
+```
+
+#### Compare run 29B and 29F (NEFSC split with multinomial and logistic-normal age comp likelihoods respectively) 
+```{r}
+# File path
+modelRuns <- paste(here::here(), "WG_Revised_Runs",
+c("WHAM_Run29B_splitNEFSC-BigUnits-noSurvRandSel/WHAM_Run29B_model.rds",
+  "WHAM_Run29F_splitNEFSC-BigUnits-nlAgeComp/WHAM_Run29F_model.rds"), sep="/")
+
+# Read in model Rdata
+models <- lapply(modelRuns, readRDS)
+names(models) <- paste("Run", c("29B", "29F"), sep="")
+
+# Generate comparative diagnostics
+compare_wham_models(models, do.plot = TRUE, do.table=TRUE, fdir=paste(here::here(), "WG_Revised_Runs", "Comparison_Output", sep="/")) # plot.opts=list(which = 1) argument generates only the first plot - here looked at plots 1,2,6,7,8,9,10
+```
+
+#### Compare run 27, 29, 29B, 29F 
+```{r}
+# File path
+modelRuns <- paste(here::here(), "WG_Revised_Runs",
+c("WHAM_Run27_Full-State-Space/WHAM_Run27_model.rds",
+  "WHAM_Run29_splitNEFSC/WHAM_Run29_model.rds",
+  "WHAM_Run29F_splitNEFSC-BigUnits-nlAgeComp/WHAM_Run29F_model.rds",
+  "WHAM_Run29B_splitNEFSC-BigUnits-noSurvRandSel/WHAM_Run29B_model.rds"), sep="/") # ,
+#   "Compare_ASAP_Run46B/Compare_ASAP_Run46B_model.rds"), sep="/")
+
+# Read in model Rdata
+models <- lapply(modelRuns, readRDS)
+names(models) <- paste("Run", c(27, 29, "29F", "29B"), sep="") # , "ASAP46B"), sep="")
+
+# Generate comparative diagnostics
+compare_wham_models(models, do.plot = TRUE, do.table=TRUE, fdir=paste(here::here(), "WG_Revised_Runs", "Comparison_Output", sep="/"), plot.opts=list(which = c(1,2,6,7,8,9,10))) # plot.opts=list(which = 1) argument generates only the first plot - here looked at plots 1,2,6,7,8,9,10 (mostly 1,2,8)
+```
+
+#### Compare run 29, 29B
+```{r}
+# File path
+modelRuns <- paste(here::here(), "WG_Revised_Runs",
+c("WHAM_Run29_splitNEFSC/WHAM_Run29_model.rds",
+  "WHAM_Run29B_splitNEFSC-BigUnits-noSurvRandSel/WHAM_Run29B_model.rds"), sep="/") 
+
+# Read in model Rdata
+models <- lapply(modelRuns, readRDS)
+names(models) <- paste("Run", c(29,"29B"), sep="") 
+
+# Generate comparative diagnostics
+compare_wham_models(models, do.plot = TRUE, do.table=TRUE, fdir=paste(here::here(), "WG_Revised_Runs", "Comparison_Output", sep="/"), plot.opts=list(which = c(1,2,6,7,8,9,10))) # plot.opts=list(which = 1) argument generates only the first plot - here looked at plots 1,2,6,7,8,9,10 (mostly 1,2,8)
 ```
 
 ### Compare full NAA random effect (run 27) with models that add in other survey indices 
@@ -274,7 +327,7 @@ models <- lapply(modelRuns, readRDS)
 names(models) <- paste("Run", c(27, 30, 31, 32, 33, 34, 35), sep="")
 
 # Generate comparative diagnostics
-compare_wham_models(models, do.plot = TRUE, do.table=TRUE, fdir=paste(here::here(), "WG_Revised_Runs", "Comparison_Output", sep="/"), plot.opts=list(which = 9)) # plot.opts=list(which = 1) argument generates only the first plot - here looked at plots 1,2,6,7,8,9,10
+compare_wham_models(models, do.plot = TRUE, do.table=TRUE, fdir=paste(here::here(), "WG_Revised_Runs", "Comparison_Output", sep="/"), plot.opts=list(which = c(1,2,6,7,8,9,10))) # plot.opts=list(which = 1) argument generates only the first plot - here looked at plots 1,2,6,7,8,9,10
 ```
 
 #### Compare full NAA random effect (run 27), R random effect (run 25) and models that add individual indices
@@ -292,7 +345,7 @@ models <- lapply(modelRuns, readRDS)
 names(models) <- paste("Run", c(25, 27, 30, 31, 32), sep="")
 
 # Generate comparative diagnostics
-compare_wham_models(models, do.plot = TRUE, do.table=TRUE, fdir=paste(here::here(), "WG_Revised_Runs", "Comparison_Output", sep="/"), plot.opts=list(which = 8)) # plot.opts=list(which = 1) argument generates only the first plot - here looked at plots 1,2,6,7,8,9,10
+compare_wham_models(models, do.plot = TRUE, do.table=TRUE, fdir=paste(here::here(), "WG_Revised_Runs", "Comparison_Output", sep="/"), plot.opts=list(which = c(1,2,6,7,8,9,10))) # plot.opts=list(which = 1) argument generates only the first plot - here looked at plots 1,2,6,7,8,9,10
 ```
 
 #### Compare runs with MADMF and MENH to run 27 
@@ -309,7 +362,7 @@ models <- lapply(modelRuns, readRDS)
 names(models) <- paste("Run", c(27, 30, 31, 33), sep="")
 
 # Generate comparative diagnostics
-compare_wham_models(models, do.plot = TRUE, do.table=TRUE, fdir=paste(here::here(), "WG_Revised_Runs", "Comparison_Output", sep="/"), plot.opts=list(which = 8)) # plot.opts=list(which = 1) argument generates only the first plot - here looked at plots 1,2,6,7,8,9,10
+compare_wham_models(models, do.plot = TRUE, do.table=TRUE, fdir=paste(here::here(), "WG_Revised_Runs", "Comparison_Output", sep="/"), plot.opts=list(which = c(1,2,6,7,8,9,10))) # plot.opts=list(which = 1) argument generates only the first plot - here looked at plots 1,2,6,7,8,9,10
 ```
 
 #### Compare runs with LPUE indices to run 25
@@ -325,7 +378,7 @@ models <- lapply(modelRuns, readRDS)
 names(models) <- paste("Run", c(25, 32, 34, 35), sep="")
 
 # Generate comparative diagnostics
-compare_wham_models(models, do.plot = TRUE, do.table=TRUE, fdir=paste(here::here(), "WG_Revised_Runs", "Comparison_Output", sep="/"), plot.opts=list(which = 1)) # plot.opts=list(which = 1) argument generates only the first plot - here looked at plots 1,2,6,7,8,9,10
+compare_wham_models(models, do.plot = TRUE, do.table=TRUE, fdir=paste(here::here(), "WG_Revised_Runs", "Comparison_Output", sep="/"), plot.opts=list(which = c(1,2,6,7,8,9,10))) # plot.opts=list(which = 1) argument generates only the first plot - here looked at plots 1,2,6,7,8,9,10
 ```
 
 
@@ -344,7 +397,6 @@ names(models) <- paste("Run", c(37, "37A"), sep="")
 compare_wham_models(models, do.plot = TRUE, do.table=TRUE, fdir=paste(here::here(), "WG_Revised_Runs", "Comparison_Output", sep="/")) # plot.opts=list(which = 1) argument generates only the first plot - here looked at plots 1,2,6,7,8,9,10
 ```
 
-
 # Read in individuals
 ```{r}
 modelRuns <- paste(here::here(), "WG_Revised_Runs",
@@ -354,14 +406,23 @@ modelRuns <- paste(here::here(), "WG_Revised_Runs",
                      #"WHAM_Run12_FreeSelectivity-at-age/WHAM_Run12_model.rds",
                      "WHAM_Run13_FixSelectivity-at-age/WHAM_Run13_model.rds",
                      "WHAM_Run14_Index2Sel-logistic/WHAM_Run14_model.rds",
-                     "WHAM_Run16_FixSelectivity-at-age_2SelBlock/WHAM_Run16_model.rds", "WHAM_Run16A_2SelBlock_logisticSel/WHAM_Run16A_model.rds",
+                     "WHAM_Run16_FixSelectivity-at-age_2SelBlock/WHAM_Run16_model.rds",
+                     "WHAM_Run16A_2SelBlock_logisticSel/WHAM_Run16A_model.rds",
                      "WHAM_Run17_2SelBlock_Rrand-mean/WHAM_Run17_model.rds",
-                     "WHAM_Run19_2SelBlock_logistic-normal-agecomp_Index2Sel-logistic/WHAM_Run19_model.rds", "WHAM_Run22_2SelBlock_changeESS/WHAM_Run22_model.rds", "WHAM_Run23_SelRandEffect-iid/WHAM_Run23_model.rds",
+                     "WHAM_Run19_2SelBlock_logistic-normal-agecomp_Index2Sel-logistic/WHAM_Run19_model.rds",
+                     "WHAM_Run22_2SelBlock_changeESS/WHAM_Run22_model.rds",
+                     "WHAM_Run23_SelRandEffect-iid/WHAM_Run23_model.rds",
                      "WHAM_Run23A_SelRandEffect-iidFleetOnly/WHAM_Run23A_model.rds",
-                     "WHAM_Run24_SelRandEffect-ar1_y/WHAM_Run24_model.rds", "WHAM_Run25_RRandEffect-randMean/WHAM_Run25_model.rds", "WHAM_Run26_RRandEffect-ar1_y/WHAM_Run26_model.rds",
+                     "WHAM_Run24_SelRandEffect-ar1_y/WHAM_Run24_model.rds",
+                     "WHAM_Run25_RRandEffect-randMean/WHAM_Run25_model.rds",
+                     "WHAM_Run26_RRandEffect-ar1_y/WHAM_Run26_model.rds",
                      "WHAM_Run27_Full-State-Space/WHAM_Run27_model.rds", 
                      "WHAM_Run28_Extended-Catch1960/WHAM_Run28_model.rds",
                      "WHAM_Run29_splitNEFSC/WHAM_Run29_model.rds",
+                     "WHAM_Run29A_splitNEFSC-BigUnits/WHAM_Run29A_model.rds",
+                     "WHAM_Run29B_splitNEFSC-BigUnits-noSurvRandSel/WHAM_Run29B_model.rds",
+                     "WHAM_Run29C_splitNEFSC-biomass/WHAM_Run29C_model.rds",
+                     "WHAM_Run29F_splitNEFSC-BigUnits-nlAgeComp/WHAM_Run29F_model.rds",
                      "WHAM_Run30_addMADMF/WHAM_Run30_model.rds",
                      "WHAM_Run31_addMENH/WHAM_Run31_model.rds",
                      "WHAM_Run32_addLPUE/WHAM_Run32_model.rds", 
@@ -373,9 +434,10 @@ modelRuns <- paste(here::here(), "WG_Revised_Runs",
 
 # Read in model Rdata
 models <- lapply(modelRuns, readRDS)
-names(models) <- paste("Run", c(9, 10,11, 13,14,16, "16A",17,19,22, 23, "23A", 24, 25, 26, 27, 28:35, 37, "37A"), sep="")
+names(models) <- paste("Run", c(9, 10,11, 13,14,16, "16A",17,19,22, 23, "23A", 24, 25, 26, 27, 28, 29, "29A", "29B", "29C", "29F", 30:35, 37, "37A"), sep="")
 
 check_convergence(models$Run26)
 print(paste("Number of parameters", length(models$Run26$par), sep=" "))
 ```
+
 
