@@ -12,32 +12,13 @@ source(paste(here::here(), "WG_Revised_Runs/MASE_Diagnostic", "hindcast.R", sep=
 
 ##### Read in all fitted models #####
 modelRuns <- paste(here::here(), "WG_Revised_Runs",
-                   c(# "WHAM_Run9_RevisedData-M-Maturity/WHAM_Run9_model.rds",
-                     # "WHAM_Run10_RevisedData-Maturity/WHAM_Run10_model.rds",
-                     # "WHAM_Run11_RevisedData/WHAM_Run11_model.rds",
-                     # #"WHAM_Run12_FreeSelectivity-at-age/WHAM_Run12_model.rds",
-                     # "WHAM_Run13_FixSelectivity-at-age/WHAM_Run13_model.rds",
-                     # "WHAM_Run14_Index2Sel-logistic/WHAM_Run14_model.rds",
-                     # "WHAM_Run16_FixSelectivity-at-age_2SelBlock/WHAM_Run16_model.rds", "WHAM_Run16A_2SelBlock_logisticSel/WHAM_Run16A_model.rds",
-                     # "WHAM_Run17_2SelBlock_Rrand-mean/WHAM_Run17_model.rds",
-                     # "WHAM_Run19_2SelBlock_logistic-normal-agecomp_Index2Sel-logistic/WHAM_Run19_model.rds", "WHAM_Run22_2SelBlock_changeESS/WHAM_Run22_model.rds", "WHAM_Run23_SelRandEffect-iid/WHAM_Run23_model.rds",
-                     # "WHAM_Run23A_SelRandEffect-iidFleetOnly/WHAM_Run23A_model.rds",
-                     # "WHAM_Run24_SelRandEffect-ar1_y/WHAM_Run24_model.rds", "WHAM_Run25_RRandEffect-randMean/WHAM_Run25_model.rds", "WHAM_Run26_RRandEffect-ar1_y/WHAM_Run26_model.rds",
-                     "WHAM_Run27_Full-State-Space/WHAM_Run27_model.rds", 
-                     # "WHAM_Run28_Extended-Catch1960/WHAM_Run28_model.rds",
-                     "WHAM_Run29_splitNEFSC/WHAM_Run29_model.rds"), sep="/")
-                     # "WHAM_Run30_addMADMF/WHAM_Run30_model.rds",
-                     # "WHAM_Run31_addMENH/WHAM_Run31_model.rds",
-                     # "WHAM_Run32_addLPUE/WHAM_Run32_model.rds", 
-                     # "WHAM_Run33_addMADMF-MENH/WHAM_Run33_model.rds",
-                     # "WHAM_Run34_addMENH-LPUE/WHAM_Run34_model.rds",
-                     # "WHAM_Run35_addMADMF-LPUE/WHAM_Run35_model.rds", 
-                     # "WHAM_Run37_VAST_ALL/WHAM_Run37_model.rds",
-                     # "WHAM_Run37A_VAST_ALL-randSel/WHAM_Run37A_model.rds"), sep="/")
+                   c("WHAM_Run27_Full-State-Space/WHAM_Run27_model.rds", 
+                     "WHAM_Run29_splitNEFSC/WHAM_Run29_model.rds",
+                     "WHAM_Run29B_splitNEFSC-BigUnits-noSurvRandSel/WHAM_Run29B_model.rds",
+                     "WHAM_Run29F_splitNEFSC-BigUnits-nlAgeComp/WHAM_Run29F_model.rds"), sep="/")
 
 models <- lapply(modelRuns, readRDS)
-# names(models) <- paste("Run", c(9, 10,11, 13,14,16, "16A",17,19,22, 23, "23A", 24, 25, 26, 27, 28:35, 37, "37A"), sep="")
-names(models) <- paste("Run", c(27,29), sep="")
+names(models) <- paste("Run", c(27, 29, "29B", "29F"), sep="")
 
 
 ##### Calculate hindcast #####
@@ -49,43 +30,42 @@ colnames(df) <- df.colnames
 # Loop over models
 for(imodel in 1:length(models)){
   n.i <- models[[imodel]]$env$data$n_indices # Number of indices
-  models[[imodel]] <- hindcast(models[[imodel]], horizon=1:5, drop=list(indices=1:n.i, index_paa=1:n.i)) # drop both agg and paa
+  models[[imodel]] <- hindcast(models[[imodel]], horizon=1:5, drop=list(indices=1:n.i, index_paa=1:n.i)) # drop both agg and paa for indices 1:#indices
   tmp = models[[imodel]]$hindcast$mase
   tmp$model = names(models)[imodel]
   df <- rbind(df, tmp) # Append to data
 }
 
 ##### Save MASE results #####
+res_dir <- paste(here::here(), "WG_Revised_Runs", "MASE_Diagnostic", sep="/") # Specify storage
 saveRDS(models, file=file.path(res_dir, "models.rds")) # Save one data object with all models for which MASE was calculated
 saveRDS(df, file=file.path(res_dir, "mase.rds")) # Save MASE results for these models
 
 ##### Plot MASE results #####
 ### Post-processing
+# Since the index numbering varies by run the below provides run-specific labels, all MASE calculations dropped the aggregate index and paa for the same index at the same time
+renameHindcast <- factor(c(rep("NEFSCspring", 5), # Run 27 (relabel factor)
+                         rep("NEFSCfall", 5),
+                         rep("AlbSpring",5), # Run 29
+                         rep("BigSpring",5),
+                         rep("AlbFall", 5),
+                         rep("BigFall", 5),
+                         rep("AlbSpring",5), # Run 29B
+                         rep("BigSpring",5),
+                         rep("AlbFall", 5),
+                         rep("BigFall", 5),
+                         rep("AlbSpring",5), # Run 29F
+                         rep("BigSpring",5),
+                         rep("AlbFall", 5),
+                         rep("BigFall", 5))) # everything repeated 5 times since horizon = 1:5
+df$hindcast <- renameHindcast
 
-# # May also want to treat models as factors (not yet implemented below)
-# df$model = factor(df$model, levels=c("04-Base","04-NAA2","17-NAA4","17-NAA5"), labels=c("04-Base","04-NAA2","17-NAA4","17-NAA5"))
-# df$hindcast <- factor(df$hindcast, levels=unique(df$hindcast), labels=paste0("index",2:6))
-
-# # What does the following do/why? - only looking at smaller horizons
-# df3 <- df %>% filter(horizon < 4)
-# df2 <- df %>% filter(horizon < 3)
-# df2$horizon = as.factor(df2$horizon)
-# df3$horizon = as.factor(df3$horizon)
-# df$horizon = as.factor(df$horizon)
-
-# best_v5 looked at 2, 3, and 5 yr horizon - also the range I should look at?
-  # Worth looking at # Kell 2021 fig 6, boxplot all resids by horizon? median/mean MASE value?
-
-# Unclear how indices labeled given that run 27 has 2 indices and run 29 has 4?
-# I need a better understanding of the horizon, what does the hindcast column mean? labels at present are probably wrong
-df$hindcast <- factor(df$hindcast, levels=unique(df$hindcast), labels=paste0("index",c("1?", "2?", "3?"))) # Need better labels to align with indices
 df3 <- df %>% filter(horizon < 4)
 df3$horizon = as.factor(df3$horizon)
 df$horizon = as.factor(df$horizon)
 
 
 ### Start plots
-res_dir <- paste(here::here(), "WG_Revised_Runs", "MASE_Diagnostic", sep="/")
 png(file.path(res_dir, "mase_model_horizon_5yr.png"), units='in', res=300, width=6, height=4.5)
 ggplot(df, aes(x=horizon, y=mase, fill=model, group=interaction(model,horizon))) +
   geom_boxplot(position = position_dodge(width=.75)) +
@@ -93,7 +73,7 @@ ggplot(df, aes(x=horizon, y=mase, fill=model, group=interaction(model,horizon)))
   ylim(0,2.5) +
   ylab("MASE") +
   xlab("Prediction horizon (years)") +
-  theme_bw()
+  theme_bw() 
 dev.off()
 
 png(file.path(res_dir, "mase_model_horizon_3yr.png"), units='in', res=300, width=6, height=4.5)
@@ -114,7 +94,8 @@ ggplot(df, aes(x=model, y=mase, fill=model)) +
   ylab("MASE") +
   xlab("Model") +
   theme_bw() +
-  theme(legend.position='none')
+  theme(legend.position='none') + 
+  ggtitle("MASE statistics over 5 year horizon")
 dev.off()
 
 png(file.path(res_dir, "mase_model_3yr.png"), units='in', res=300, width=5, height=5)
@@ -125,7 +106,8 @@ ggplot(df3, aes(x=model, y=mase, fill=model)) +
   ylab("MASE") +
   xlab("Model") +
   theme_bw() +
-  theme(legend.position='none')
+  theme(legend.position='none') + 
+  ggtitle("MASE statistics over 3 year horizon")
 dev.off()
 
 png(file.path(res_dir, "mase_index_horizon_5yr.png"), units='in', res=300, width=11.1, height=3.76)
@@ -149,22 +131,75 @@ ggplot(df3, aes(x=horizon, y=mase, fill=model, group=interaction(model,horizon))
 dev.off()
 
 png(file.path(res_dir, "mase_index_5yr.png"), units='in', res=300, width=4, height=4)
-ggplot(df, aes(x=hindcast, y=mase)) +
+df %>% filter(mase != Inf) %>% # Filter out indices that don't have data at the end of the time series (Albatross indices)
+  ggplot(., aes(x=hindcast, y=mase)) +
   geom_boxplot(fill='grey',alpha=0.5) +
   geom_hline(yintercept=1, linetype=2) +
   ylim(0,2.5) +
   ylab("MASE") +
   xlab("Index") +
-  theme_bw()
+  theme_bw() + 
+  ggtitle("MASE statistic by index over 5 year horizon")
 dev.off()
 
 png(file.path(res_dir, "mase_index_3yr.png"), units='in', res=300, width=4, height=4)
-ggplot(df3, aes(x=hindcast, y=mase)) +
+df3 %>% filter(mase != Inf) %>% # Filter out indices that don't have data at the end of the time series (Albatross indices)
+ggplot(., aes(x=hindcast, y=mase)) +
   geom_boxplot(fill='grey',alpha=0.5) +
   geom_hline(yintercept=1, linetype=2) +
   ylim(0,2.5) +
   ylab("MASE") +
   xlab("Index") +
+  theme_bw() + 
+  ggtitle("MASE statistic by index over 3 year horizon")
+dev.off()
+
+
+# Kell 2021 fig 6, boxplot all resids by horizon
+models <- readRDS("~/Research/PlaiceWG2021/WG_Revised_Runs/MASE_Diagnostic/models.rds") # Load models with hindcast data
+resid.colnames <- c("hindcast","horizon","peel","resid_std","model")
+df.resid <- as.data.frame(matrix(NA, ncol = length(resid.colnames), nrow = 0))
+colnames(df.resid) <- resid.colnames
+for(m in 1:length(models)){
+  n.i <- models[[m]]$env$data$n_indices
+  models[[m]]$hindcast <- models[[m]]$hindcast[1:(n.i-1)]
+  models[[m]]$hindcast <- calc_hindcast_mase(models[[m]]$hindcast, horizon=1:5, drop=list(indices=2:n.i, index=rep(NA, n.i-1)))
+  tmp = models[[m]]$hindcast$resid[,c(1:3,6)]
+  tmp$model = names(models)[m]
+  df.resid <- rbind(df.resid, tmp)
+}
+
+# Since the index numbering varies by run the below provides run-specific labels, all MASE calculations dropped the aggregate index and paa for the same index at the same time
+renameHindcast <- factor(c(rep("NEFSCspring", 25), # Run 27 (relabel factor, excludes last index)
+                           rep("AlbSpring",25), # Run 29
+                           rep("BigSpring",25),
+                           rep("AlbFall", 25),
+                           rep("AlbSpring",25), # Run 29B
+                           rep("BigSpring",25),
+                           rep("AlbFall", 25),
+                           rep("AlbSpring",25), # Run 29F
+                           rep("BigSpring",25),
+                           rep("AlbFall", 25))) # everything repeated 25 times to match number of peels for each horizon
+df.resid$hindcast <- renameHindcast
+# Then summarize data
+df.resid$horizon = as.factor(df.resid$horizon)
+df.meds <- df.resid %>% group_by(model, horizon) %>%
+  summarize(med = median(resid_std), 
+            bnd_lo = qbinom(0.025, n(), 0.5)/n(), 
+            bnd_hi = qbinom(0.975, n(), 0.5)/n(),
+            med_lo = quantile(resid_std, probs=bnd_lo),
+            med_hi = quantile(resid_std, probs=bnd_hi))
+png(file.path(res_dir, "pred_resid.png"), units='in', res=300, width=9, height=5)
+# df.resid %>% filter(hindcast != "AlbSpring" & hindcast != "AlbFall") %>%
+ggplot(df.resid, aes(x=horizon, y=resid_std, group=interaction(model,horizon))) +
+  geom_boxplot(fill='grey',alpha=0.4) +
+  geom_hline(yintercept=0, linetype=2) +
+  geom_jitter(alpha=0.2, width=0.25) +
+  geom_linerange(data=df.meds, mapping=aes(x=horizon, ymin=med_lo, ymax=med_hi), size=.7, color='red', inherit.aes=F) +
+  geom_point(data=df.meds, mapping=aes(x=horizon, y=med), size=2, color='red', inherit.aes=F) +
+  facet_wrap(~model, ncol=3, strip.position='right') +
+  ylab("Prediction residuals (Pearson)") +
+  xlab("Prediction horizon (years)") +
   theme_bw()
 dev.off()
 

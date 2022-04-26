@@ -1,6 +1,6 @@
 #' @param model A fitted model object from WHAM
-#' @param peel.max years to peel off final year, like retrospective peel
-#' @param horizon A vector indicating the number of years to forecast using peeled models, I think this needs to be smaller than 
+#' @param peel.max years to peel off final year, like retrospective peel but only for specified indices
+#' @param horizon A vector indicating the number of years to forecast using peeled models
 #' @param drop A list containing the following:
 #' \list{
 #'   \{indices - indexing numbers for the aggregate indices to drop to drop for MASE calculations}
@@ -45,12 +45,13 @@ hindcast = function(model, peel.max=7, horizon=c(1,3), drop=NULL, makeADFun.sile
     }
   }
   # calculate prediction residuals and MASE
-  model$rawHindcast <- model$hindcast 
-  model$hindcast <- calc_hindcast_mase(model$hindcast, horizon=horizon, drop=drop) # !!! try saving model$hindcast rather than overwriting so we can look at raw
+  model$rawHindcast <- model$hindcast # Try saving model$hindcast rather than overwriting so we can look at raw hindcast values
+  model$hindcast <- calc_hindcast_mase(model$hindcast, horizon=horizon, drop=drop) 
 
   return(model)
 }
   
+# Fit hindcast model to data, dropping specified indices and years of data specified by the peel
 fit_hindcast <- function(model, peel, drop){
   temp = list(data = model$env$data, par = model$parList, map = model$env$map, random = unique(names(model$env$par[model$env$random])))
   nyrs = temp$data$n_years_model
@@ -82,6 +83,14 @@ calc_hindcast_mase <- function(hindcast, horizon, drop){
       }
     }
   }
+  
+  # Filter any rows with a resid_naive value = 0 (no data at end of time series, e.g. because of truncated survey or missing data, will cause MASE value of INF since divide by 0)
+  checkMissing <- df %>% filter(resid_naive == 0) %>% nrow()
+  if(checkMissing > 0){ # If there are peels with naive values of 0 print warning that data is likely missing at end of timeseries & the names of the indices to check for missing info
+    checkIndex <- df %>% filter(resid_naive == 0) %>% distinct(hindcast) %>% mutate_if(is.factor, as.character) %>% unlist() %>% paste(., " ")
+    warning("Check the following indices for missing data in the chosen horizon years (if missing, could result in MASE value of INF): " , checkIndex)
+  }
+  
   hindcast$resid <- df
 
   # 2. calculate mase by hindcast and horizon (avg across peels)
