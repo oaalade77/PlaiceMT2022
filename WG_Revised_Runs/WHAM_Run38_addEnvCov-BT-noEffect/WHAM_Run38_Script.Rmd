@@ -1,11 +1,11 @@
 ---
-title: "WHAM_Run26_addEnvCov-BT-noEffect"
+title: "WHAM_Run38_addEnvCov-BT-noEffect"
 output: html_document
-date: '2022-03-03'
+date: '2022-04-20'
 ---
 
 ## Model description
-This run is identical to run 25 (revised data, fixed selectivity at intermediate ages, logistic fleet selectivity, age-specific index selectivity, with an iid random effect for selectivity and a random effect on recruitment that is random about the mean) but is fit with an environmental covariate that has no effect so it can be directly compared to run 27 that incorporates this environmental effect on recruitment. Mean annual bottom temperature was the environmental covariate considered here, with a 1 year lag (bottom temperature in year t impacts recruitment in year t+1) and a random walk process model. 
+Model specified as in run 29B but is fit with an environmental covariate that has no effect so it can be directly compared to run 38A that incorporates this environmental effect on recruitment. Mean annual bottom temperature was the environmental covariate considered here, with a 1 year lag (bottom temperature in year t impacts recruitment in year t+1) and a random walk process model. 
 
 ### Load R packages
 ```{r, echo=FALSE}
@@ -18,7 +18,7 @@ library(DataExplorer)
 ### Load data
 ```{r}
 # ASAP data input
-asap3 <- read_asap3_dat(paste(here::here(), "data", "PlaiceWHAM-2019_revised_NEFSC-LW-WAA.DAT", sep="/"))
+asap3 <- read_asap3_dat(paste(here::here(), "data", "PlaiceWHAM-2019_revised_NEFSC-LW-WAA_splitNEFSC-BigUnit.DAT", sep="/"))
 
 # Load and filter environmental data to match year range of other model data
 annualBT <- read.csv(paste(here::here(), "data", "year_bt_stdmean.csv", sep="/"))
@@ -27,47 +27,49 @@ annualBT <- filter(annualBT, as.numeric(Year) > 1978) # Filter to match timefram
 
 ### Prepare model input
 ```{r}
-# iid random effects for recruitment only 
-NAA_re = list(sigma = "rec") 
-NAA_re$recruit_model = 2 # random effects with a constant mean
+NAA_re = list(sigma = "rec+1") # Full state-space model
+NAA_re$cor = "iid" # iid random effects
+NAA_re$recruit_model = 2 # recruitment is random about the mean
 NAA_re$recruit_pars = exp(10) #initial guess for mean recruitment
 
 # Setup environmental covariate and options
   ecov <- list(
-    label = "BT",
+    label = "BT_FVCOM",
     mean = as.matrix(annualBT$mean_bt),
     logsigma = as.matrix(log(annualBT$standard_err_bt)),
-    logsigma = as.matrix(log(10*annualBT$standard_err_bt)),
-    #year = as.numeric(annualBT$Year),
+    # logsigma = as.matrix(log(10*annualBT$standard_err_bt)),
+    year = as.numeric(annualBT$Year),
     use_obs = matrix(1, ncol = 1, nrow=nrow(annualBT)), # use all obs = 1
     lag = 1, # BT in year t impact R in year t+1
     #process_model = "ar1",
     process_model = "rw",
-    where = "none",
-    how = 0 # 1 for controlling, 4 for masking
+    where = "recruit",
+    how = 1
+    # where = "none", # "recruit" for recruitment effect
+    # how = 0 # 1 for controlling = density-independent mortality
   )
 
 # Setup initial selectivity model and parameters
-use_n_indices = 2
+use_n_indices = 4
 modelsetup <- c(rep("logistic", asap3$dat$n_fleet_sel_blocks), rep("age-specific", use_n_indices))
 
 init_fleet_sel <- list(c(2,0.4)) # logistic parameters, based on model type
-#init_index_sel <- lapply(1:use_n_indices, function(x) c(0.5, 0.5, 0.5, 1, 1, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5))
-init_index_sel <- list(
-  c(0.5, 0.5, 0.5, 1, 1, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5),
-  c(0.5, 0.5, 0.5, 1, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5))
+init_index_sel <- lapply(1:use_n_indices, function(x) c(0.5, 0.5, 0.5, 1, 1, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5))
 
 # Setup fixed parameters
 fix_fleet_sel <- lapply(1:asap3$dat$n_fleets, function(x) NA) 
-# fix_index_sel <- lapply(1:use_n_indices, function(x) 4) # Fix age 4 for both indices,  NA means do not fix 
+fix_index_sel <- lapply(1:use_n_indices, function(x) NA) # Set up index object
 
-fix_index_sel = list()
-fix_index_sel[[1]] <- c(4,5) # Fix age 4 & 5 for for index 1
-#fix_index_sel[[2]][1] <- 4 # Fix age 4 for for index 2
-fix_index_sel[[2]] <- 4 # Fix age 4 for for index 2
+fix_index_sel[[1]] <- c(4,5) # Fix age 4 & 5 for for index 1 (NEFSC spring Albatross)
+fix_index_sel[[2]][1] <- 5 # Fix age  5 for for index 2 (NEFSC spring Bigelow)
+fix_index_sel[[3]][1] <- 4 # Fix age 4 for for index 3 (NEFSC fall Albatross)
+fix_index_sel[[4]] <- c(4,5) # Fix age 4 for for index 4 (NEFSC fall Bigelow)
 
 # Setup random effect by selectivity block (here: fleet, index1, index2)
 randeffect <- c(rep("iid", asap3$dat$n_fleet_sel_blocks), rep("iid", use_n_indices))
+
+# Setup random effect by selectivity block (here: fleet, index1, index2, index3, index4)
+randeffect <- c(rep("iid", asap3$dat$n_fleet_sel_blocks), rep("none", 4)) # Don't include selectivity random effects for any surveys 
 
 # Setup selectivity list
 sel_list <- list(model = modelsetup, # list selectivity model for each fleet and index
@@ -75,47 +77,44 @@ sel_list <- list(model = modelsetup, # list selectivity model for each fleet and
                  initial_pars = c(init_fleet_sel, init_index_sel),
                  fix_pars = c(fix_fleet_sel, fix_index_sel))
 
-input <- prepare_wham_input(asap3, NAA_re = NAA_re, selectivity = sel_list, ecov=ecov, model_name = "WHAM_Run26") 
+input <- prepare_wham_input(asap3, NAA_re = NAA_re, selectivity = sel_list, ecov=ecov, model_name = "WHAM_Run38") 
 ```
 
 ### Save input
 ```{r}
 # Save model data input
-saveRDS(input, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run26_addEnvCov-BT-noEffect", "WHAM_Run26_input.rds", sep="/"))
+saveRDS(input, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run38_addEnvCov-BT-noEffect", "WHAM_Run38_input.rds", sep="/"))
 ```
 
 ### Fit model, check convergence, and run diagnostics
 ```{r}
-#input <- prepare_wham_input(asap3, NAA_re = NAA_re, ecov=ecov, model_name = "WHAM_Run26") 
-
-WHAM_Run26 <- fit_wham(input, do.fit = F)
-WHAM_Run26$fn()
-#x = WHAM_Run26$report()
+# WHAM_Run38 <- fit_wham(input, do.fit = F)
+# WHAM_Run38$fn()
+#x = WHAM_Run38$report()
 #lapply(x[grep('nll', names(x))],sum)
 
-#input <- prepare_wham_input(asap3, NAA_re = NAA_re, selectivity = sel_list, model_name = "WHAM_Run26") 
-WHAM_Run26 <- fit_wham(input, do.osa =F, do.retro = F) 
-check_convergence(WHAM_Run26)
-print(paste("Number of parameters", length(WHAM_Run26$par), sep=" "))
+WHAM_Run38 <- fit_wham(input, do.osa = FALSE, do.retro = FALSE) 
+check_convergence(WHAM_Run38)
+print(paste("Number of parameters", length(WHAM_Run38$par), sep=" "))
 
-plot_wham_output(mod=WHAM_Run26, out.type='html')
-# plot_wham_output(mod=WHAM_Run26, out.type='png', dir.main = paste(here::here(), "WHAM_Run26", sep="/"))
+plot_wham_output(mod=WHAM_Run38, out.type='html')
+# plot_wham_output(mod=WHAM_Run38, out.type='png', dir.main = paste(here::here(), "WHAM_Run38", sep="/"))
 ```
 
 ### Save output
 ```{r}
 # Save fitted model
-saveRDS(WHAM_Run26, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run26_addEnvCov-BT-noEffect", "WHAM_Run26_model.rds", sep="/"))
+saveRDS(WHAM_Run38, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run38_addEnvCov-BT-noEffect", "WHAM_Run38_model.rds", sep="/"))
 ```
 
 ### Rerun model using saved input data
 Load data from saved input RData and rerun model
 ```{r}
 inputRerun <- readRDS(paste(here::here(), "WG_Revised_Runs",
-                     "WHAM_Run26_addEnvCov-BT-noEffect/WHAM_Run26_input.rds", sep="/"))
+                     "WHAM_Run38_addEnvCov-BT-noEffect/WHAM_Run38_input.rds", sep="/"))
 
 # Rerun data
-Rerun26 <- fit_wham(input = inputRerun, MakeADFun.silent = TRUE)
+ReRun38 <- fit_wham(input = inputRerun, MakeADFun.silent = TRUE)
 ```
 
 ## Comment
