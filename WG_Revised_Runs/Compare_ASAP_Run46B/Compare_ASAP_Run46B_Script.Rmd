@@ -1,0 +1,61 @@
+---
+title: "Compare_ASAP_Run46B"
+output: html_document
+date: '2022-04-11'
+---
+
+## Model description
+Re-run ASAP run 46B in WHAM without random effects so comparative diagnostic plots can be easily generated between ASAP and WHAM runs.
+
+### Load R packages
+```{r, echo=FALSE}
+library(tidyverse)
+library(wham)
+library(readxl)
+library(DataExplorer)
+```
+
+### Load data used in ASAP run
+```{r}
+asap3 <- read_asap3_dat(paste(here::here(), "data", "Run46B.DAT", sep="/"))
+```
+
+### Prepare model input
+```{r}
+input <- prepare_wham_input(asap3, model_name = "Compare_ASAP_Run46B") 
+```
+
+### Save input
+```{r}
+# Save model data input
+saveRDS(input, file=paste(here::here(), "WG_Revised_Runs", "Compare_ASAP_Run46B", "Compare_ASAP_Run46B_input.rds", sep="/"))
+```
+
+### Fit model, check convergence, and run diagnostics
+```{r}
+Compare_ASAP_Run46B <- fit_wham(input, MakeADFun.silent = TRUE, do.osa=FALSE) 
+check_convergence(Compare_ASAP_Run46B)
+print(paste("Number of parameters", length(Compare_ASAP_Run46B$par), sep=" "))
+
+# plot_wham_output(mod=Compare_ASAP_Run46B, out.type='html')
+```
+
+### Save output
+```{r}
+# Save fitted model
+saveRDS(Compare_ASAP_Run46B, file=paste(here::here(), "WG_Revised_Runs", "Compare_ASAP_Run46B", "Compare_ASAP_Run46B_model.rds", sep="/"))
+```
+
+### Rerun model using saved input data
+Load data from saved input RData and rerun model
+```{r}
+inputRerun <- readRDS(paste(here::here(), "WG_Revised_Runs",
+                     "Compare_ASAP_Run46B/Compare_ASAP_Run46B_input.rds", sep="/"))
+
+# Rerun data
+ReRun_Compare_ASAP_Run46B <- fit_wham(input = inputRerun, MakeADFun.silent = TRUE)
+```
+
+## Comment
+
+
