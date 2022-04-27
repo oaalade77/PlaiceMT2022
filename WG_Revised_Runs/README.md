@@ -37,6 +37,7 @@ Each run folder contains the following information:
 | WHAM_Run25_RRandEffect-randMean | WG run similar to run 23, but includes an iid recruitment random effect that is random about the mean. |
 | WHAM_Run26_RRandEffect-randWalk | WG run simlar to run 25, but applies an ar1_y recruitment random effect. |
 | WHAM_Run27_Full-State-Space | WG run similar to run 25, but implements a full state-space model with random effects for all NAA. | 
+| WHAM_Run27A_Full-State-Space_biomassUnit | WG run similar to run 27 but fit to indices with aggregate data in biomass units, comparable to run 29C via AIC (Albatross and biomass units but split NEFSC indices). |
 | WHAM_Run28_Extended-Catch1960 | WG run structured the same as run 25 but fit to an extended data set with catch going back to 1960 and several additional years of survey data (without age comps). | 
 | WHAM_Run29_splitNEFSC | WG run with full state-space model and split Albatross (1980-2008)/Bigelow (2009-2019) surveys. An iid selectivity random effect was implemented for the fleet and index 1 (Albatross spring). | 
 | WHAM_Run29A_splitNEFSC-BigUnits | WG run fit to data in biomass bigelow units rather than abundance albatross units for the NEFSC split as done in run 29. An iid selectivity random effect was implemented for the fleet and index 1 (Albatross spring). |
@@ -59,6 +60,8 @@ Each run folder contains the following information:
 | WHAM_Run37A_VAST_All | WG run fit to integrated VAST index as in run 37 (implements a full state space model fit to VAST spring and fall idnices and a plus group set to 9+), but also includes selectivity random effects for the fleet and both indices. |
 | WHAM_Run37B_VAST_ALL-split | WG run fit to integrated VAST index as in run 37A but both spring and fall indices split into Albatross (1980-2008) and Bigelow years (2009-2019) and selectivity random effects were only implemented for the fleet and VAST Albatross spring index. |
 | WHAM_Run37C_VAST_ALL-split-noRand | WG run fit to split VAST indices as in run 37B but no index selectivity random effects were implemented. |
+| WHAM_Run37D_VAST_ALL-likeASAP50 | WG run with split indices and no index random effects as in run 37C, but VAST index data pulled from ASAP run 50. |
+| WHAM_Run38_addEnvCov-BT-noEffect | WG run similar to run 29B, but also fit to bottom temperature data so comparable via AIC to runs that link R to this environmental covariate. |
 
 ### ASAP re-runs for easy comparison with WHAM
 The following use data files from ASAP runs and re-run in WHAM so they can be easily compared and plotted with WHAM runs. Run numbering is inherited from the ASAP run for consistency.
