@@ -1,0 +1,113 @@
+---
+title: "WHAM_Run37D_VAST_ALL-likeASAP50"
+output: html_document
+date: '2022-04-18'
+---
+
+## Model description
+A full state-space model was implemented as in run 37B (logistic fleet selectivity, age-specific index selectivity, recruitment about the mean, fit to VAST index that combines all observed indices, selectivity iid random effect for the fleet, split Albatross/Bigelow indices), but the selectivity random effect for the spring Albatross index was removed since the variability in this selectivity was small. 
+
+VAST data was taken from ASAP run 50 (order of split indices different than run 37C, here: Albatross spring/fall, Bigelow spring/fall)
+
+### Load R packages
+```{r, echo=FALSE}
+library(tidyverse)
+library(wham)
+library(readxl)
+library(DataExplorer)
+```
+
+### Load data
+```{r}
+asap3 <- read_asap3_dat(paste(here::here(), "data", "PlaiceWHAM-2019_revised_NEFSC-LW-WAA_StateVAST-asASAP50.DAT", sep="/"))
+
+# Overwrite settings to stop using design-based NEFSC indices
+asap3$dat$use_index_acomp[1:2] <- 0 # don't use index age comp
+asap3$dat$use_index[1:2] <- 0 # don't use design-based NEFSC spring and fall indices
+
+# Overwrite to use VAST indices that integrates all available surveys (except LPUE index)
+asap3$dat$use_index_acomp[11:14] <- 1 # use index age comp
+asap3$dat$use_index[11:14] <- 1 # Use VAST model-based spring and fall indices split into Albatross/Bigelow spring (11&12) and fall (13&14)
+```
+
+### Prepare model input
+```{r}
+NAA_re = list(sigma = "rec+1") # Full state space
+NAA_re$cor = "iid" # iid random effects
+NAA_re$recruit_model = 2 # recruitment is random about the mean
+NAA_re$recruit_pars = exp(10) #initial guess for mean recruitment
+
+# Setup initial selectivity model and parameters
+use_n_indices = 4
+modelsetup <- c(rep("logistic", asap3$dat$n_fleet_sel_blocks), rep("age-specific", use_n_indices))
+
+init_fleet_sel <- list(c(2,0.4)) # logistic parameters, based on model type
+init_index_sel <- list(c(0.5, 0.5, 1, 1, 1, 0.5, 0.5, 0.5, 0.5, 0, 0), # all VAST Albatross spring
+                       c(0.5, 1, 1, 1, 1, 0.5, 0.5, 0.5, 0.5, 0, 0), # all VAST Albatross fall
+                       c(0.5, 0.5, 0.5, 1, 1, 0.5, 0.5, 0.5, 0.5, 0, 0), # all VAST Bigelow spring
+                       c(0.5, 0.5, 1, 1, 1, 0.5, 0.5, 0.5, 0.5, 0, 0)) # all VAST Bigelow fall
+
+# Setup fixed parameters
+fix_fleet_sel <- lapply(1:asap3$dat$n_fleets, function(x) NA) 
+fix_index_sel <- lapply(1:use_n_indices, function(x) NA) # Setup storage object to populate 
+
+fix_index_sel[[1]] <- c(3,4,5) # Fix age 3 & 4 for for index 1 all VAST Albatross spring
+fix_index_sel[[2]] <- c(2,3,4,5) # Fix age 5 for for index 2 all VAST Albatross fall
+fix_index_sel[[3]] <- c(4,5) # VAST Bigelow spring
+fix_index_sel[[4]] <- c(3,4,5) # VAST Bigelow fall
+
+# Setup random effect by selectivity block (here: fleet, index1, index2)
+randeffect <- c(rep("iid", asap3$dat$n_fleet_sel_blocks), rep("none", use_n_indices))
+
+# Setup selectivity list
+sel_list <- list(model = modelsetup, # list selectivity model for each fleet and index
+                 re = randeffect,
+                 initial_pars = c(init_fleet_sel, init_index_sel),
+                 fix_pars = c(fix_fleet_sel, fix_index_sel))
+
+input <- prepare_wham_input(asap3, NAA_re = NAA_re, selectivity = sel_list, model_name = "WHAM_Run37D") 
+```
+
+### Save input
+```{r}
+# Save model data input
+saveRDS(input, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run37D_VAST_ALL-likeASAP50", "WHAM_Run37D_input.rds", sep="/"))
+```
+
+### Fit model, check convergence, and run diagnostics
+```{r}
+WHAM_Run37D <- fit_wham(input, MakeADFun.silent = TRUE, do.osa=FALSE) 
+check_convergence(WHAM_Run37D)
+print(paste("Number of parameters", length(WHAM_Run37D$par), sep=" "))
+
+plot_wham_output(mod=WHAM_Run37D, out.type='html')
+# plot_wham_output(mod=WHAM_Run37D, out.type='png', dir.main = paste(here::here(), "WHAM_Run37D", sep="/"))
+```
+
+### Rerun model using saved input data
+Load data from saved input RData and rerun model
+```{r}
+inputRerun <- readRDS(paste(here::here(), "WG_Revised_Runs",
+                     "WHAM_Run37D_VAST_ALL-likeASAP50/WHAM_Run37D_input.rds", sep="/"))
+
+# Rerun data
+ReRun37D <- fit_wham(input = inputRerun, MakeADFun.silent = TRUE)
+```
+
+## Comment
+Model did not converge with invertible hessian using same selectivity assumptions as run 37C, tried freely estimating selectivity and using this to inform ages fixed at full selectivity. 
+
+Compare via AIC: run 37B and 37C have AIC values within 2 of each other so these models should be considered equivalent, but run 37C has a slightly smaller AIC value, smaller Mohn's rho values and is more parsimonious and is therefore slightly preferred.
+```{r}
+modelRuns <- paste(here::here(), "WG_Revised_Runs",
+                   c("WHAM_Run37B_VAST_ALL-split/WHAM_Run37B_model.rds",
+                     "WHAM_Run37D_VAST_ALL-likeASAP50/WHAM_Run37D_model.rds"), sep="/")
+
+# Read in model Rdata
+models <- lapply(modelRuns, readRDS)
+names(models) <- paste("Run", c("37B", "37C"), sep="")
+
+# Generate comparative diagnostics
+compare_wham_models(models, do.plot = FALSE, do.table=TRUE, fdir=paste(here::here(), "WG_Revised_Runs", "Comparison_Output", sep="/"))
+```
+
