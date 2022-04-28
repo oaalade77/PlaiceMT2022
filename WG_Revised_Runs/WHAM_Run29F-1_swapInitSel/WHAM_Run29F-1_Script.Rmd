@@ -5,7 +5,7 @@ date: '2022-04-28'
 ---
 
 ## Model description
-Model identical to run 29F (full state-space model, revised data, logistic fleet selectivity, age-specific index selectivity, recruitment that is random about the mean, with split Albatross and Bigelow indices and a logistic-normal age composition likelihood) but swap the starting selectivity-at-age values for the estimates from run 29B and freely estimate parameters to see if this improves estimation of these parameters (particularly age 11+). This preliminary run did not converge, but suggested that ages should be fixed at full selectivity and were subsequently fixed at 1 in the full run for which results are recorded. 
+Model identical to run 29F (full state-space model, revised data, logistic fleet selectivity, age-specific index selectivity, recruitment that is random about the mean, with split Albatross and Bigelow indices and a logistic-normal age composition likelihood) but swap the starting selectivity-at-age values for the estimates from run 29B. A preliminary run freely estimated parameters to see if this improves estimation of these parameters (particularly age 11+). This preliminary run did not converge, but suggested that ages 5&6 for index 1 (Albatross spring), 5 for index 2 (Bigelow spring), age 4&11 for index 3 (Albatross fall) and ages 3&4 for index 4 (Bigelow fall) should be fixed at full selectivity and were subsequently fixed at 1 in the full run for which results are recorded. 
 
 ### Load R packages
 ```{r, echo=FALSE}
