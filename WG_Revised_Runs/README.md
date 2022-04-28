@@ -65,6 +65,10 @@ Each run folder contains the following information:
 | WHAM_Run37C_VAST_ALL-split-noRand | WG run fit to split VAST indices as in run 37B but no index selectivity random effects were implemented. |
 | WHAM_Run37D_VAST_ALL-likeASAP50 | WG run with split indices and no index random effects as in run 37C, but VAST index data pulled from ASAP run 50. |
 | WHAM_Run38_addEnvCov-BT-noEffect | WG run similar to run 29B, but also fit to bottom temperature data so comparable via AIC to runs that link R to this environmental covariate. |
+| WHAM_Run38A_addEnvCov-BT-withEffect | WG run identical to 38 but implements an effect of bottom temperature on recruitment with a 1 year lag. |
+| WHAM_Run38B_addEnvCov-BT-withEffect-2lag | WG run identical to 38 but implements an effect of bottom temperature on recruitment with a 2 year lag. |
+| WHAM_Run39_addEnvCov-anomSST-noEffect | WG run similar to run 29B, but also fit to sea surface temperature anomaly data so comparable via AIC to runs that link R to this environmental covariate. | 
+| WHAM_Run39A_addEnvCov-anomSST-withEffect | WG run identical to 39 but implements an effect of sea surface temperature anomalies on recruitment with a 1 year lag. |
 
 ### ASAP re-runs for easy comparison with WHAM
 The following use data files from ASAP runs and re-run in WHAM so they can be easily compared and plotted with WHAM runs. Run numbering is inherited from the ASAP run for consistency.
