@@ -151,6 +151,14 @@ ggsave(filename = paste(here::here(), "WG_Revised_Runs/WHAM_Run29F_splitNEFSC-Bi
 
 ### Plot sel*catchability Bigelow:Albatross ratio
 ```{r}
+# Read in model (need to read > 1 so subsetting works)
+modelRuns <- paste(here::here(), "WG_Revised_Runs",
+                   c("WHAM_Run29B_splitNEFSC-BigUnits-noSurvRandSel/WHAM_Run29B_model.rds",
+                     "WHAM_Run29F_splitNEFSC-BigUnits-nlAgeComp/WHAM_Run29F_model.rds",), sep="/")
+# Read in model Rdata
+models <- lapply(modelRuns, readRDS)
+names(models) <- paste("Run", c( "29B", "29F"), sep="")
+
 # Catchability at age: QAA [1list, index number, age/s]
 albSpringQ <- models$Run29F$rep$QAA[1,1,]
 bigSpringQ <- models$Run29F$rep$QAA[1,2,]
