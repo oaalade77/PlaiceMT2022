@@ -24,6 +24,7 @@ asap3 <- read_asap3_dat(paste(here::here(), "data", "PlaiceWHAM-2019_revised_NEF
 
 # Load and filter environmental data to match year range of other model data
 annualBT <- read.csv(paste(here::here(), "data", "year_bt_stdmean.csv", sep="/"))
+names(annualBT)[1] = "Year"
 annualBT <- filter(annualBT, as.numeric(Year) > 1978) # Filter to match timeframe of other data + 1 year before other data (here 1979) to allow for 1 year lag
 ```
 
