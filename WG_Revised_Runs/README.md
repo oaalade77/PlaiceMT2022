@@ -46,6 +46,9 @@ Each run folder contains the following information:
 | WHAM_Run29C_splitNEFSC-biomass | WG run identical to run 29, but fit to biomass Albatross/Bigelow indices instead of abundance. Verifies that the improved selectivity pattern for the Bigelow fall index in runs 29A and 29B was do to the switch to Bigelow units NOT the switch to biomass units. |
 | WHAM_Run29DE_splitNEFSC-FreeSel-nlAgeComp | WG exploratory run to freely estimate selectivity (see also description at start of run 29A/C/F scripts) and explore logistic normal age composition likelihood (see run 29F for more thurough implementation). | 
 | WHAM_Run29F_splitNEFSC-BigUnits-nlAgeComp | WG run as in run 29B (split Albatross/Bigelow indices in Bigelow and biomass units) but with a logistic normal age composition model that treats zeros as missing and with a wider range of ages fixed at full selectivity in order to obtain model convergence. |
+| WHAM_Run29F-1_swapInitSel | WG run that uses run 29B selectivity estimates as starting estimates for this run, includes exploratory run to inform selection of fully selected ages. |
+| WHAM_Run29F-2_swapInitSel-randAlbFall | WG run identical to run 29F-1 but implement a selectivity random effect for the fall Albatross fall index. Also tried this while freely estimating Albatross fall age 11+ selectivity but that did not converge. | 
+| WHAM_Run29F-3_swapInitSel-fixAlbFall | WG run identical to run 29F-2 but does not include the Albatross fall selectiity random effect and fixed age 11+ for this index at the estimate from run 29B rather than at 1. | 
 | WHAM_Run29G_splitNEFSC-BigUnits-dirmultAgeComp | Exploratory WG run as in run 29B but explores a dirichlet-multinomial age composition likelihood and changes effective sample size to 100. Did not converge.|
 | WHAM_Run30_addMADMF | WG run with full state space model as in run 27 except selectivity random effect only implemented for the fleet, adds MADMF spring and fall indices in addition to NEFSC. FROM THIS RUN ON OSA RESIDUALS CALCULATED FOR FIT TO AGE COMP DATA! |
 | WHAM_Run31_addMENH | WG run with full state space model as in run 27, adds MENH spring and fall indices in addition to NEFSC. | 
@@ -62,6 +65,10 @@ Each run folder contains the following information:
 | WHAM_Run37C_VAST_ALL-split-noRand | WG run fit to split VAST indices as in run 37B but no index selectivity random effects were implemented. |
 | WHAM_Run37D_VAST_ALL-likeASAP50 | WG run with split indices and no index random effects as in run 37C, but VAST index data pulled from ASAP run 50. |
 | WHAM_Run38_addEnvCov-BT-noEffect | WG run similar to run 29B, but also fit to bottom temperature data so comparable via AIC to runs that link R to this environmental covariate. |
+| WHAM_Run38A_addEnvCov-BT-withEffect | WG run identical to 38 but implements an effect of bottom temperature on recruitment with a 1 year lag. |
+| WHAM_Run38B_addEnvCov-BT-withEffect-2lag | WG run identical to 38 but implements an effect of bottom temperature on recruitment with a 2 year lag. |
+| WHAM_Run39_addEnvCov-anomSST-noEffect | WG run similar to run 29B, but also fit to sea surface temperature anomaly data so comparable via AIC to runs that link R to this environmental covariate. | 
+| WHAM_Run39A_addEnvCov-anomSST-withEffect | WG run identical to 39 but implements an effect of sea surface temperature anomalies on recruitment with a 1 year lag. |
 
 ### ASAP re-runs for easy comparison with WHAM
 The following use data files from ASAP runs and re-run in WHAM so they can be easily compared and plotted with WHAM runs. Run numbering is inherited from the ASAP run for consistency.

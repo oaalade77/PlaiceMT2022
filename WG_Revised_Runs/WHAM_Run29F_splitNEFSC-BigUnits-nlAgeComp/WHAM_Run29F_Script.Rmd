@@ -151,6 +151,14 @@ ggsave(filename = paste(here::here(), "WG_Revised_Runs/WHAM_Run29F_splitNEFSC-Bi
 
 ### Plot sel*catchability Bigelow:Albatross ratio
 ```{r}
+# Read in model (need to read > 1 so subsetting works)
+modelRuns <- paste(here::here(), "WG_Revised_Runs",
+                   c("WHAM_Run29B_splitNEFSC-BigUnits-noSurvRandSel/WHAM_Run29B_model.rds",
+                     "WHAM_Run29F_splitNEFSC-BigUnits-nlAgeComp/WHAM_Run29F_model.rds",), sep="/")
+# Read in model Rdata
+models <- lapply(modelRuns, readRDS)
+names(models) <- paste("Run", c( "29B", "29F"), sep="")
+
 # Catchability at age: QAA [1list, index number, age/s]
 albSpringQ <- models$Run29F$rep$QAA[1,1,]
 bigSpringQ <- models$Run29F$rep$QAA[1,2,]
@@ -184,6 +192,78 @@ data.frame(age = c(1,2,3,4,5,6,7,8,9,10,11), albSpring = albSpring, bigSpring = 
   geom_hline(yintercept = 1, color="orange") +
   ggtitle("Fall Bigelow:Albatross Ratio")
 ggsave(filename = paste(here::here(), "WG_Revised_Runs/WHAM_Run29F_splitNEFSC-BigUnits-nlAgeComp/plots_png/sel-q-Fall_barplot.png", sep="/"))
+```
+
+### Plot selectivity with CI 
+Borrowed code from plot.fleet.sel.blocks() for plot and par_tables_fn() for CI data
+-currently pull CI mannually from WHAM Output Tables but would be good to automate so we can loop over indices
+```{r}
+dat <- Run29F$env$data
+ages = 1:dat$n_ages
+
+# Plot index selectivity (fleet doesn't have age-specific CI since logistic selectivity)
+sb_p = dat$selblock_pointer_indices #selblock pointer by year and index
+  # sb_p = dat$selblock_pointer_fleets #selblock pointer by year and fleet
+
+# Index 1
+i = 1
+blocks = unique(sb_p[,i])
+sel = do.call(rbind, lapply(Run29F$rep$selAA, function(x) apply(x,2,mean)))[blocks,,drop=FALSE]
+
+data.frame(ages = ages, 
+           sel = c(sel), 
+           lowerCI = c(0.008, 0.158, 0.321, 1, 1, 1, 0.137, 0.339, 0.379, 0.383, 0.464),
+           upperCI = c(0.020,	0.364,	0.717, 1, 1, 1, 0.997, 0.853,	0.851,	0.888,	0.737)) %>%
+  ggplot() +
+  geom_line(aes(x=ages, y=sel)) + 
+  geom_ribbon(aes(x=ages,ymin=lowerCI, ymax=upperCI), alpha=0.2) + 
+  ggtitle("Index 1 Selectivity")
+ggsave(filename = paste(here::here(), "WG_Revised_Runs", "WHAM_Run29F_splitNEFSC-BigUnits-nlAgeComp", "plots_png", "results", "Selectivity_index1_CI.png", sep="/"))
+
+# Index 2
+i = 2
+blocks = unique(sb_p[,i])
+sel = do.call(rbind, lapply(Run29F$rep$selAA, function(x) apply(x,2,mean)))[blocks,,drop=FALSE]
+
+data.frame(ages = ages, 
+           sel = c(sel), 
+           lowerCI = c(0.055, 0.234, 0.492, 1, 1, 0.514, 0.471, 0.443, 0.417, 0.391, 0.399),
+           upperCI = c(0.107,	0.429,	0.846, 1, 1,	0.945, 0.869,	0.835,	0.798,	0.759,	0.654)) %>%
+  ggplot() +
+  geom_line(aes(x=ages, y=sel)) + 
+  geom_ribbon(aes(x=ages,ymin=lowerCI, ymax=upperCI), alpha=0.2) + 
+  ggtitle("Index 2 Selectivity")
+ggsave(filename = paste(here::here(), "WG_Revised_Runs", "WHAM_Run29F_splitNEFSC-BigUnits-nlAgeComp", "plots_png", "results", "Selectivity_index2_CI.png", sep="/"))
+
+# Index 3
+i = 3
+blocks = unique(sb_p[,i])
+sel = do.call(rbind, lapply(Run29F$rep$selAA, function(x) apply(x,2,mean)))[blocks,,drop=FALSE]
+
+data.frame(ages = ages, 
+           sel = c(sel), 
+           lowerCI = c(0.128, 0.367, 0.553, 1, 0.608, 0.539, 0.352, 0.331, 0.321, 0.410, 1),
+           upperCI = c(0.212,	0.588,	0.969, 1,	0.938, 0.789, 0.510,	0.477,	0.470,	0.643, 1)) %>%
+  ggplot() +
+  geom_line(aes(x=ages, y=sel)) + 
+  geom_ribbon(aes(x=ages,ymin=lowerCI, ymax=upperCI), alpha=0.2) + 
+  ggtitle("Index 3 Selectivity")
+ggsave(filename = paste(here::here(), "WG_Revised_Runs", "WHAM_Run29F_splitNEFSC-BigUnits-nlAgeComp", "plots_png", "results", "Selectivity_index3_CI.png", sep="/"))
+
+# Index 4
+i = 4
+blocks = unique(sb_p[,i])
+sel = do.call(rbind, lapply(Run29F$rep$selAA, function(x) apply(x,2,mean)))[blocks,,drop=FALSE]
+
+data.frame(ages = ages, 
+           sel = c(sel), 
+           lowerCI = c(0.190, 0.245, 1, 1, 1, 0.266, 0.253, 0.237, 0.233, 0.179, 0.312),
+           upperCI = c(0.649,	0.905, 1, 1, 1,	0.941, 0.889, 0.871,	0.852,	0.990,	0.640)) %>%
+  ggplot() +
+  geom_line(aes(x=ages, y=sel)) + 
+  geom_ribbon(aes(x=ages,ymin=lowerCI, ymax=upperCI), alpha=0.2) + 
+  ggtitle("Index 4 Selectivity")
+ggsave(filename = paste(here::here(), "WG_Revised_Runs", "WHAM_Run29F_splitNEFSC-BigUnits-nlAgeComp", "plots_png", "results", "Selectivity_index4_CI.png", sep="/"))
 ```
 
 ## Comment

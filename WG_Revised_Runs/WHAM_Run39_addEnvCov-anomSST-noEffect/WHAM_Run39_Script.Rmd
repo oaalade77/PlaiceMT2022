@@ -1,0 +1,127 @@
+---
+title: "WHAM_Run39_addEnvCov-anomSST-noEffect"
+output: html_document
+date: '2022-04-28'
+---
+
+## Model description
+Model specified as in run 29B but is fit with an environmental covariate that has no effect so it can be directly compared to run 39A that incorporates this environmental effect on recruitment. Annual sea surface temperature anomaly was the environmental covariate considered here, with a 1 year lag (bottom temperature in year t impacts recruitment in year t+1) and a random walk process model.
+
+
+### Environmental covariate description
+Raw sea surface temperature data used in the calculation of anomalies are available via the following:
+
+NOAA_ERSST_V5 data provided by the NOAA/OAR/ESRL PSL, Boulder, Colorado, USA, from their Web site at https://psl.noaa.gov/data/gridded/data.noaa.ersst.v5.html.
+
+NOAA High Resolution SST data provided by the NOAA/OAR/ESRL PSL, Boulder, Colorado, USA, from their Web site at https://psl.noaa.gov/data/gridded/data.noaa.oisst.v2.highres.html.
+
+Calculated sea surface temperature anomalies were provided by Adam Kemberling, GMRI (https://adamkemberling.github.io/oisst_mainstays/R/markdown_reports/GOM_Annual_Report.html). For use in this analysis, these anomalies were averaged for all survey strata in the Gulf of Maine (including 3 small strata in the NE that fall within Canadian waters and were exculded from other plaice stock assessment datasets) and Georges Bank to generate an annual anomaly and standard error for all years where data was availble for the entire year (1982-2019). 
+
+
+### Load R packages
+```{r, echo=FALSE}
+library(tidyverse)
+library(wham)
+library(readxl)
+library(DataExplorer)
+```
+
+### Load data
+```{r}
+# ASAP data input
+asap3 <- read_asap3_dat(paste(here::here(), "data", "PlaiceWHAM-2019_revised_NEFSC-LW-WAA_splitNEFSC-BigUnit.DAT", sep="/"))
+
+# Load environmental data and add 3 years (1979-1981) of placeholder data that will not be used in model fitting (1st 2 years of data + 1979 since 1 year lag)
+anomSST <- read.csv(paste(here::here(), "data", "GOM_BG_mean_anom_se.csv", sep="/"))
+anomSST <- rbind(c(1981, -999, -999, -999, -999), anomSST)
+anomSST <- rbind(c(1980, -999, -999, -999, -999), anomSST)
+anomSST <- rbind(c(1979, -999, -999, -999, -999), anomSST)
+```
+
+### Prepare model input
+```{r}
+NAA_re = list(sigma = "rec+1") # Full state-space model
+NAA_re$cor = "iid" # iid random effects
+NAA_re$recruit_model = 2 # recruitment is random about the mean
+NAA_re$recruit_pars = exp(10) #initial guess for mean recruitment
+
+# Setup environmental covariate and options
+  ecov <- list(
+    label = "SST_anomaly",
+    mean = as.matrix(anomSST$mean),
+    logsigma = as.matrix(anomSST$se),
+    year = as.numeric(anomSST$Year),
+    use_obs = matrix(c(FALSE, FALSE, FALSE, rep(TRUE, nrow(anomSST)-3)), ncol = 1, nrow=nrow(anomSST)), # use all obs except the first 2 (no data 1979 and 1980, not full year of data in 1981) 
+    lag = 1, # SST anomaly in year t impact R in year t+1
+    #process_model = "ar1",
+    process_model = "rw",
+    where = "none", 
+    how = 0 
+  )
+
+# Setup initial selectivity model and parameters
+use_n_indices = 4
+modelsetup <- c(rep("logistic", asap3$dat$n_fleet_sel_blocks), rep("age-specific", use_n_indices))
+
+init_fleet_sel <- list(c(2,0.4)) # logistic parameters, based on model type
+init_index_sel <- lapply(1:use_n_indices, function(x) c(0.5, 0.5, 0.5, 1, 1, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5))
+
+# Setup fixed parameters
+fix_fleet_sel <- lapply(1:asap3$dat$n_fleets, function(x) NA) 
+fix_index_sel <- lapply(1:use_n_indices, function(x) NA) # Set up index object
+
+fix_index_sel[[1]] <- c(4,5) # Fix age 4 & 5 for for index 1 (NEFSC spring Albatross)
+fix_index_sel[[2]][1] <- 5 # Fix age  5 for for index 2 (NEFSC spring Bigelow)
+fix_index_sel[[3]][1] <- 4 # Fix age 4 for for index 3 (NEFSC fall Albatross)
+fix_index_sel[[4]] <- c(4,5) # Fix age 4 for for index 4 (NEFSC fall Bigelow)
+
+# Setup random effect by selectivity block (here: fleet, index1, index2)
+randeffect <- c(rep("iid", asap3$dat$n_fleet_sel_blocks), rep("iid", use_n_indices))
+
+# Setup random effect by selectivity block (here: fleet, index1, index2, index3, index4)
+randeffect <- c(rep("iid", asap3$dat$n_fleet_sel_blocks), rep("none", 4)) # Don't include selectivity random effects for any surveys 
+
+# Setup selectivity list
+sel_list <- list(model = modelsetup, # list selectivity model for each fleet and index
+                 re = randeffect,
+                 initial_pars = c(init_fleet_sel, init_index_sel),
+                 fix_pars = c(fix_fleet_sel, fix_index_sel))
+
+input <- prepare_wham_input(asap3, NAA_re = NAA_re, selectivity = sel_list, ecov=ecov, model_name = "WHAM_Run39") 
+```
+
+### Save input
+```{r}
+# Save model data input
+saveRDS(input, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run39_addEnvCov-anomSST-noEffect", "WHAM_Run39_input.rds", sep="/"))
+```
+
+### Fit model, check convergence, and run diagnostics
+```{r}
+WHAM_Run39 <- fit_wham(input, do.osa = TRUE, do.retro = TRUE) 
+check_convergence(WHAM_Run39)
+print(paste("Number of parameters", length(WHAM_Run39$par), sep=" "))
+
+plot_wham_output(mod=WHAM_Run39, out.type='html')
+# plot_wham_output(mod=WHAM_Run39, out.type='png', dir.main = paste(here::here(), "WHAM_Run39", sep="/"))
+```
+
+### Save output
+```{r}
+# Save fitted model
+saveRDS(WHAM_Run39, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run39_addEnvCov-anomSST-noEffect", "WHAM_Run39_model.rds", sep="/"))
+```
+
+### Rerun model using saved input data
+Load data from saved input RData and rerun model
+```{r}
+inputRerun <- readRDS(paste(here::here(), "WG_Revised_Runs",
+                     "WHAM_Run39_addEnvCov-anomSST-noEffect/WHAM_Run39_input.rds", sep="/"))
+
+# Rerun data
+ReRun39 <- fit_wham(input = inputRerun, MakeADFun.silent = TRUE)
+```
+
+## Comment
+
+
