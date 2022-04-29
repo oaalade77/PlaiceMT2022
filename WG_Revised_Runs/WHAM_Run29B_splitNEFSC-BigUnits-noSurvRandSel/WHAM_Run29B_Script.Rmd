@@ -224,7 +224,7 @@ data.frame(ages = ages,
   geom_line(aes(x=ages, y=sel)) + 
   geom_ribbon(aes(x=ages,ymin=lowerCI, ymax=upperCI), alpha=0.2) + 
   ggtitle("Index 1 Selectivity")
-ggsave(filename = paste(here::here(), "WG_Revised_Runs", "WHAM_Run29B_splitNEFSC-BigUnits-noSurvRandSel", "plots_png", "results", "Selectivity_index1_CI.png"))
+ggsave(filename = paste(here::here(), "WG_Revised_Runs", "WHAM_Run29B_splitNEFSC-BigUnits-noSurvRandSel", "plots_png", "results", "Selectivity_index1_CI.png", sep="/"))
 
 # Index 2
 i = 2
@@ -239,7 +239,7 @@ data.frame(ages = ages,
   geom_line(aes(x=ages, y=sel)) + 
   geom_ribbon(aes(x=ages,ymin=lowerCI, ymax=upperCI), alpha=0.2) + 
   ggtitle("Index 2 Selectivity")
-ggsave(filename = paste(here::here(), "WG_Revised_Runs", "WHAM_Run29B_splitNEFSC-BigUnits-noSurvRandSel", "plots_png", "results", "Selectivity_index2_CI.png"))
+ggsave(filename = paste(here::here(), "WG_Revised_Runs", "WHAM_Run29B_splitNEFSC-BigUnits-noSurvRandSel", "plots_png", "results", "Selectivity_index2_CI.png", sep="/"))
 
 # Index 3
 i = 3
@@ -254,7 +254,7 @@ data.frame(ages = ages,
   geom_line(aes(x=ages, y=sel)) + 
   geom_ribbon(aes(x=ages,ymin=lowerCI, ymax=upperCI), alpha=0.2) + 
   ggtitle("Index 3 Selectivity")
-ggsave(filename = paste(here::here(), "WG_Revised_Runs", "WHAM_Run29B_splitNEFSC-BigUnits-noSurvRandSel", "plots_png", "results", "Selectivity_index3_CI.png"))
+ggsave(filename = paste(here::here(), "WG_Revised_Runs", "WHAM_Run29B_splitNEFSC-BigUnits-noSurvRandSel", "plots_png", "results", "Selectivity_index3_CI.png", sep="/"))
 
 # Index 4
 i = 4
@@ -269,7 +269,7 @@ data.frame(ages = ages,
   geom_line(aes(x=ages, y=sel)) + 
   geom_ribbon(aes(x=ages,ymin=lowerCI, ymax=upperCI), alpha=0.2) + 
   ggtitle("Index 4 Selectivity")
-ggsave(filename = paste(here::here(), "WG_Revised_Runs", "WHAM_Run29B_splitNEFSC-BigUnits-noSurvRandSel", "plots_png", "results", "Selectivity_index4_CI.png"))
+ggsave(filename = paste(here::here(), "WG_Revised_Runs", "WHAM_Run29B_splitNEFSC-BigUnits-noSurvRandSel", "plots_png", "results", "Selectivity_index4_CI.png", sep="/"))
 ```
 
 ## Comment
