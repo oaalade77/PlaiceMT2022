@@ -28,7 +28,7 @@ asap3 <- read_asap3_dat(paste(here::here(), "data", "PlaiceWHAM-2019_revised_NEF
 
 ### Prepare model input
 ```{r}
-NAA_re = list(sigma = "rec") # Full state-space model
+NAA_re = list(sigma = "rec+1") # Full state-space model
 NAA_re$cor = "iid" # iid random effects
 NAA_re$recruit_model = 2 # recruitment is random about the mean
 NAA_re$recruit_pars = exp(10) #initial guess for mean recruitment
