@@ -114,20 +114,20 @@ WHAM_Run29H <- fit_wham(input, MakeADFun.silent = TRUE, do.osa=FALSE, do.retro=F
 ### Save input
 ```{r}
 # Save model data input
-saveRDS(input, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run29G_splitNEFSC-BigUnits-dirmultAgeComp", "WHAM_Run29H_input.rds", sep="/"))
+saveRDS(input, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run29H_splitNEFSC-BigUnits-dirmultAgeComp", "WHAM_Run29H_input.rds", sep="/"))
 ```
 
 check_convergence(WHAM_Run29H)
 print(paste("Number of parameters", length(WHAM_Run29H$par), sep=" "))
 
 plot_wham_output(mod=WHAM_Run29H, out.type='html')
-# plot_wham_output(mod=WHAM_Run29G, out.type='png', dir.main = paste(here::here(), "WHAM_Run29G", sep="/"))
+# plot_wham_output(mod=WHAM_Run29H, out.type='png', dir.main = paste(here::here(), "WHAM_Run29H", sep="/"))
 ```
 
 ### Save output
 ```{r}
 # Save fitted model
-saveRDS(WHAM_Run29G, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run29G_splitNEFSC-BigUnits-dirmultAgeComp", "WHAM_Run29G_model.rds", sep="/"))
+saveRDS(WHAM_Run29H, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run29H_splitNEFSC-BigUnits-dirmultAgeComp", "WHAM_Run29H_model.rds", sep="/"))
 ```
 
 ### Rerun model using saved input data
