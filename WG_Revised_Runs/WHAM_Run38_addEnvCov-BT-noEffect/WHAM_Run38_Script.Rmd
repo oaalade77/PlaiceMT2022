@@ -1,11 +1,13 @@
 ---
 title: "WHAM_Run38_addEnvCov-BT-noEffect"
 output: html_document
-date: '2022-04-20'
+date: '2022-04-28'
 ---
 
 ## Model description
-Model specified as in run 29B but is fit with an environmental covariate that has no effect so it can be directly compared to run 38A that incorporates this environmental effect on recruitment. Mean annual bottom temperature was the environmental covariate considered here, with a 1 year lag (bottom temperature in year t impacts recruitment in year t+1) and a random walk process model. 
+Model specified as in run 29B but is fit with an environmental covariate that has no effect so it can be directly compared to run 38A that incorporates this environmental effect on recruitment. Mean annual bottom temperature was the environmental covariate considered here, with a 1 year lag (bottom temperature in year t impacts recruitment in year t+1) and a random walk process model.
+
+When the calculated standard error for the annual bottom temperature measurements were used (some of which were very small) this prevented the OSA resiudals for Ecov_obs from being generated so instead a standard error of 0.01 was used in all years (see line 41-42). 
 
 ### Load R packages
 ```{r, echo=FALSE}
@@ -37,17 +39,17 @@ NAA_re$recruit_pars = exp(10) #initial guess for mean recruitment
   ecov <- list(
     label = "BT_FVCOM",
     mean = as.matrix(annualBT$mean_bt),
-    logsigma = as.matrix(log(annualBT$standard_err_bt)),
-    # logsigma = as.matrix(log(10*annualBT$standard_err_bt)),
+    # logsigma = as.matrix(log(annualBT$standard_err_bt)), #Overly small standard errors prevented OSA residuals for the environmental covariate from being generated
+    logsigma = as.matrix(rep(log(0.01), length(annualBT$mean_bt))),
     year = as.numeric(annualBT$Year),
-    use_obs = matrix(1, ncol = 1, nrow=nrow(annualBT)), # use all obs = 1
+    use_obs = matrix(T, ncol = 1, nrow=nrow(annualBT)), # use all obs = T
     lag = 1, # BT in year t impact R in year t+1
     #process_model = "ar1",
     process_model = "rw",
-    where = "recruit",
-    how = 1
-    # where = "none", # "recruit" for recruitment effect
-    # how = 0 # 1 for controlling = density-independent mortality
+    where = "none", # "recruit" for recruitment effect
+    how = 0 # 1 for controlling = density-independent mortality
+    # where = "recruit",
+    # how = 1
   )
 
 # Setup initial selectivity model and parameters
@@ -89,12 +91,7 @@ saveRDS(input, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run38_addEnvCov
 
 ### Fit model, check convergence, and run diagnostics
 ```{r}
-# WHAM_Run38 <- fit_wham(input, do.fit = F)
-# WHAM_Run38$fn()
-#x = WHAM_Run38$report()
-#lapply(x[grep('nll', names(x))],sum)
-
-WHAM_Run38 <- fit_wham(input, do.osa = FALSE, do.retro = FALSE) 
+WHAM_Run38 <- fit_wham(input, do.osa = TRUE, do.retro = TRUE) 
 check_convergence(WHAM_Run38)
 print(paste("Number of parameters", length(WHAM_Run38$par), sep=" "))
 
