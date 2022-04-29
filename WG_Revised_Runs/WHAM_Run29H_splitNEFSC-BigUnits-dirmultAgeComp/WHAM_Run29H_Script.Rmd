@@ -1,7 +1,7 @@
 ---
-title: "WHAM_Run29G_splitNEFSC-BigUnits-dirmultAgeComp"
+title: "WHAM_Run29H_splitNEFSC-BigUnits-dirmultAgeComp"
 output: html_document
-date: '2022-04-18'
+date: '2022-04-29'
 ---
 
 ## Model description
@@ -10,6 +10,7 @@ The age composition likelihood was switched to "dir-mult" (dirichlet multinomial
 
 Selectivity-at-age was first freely estimated (comment out lines 49-52), which did not result in a converged model but did suggest the following ages should be fixed at full selectivity: 
 
+Use 500 as ESS for input file.
 
 
 ### Load R packages
@@ -26,7 +27,7 @@ Same data as PlaiceWHAM-2019_revised_NEFSC-LW-WAA_splitNEFSC-BigUnit.DAT but sur
 asap3 <- read_asap3_dat(paste(here::here(), "data", "PlaiceWHAM-2019_revised_NEFSC-LW-WAA_splitNEFSC-BigUnit-highESS.DAT", sep="/"))
 ```
 
-### Prepare model input
+### Freely estimate selectivity
 ```{r}
 NAA_re = list(sigma = "rec+1") # Full state-space model
 NAA_re$cor = "iid" # iid random effects
@@ -63,19 +64,18 @@ sel_list <- list(model = modelsetup, # list selectivity model for each fleet and
                  initial_pars = c(init_fleet_sel, init_index_sel),
                  fix_pars = c(fix_fleet_sel, fix_index_sel))
 
-input <- prepare_wham_input(asap3, NAA_re = NAA_re, selectivity = sel_list, model_name = "WHAM_Run29G", age_comp = "dir-mult") # dirichlet multinomial
+input <- prepare_wham_input(asap3, NAA_re = NAA_re, selectivity = sel_list, model_name = "WHAM_Run29H", age_comp = "dir-mult") # dirichlet multinomial
 input$data$index_Neff[] = 500
 input$data$catch_Neff[] = 500
 input$map$logit_q = factor(rep(NA,use_n_indices))
 input$par$logit_q = wham:::gen.logit(2,input$data$q_lower,input$data$q_upper)
+
+# Run without OSA residuals to freely estimate selectivity
+WHAM_Run29H_free <- fit_wham(input, MakeADFun.silent = TRUE, do.osa=FALSE, do.retro=FALSE)
 ```
 
-
-### Fit model, check convergence, and run diagnostics
+### Prepare model input for full model run
 ```{r}
-# Run with OSA residuals
-WHAM_Run29H_free <- fit_wham(input, MakeADFun.silent = TRUE, do.osa=FALSE, do.retro=FALSE)
-
 #selectivity
 lapply(WHAM_Run29H_free$rep$selAA[-1], function(x) x[1,]/max(x[1,]))
 #index 1: age 4 
@@ -107,9 +107,7 @@ sel_list <- list(model = modelsetup, # list selectivity model for each fleet and
 input <- prepare_wham_input(asap3, NAA_re = NAA_re, selectivity = sel_list, model_name = "WHAM_Run29H", age_comp = "dir-mult") # dirichlet multinomial
 input$data$index_Neff[] = 500
 input$data$catch_Neff[] = 500
-
-#need to change do.retro, and do.osa for full results
-WHAM_Run29H <- fit_wham(input, MakeADFun.silent = TRUE, do.osa=FALSE, do.retro=FALSE)
+```
 
 ### Save input
 ```{r}
@@ -117,6 +115,9 @@ WHAM_Run29H <- fit_wham(input, MakeADFun.silent = TRUE, do.osa=FALSE, do.retro=F
 saveRDS(input, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run29H_splitNEFSC-BigUnits-dirmultAgeComp", "WHAM_Run29H_input.rds", sep="/"))
 ```
 
+### Fit model, check convergence, and run diagnostics
+```{r}
+WHAM_Run29H <- fit_wham(input, MakeADFun.silent = TRUE, do.osa=TRUE, do.retro=TRUE)
 check_convergence(WHAM_Run29H)
 print(paste("Number of parameters", length(WHAM_Run29H$par), sep=" "))
 
@@ -134,11 +135,11 @@ saveRDS(WHAM_Run29H, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run29H_sp
 Load data from saved input RData and rerun model
 ```{r}
 inputRerun <- readRDS(paste(here::here(), "WG_Revised_Runs",
-                     "WHAM_Run29G_splitNEFSC-BigUnits-dirmultAgeComp/WHAM_Run29G_input.rds", sep="/"))
+                     "WHAM_Run29H_splitNEFSC-BigUnits-dirmultAgeComp/WHAM_Run29H_input.rds", sep="/"))
 
 # Rerun data
-ReRun29G <- fit_wham(input = inputRerun, MakeADFun.silent = TRUE)
+ReRun29H <- fit_wham(input = inputRerun, MakeADFun.silent = TRUE)
 ```
 
 ## Comment
-Even with only recruitment random effects implemented the model struggled to estimate the dirichlet-multinomial dispersion parameters, and those that were estimated had very large values. 
+ 
