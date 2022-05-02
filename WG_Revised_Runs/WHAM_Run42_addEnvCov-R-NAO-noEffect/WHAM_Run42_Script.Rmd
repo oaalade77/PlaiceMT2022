@@ -1,7 +1,7 @@
 ---
 title: "WHAM_Run42_addEnvCov-R-NAO-noEffect"
 output: html_document
-date: '2022-04-29'
+date: '2022-05-02'
 ---
 
 ## Model description
