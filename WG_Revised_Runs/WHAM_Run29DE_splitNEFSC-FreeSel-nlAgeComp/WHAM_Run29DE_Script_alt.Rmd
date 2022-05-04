@@ -1,18 +1,14 @@
 ---
-title: "WHAM_Run29DE_splitNEFSC-FreeSel-nlAgeComp"
+title: "WHAM_Run29F-4_splitNEFSC-BigUnits-nlAgeComp-fix1"
 output: html_document
-date: '2022-04-11'
+date: '2022-05-04'
 ---
 
 ## Model description
-This script contains two additional model runs: run 29D freely estimates selectivity-at-age, run 29E explores a logistic-normal-miss0 age composition likelihood model. 
 
-Both runs implement a full state-space model as in run 29 with NEFSC bottom trawl surveys split into Albatross (1980-2008, indices 1 and 3 for spring/fall) and Bigelow (2009-2019, indices 2 and 4 for spring/fall) time series. No iid random effect for selectivity were implemented in run 29D, but run 29E included selectivity random effects for the fleet and index 1 (Albatross spring).
+Model identical to run 29F (full state-space model, revised data, logistic fleet selectivity, age-specific index selectivity, recruitment that is random about the mean, with split Albatross and Bigelow indices and a logistic-normal age composition likelihood) but only a single age was fixed at full selectivity for each index. A preliminary run freely estimated parameters to ID what ages should have selectivity fixed at 1. 
 
-Run 29D freely estimated selectivity at age, and fixed catchability at 2 for all indices. 
-
-Based on selectivity estimates from run 29D, run 29E fixed full selectivity at age 4 for index 1 (Albatross spring), ages 4 and 5 for index 2 (Bigelow spring), ages 4, 5, and 11 for index 3 (Albatross spring), and age 4 for index 4 (Bigelow fall). Catchability was not fixed for any index for run 29E, but the age composition likelihood was set to logistic-normal-miss0.
-
+This preliminary run did not converge, but suggested that ages 5&6 for index 1 (Albatross spring), 5 for index 2 (Bigelow spring), age 4&11 for index 3 (Albatross fall) and ages 3&4 for index 4 (Bigelow fall) should be fixed at full selectivity and were subsequently fixed at 1 in the full run for which results are recorded. 
 
 ### Load R packages
 ```{r, echo=FALSE}
@@ -24,8 +20,130 @@ library(DataExplorer)
 
 ### Load data
 ```{r}
-asap3 <- read_asap3_dat(paste(here::here(), "data", "PlaiceWHAM-2019_revised_NEFSC-LW-WAA_splitNEFSC.DAT", sep="/"))
+asap3 <- read_asap3_dat(paste(here::here(), "data", "PlaiceWHAM-2019_revised_NEFSC-LW-WAA_splitNEFSC-BigUnit.DAT", sep="/"))
 ```
+
+### Preliminary run with freely estimated selectivity
+Freely estimate selectivity-at-age for all indices to ID what ages to fix.
+```{r}
+##### Set up preliminary input with no selectivity parameters fixed
+NAA_re = list(sigma = "rec+1") # Full state-space model
+NAA_re$cor = "iid" # iid random effects
+NAA_re$recruit_model = 2 # recruitment is random about the mean
+NAA_re$recruit_pars = exp(10) #initial guess for mean recruitment
+
+# Setup initial selectivity model and parameters
+use_n_indices = 4
+modelsetup <- c(rep("logistic", asap3$dat$n_fleet_sel_blocks), rep("age-specific", use_n_indices))
+
+# Setup fixed parameters
+fix_fleet_sel <- lapply(1:asap3$dat$n_fleets, function(x) NA) 
+fix_index_sel <- lapply(1:use_n_indices, function(x) NA) # Set up index object
+
+# fix_index_sel[[1]] <- c(4) # Fix age 4  for for index 1 (NEFSC spring Albatross)
+# fix_index_sel[[2]] <- 5 # Fix age 4 & 5 for for index 2 (NEFSC spring Bigelow)
+# fix_index_sel[[3]] <- c(11) # Fix age 4, 5, and 11 for for index 3 (NEFSC fall Albatross)
+# fix_index_sel[[4]] <- 4 # Fix age 4  for for index 4 (NEFSC spring Bigelow)
+
+init_fleet_sel <- list(c(2,0.4)) # logistic parameters, based on model type
+init_index_sel <- lapply(1:use_n_indices, function(x) c(0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5))
+# for(i in 1:4) init_index_sel[[i]][fix_index_sel[[i]]] <- 1 # replace initial values for 1 for the ages where selectivity fixed
+
+
+# Setup random effect by selectivity block (here: fleet, index1, index2, index3, index4)
+randeffect <- c(rep("iid", asap3$dat$n_fleet_sel_blocks), rep("none", 4)) # Don't include selectivity random effects for any surveys 
+
+# Setup selectivity list
+sel_list <- list(model = modelsetup, # list selectivity model for each fleet and index
+                 re = randeffect,
+                 initial_pars = c(init_fleet_sel, init_index_sel),
+                 fix_pars = c(fix_fleet_sel, fix_index_sel))
+
+input <- prepare_wham_input(asap3, NAA_re = NAA_re, selectivity = sel_list, model_name = "WHAM_Run29F", age_comp = "logistic-normal-miss0") # logistic normal age comp, 0s treated as missing
+
+##### Run model with freely estimated selectivity
+WHAM_Run29F <- fit_wham(input, MakeADFun.silent = TRUE, do.osa = FALSE) 
+check_convergence(WHAM_Run29F)
+print(paste("Number of parameters", length(WHAM_Run29F$par), sep=" "))
+
+# ID ages that should be fixed at full selectivity
+
+```
+
+### Prepare model input for full run
+Fix only 1 age selectivity at 1 for each index based on highest estimated selectivity in preliminary run.
+```{r}
+NAA_re = list(sigma = "rec+1") # Full state-space model
+NAA_re$cor = "iid" # iid random effects
+NAA_re$recruit_model = 2 # recruitment is random about the mean
+NAA_re$recruit_pars = exp(10) #initial guess for mean recruitment
+
+# Setup initial selectivity model and parameters
+use_n_indices = 4
+modelsetup <- c(rep("logistic", asap3$dat$n_fleet_sel_blocks), rep("age-specific", use_n_indices))
+
+# Setup fixed parameters
+fix_fleet_sel <- lapply(1:asap3$dat$n_fleets, function(x) NA) 
+fix_index_sel <- lapply(1:use_n_indices, function(x) NA) # Set up index object
+
+fix_index_sel[[1]] <- c(4) # Fix age 4  for for index 1 (NEFSC spring Albatross)
+fix_index_sel[[2]] <- c(5) # Fix age 4 & 5 for for index 2 (NEFSC spring Bigelow)
+fix_index_sel[[3]] <- c(11) # Fix age 4, 5, and 11 for for index 3 (NEFSC fall Albatross)
+fix_index_sel[[4]] <- c(4) # Fix age 4  for for index 4 (NEFSC spring Bigelow)
+
+init_fleet_sel <- list(c(2,0.4)) # logistic parameters, based on model type
+init_index_sel <- lapply(1:use_n_indices, function(x) c(0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5))
+for(i in 1:4) init_index_sel[[i]][fix_index_sel[[i]]] <- 1 # replace initial values for 1 for the ages where selectivity fixed
+
+
+# Setup random effect by selectivity block (here: fleet, index1, index2, index3, index4)
+randeffect <- c(rep("iid", asap3$dat$n_fleet_sel_blocks), rep("none", 4)) # Don't include selectivity random effects for any surveys 
+
+# Setup selectivity list
+sel_list <- list(model = modelsetup, # list selectivity model for each fleet and index
+                 re = randeffect,
+                 initial_pars = c(init_fleet_sel, init_index_sel),
+                 fix_pars = c(fix_fleet_sel, fix_index_sel))
+
+input <- prepare_wham_input(asap3, NAA_re = NAA_re, selectivity = sel_list, model_name = "WHAM_Run29F", age_comp = "logistic-normal-miss0") # logistic normal age comp, 0s treated as missing
+```
+
+### Save input
+```{r}
+# Save model data input
+saveRDS(input, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run29F_splitNEFSC-BigUnits-nlAgeComp", "WHAM_Run29F_input.rds", sep="/"))
+```
+
+### Fit model, check convergence, and run diagnostics
+```{r}
+# Run with OSA residuals
+WHAM_Run29F <- fit_wham(input, MakeADFun.silent = TRUE, do.osa = FALSE) 
+check_convergence(WHAM_Run29F)
+print(paste("Number of parameters", length(WHAM_Run29F$par), sep=" "))
+
+plot_wham_output(mod=WHAM_Run29F, out.type='html')
+# plot_wham_output(mod=WHAM_Run29F, out.type='png', dir.main = paste(here::here(), "WHAM_Run29F", sep="/"))
+```
+
+### Save output
+```{r}
+# Save fitted model
+saveRDS(WHAM_Run29F, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run29F_splitNEFSC-BigUnits-nlAgeComp", "WHAM_Run29F_model.rds", sep="/"))
+```
+
+### Rerun model using saved input data
+Load data from saved input RData and rerun model
+```{r}
+inputRerun <- readRDS(paste(here::here(), "WG_Revised_Runs",
+                     "WHAM_Run29F_splitNEFSC-BigUnits-nlAgeComp/WHAM_Run29F_input.rds", sep="/"))
+
+# Rerun data
+ReRun29F <- fit_wham(input = inputRerun, MakeADFun.silent = TRUE)
+```
+
+## Comment
+
+
 
 ## Run 29D
 ### Run 29D: Prepare model input
