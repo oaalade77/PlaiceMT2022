@@ -7,7 +7,7 @@ date: '2022-04-28'
 ## Model description
 Model identical to run 29F-1 (full state-space model, revised data, logistic fleet selectivity, age-specific index selectivity, recruitment that is random about the mean, with split Albatross and Bigelow indices and a logistic-normal age composition likelihood, selectivity-at-age initial values similar to 29B), but include selectivity random effects for index 3 (Albatross fall). 
 
-I tried freely estimating the selectivity for age 11+ for index 3 (Albatross fall), but the model did not converge unless selectivity for this age was fixed. 
+I tried freely estimating the selectivity for age 11+ for index 3 (Albatross fall), but the model did not converge unless selectivity for this age was fixed, so this run fixed Albatross fall age 11+ selectivity at the estimated value from Run 29B. 
 
 ### Load R packages
 ```{r, echo=FALSE}
@@ -168,5 +168,8 @@ ggsave(filename = paste(here::here(), "WG_Revised_Runs/WHAM_Run29F-2_swapInitSel
 ```
 
 ## Comment
+F and recruitment estimates for run 29F-2 were lower and SSB was slightly higher than run 29. The CVs around these estimates were slightly lower for R and SSB across the time series. 
 
+OSA residuals for the fit to aggregate data for the fleet and all indices for run 29F-2 were similarly or slightly more normally distributed than run 29F-2. OSA residuals for fit to age comp data were similarly distributed in both runs. 
 
+AIC and Mohn's rho values for run 29F-2 were larger than in run 29F.  

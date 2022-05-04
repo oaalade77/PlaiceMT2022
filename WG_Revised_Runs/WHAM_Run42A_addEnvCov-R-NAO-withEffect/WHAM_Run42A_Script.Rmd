@@ -118,3 +118,9 @@ ReRun42A <- fit_wham(input = inputRerun, MakeADFun.silent = TRUE)
 ```
 
 ## Comment
+
+Model estimates of q, R, SSB, and F are similar for run 42 and 42A. OSA age comp residual patterns and distributions are also similar between these runs and the same is true for OSA residuals for fit to aggregate fleet and index data. 
+
+OSA residuals for fit to the NAO time series was not very normally distributed in either run 42 and 42A. 
+
+AIC was larger but still within 2 of the AIC score for run 42 so this run should be considered equivalent. 

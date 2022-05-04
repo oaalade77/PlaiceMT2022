@@ -122,5 +122,13 @@ ReRun39A <- fit_wham(input = inputRerun, MakeADFun.silent = TRUE)
 ```
 
 ## Comment
+Recruitment and SSB slightly lower at end of time series compared to run 39 which fits to SST anomaly data but does not include an effect on Recruitment. CVs around estimates of F, R, and SSB are slightly higher at the end of the time series. This has consequences for SSB at F40% and Yield at F40% reference points which are slightly lower than run 39. 
 
+There are slightly differences between the catchability estimates between run 39 and 39A but selectivity estimates are similar across these runs.
+
+Fleet and index OSA residuals for fit to aggregate data and age comp OSA residuals are similar across both run 39 and 39A. OSA residuals for fit to the SST anomaly data are somewhat normally distributed in both runs. 
+
+Mohn's rho values, including those for Recruitment are smaller for run 39 than 39A.
+
+Collectively, it does not appear that a SST anomaly effect on R with a 1 year lag improves model fit or diagnostics. 
 

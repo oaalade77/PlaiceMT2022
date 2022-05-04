@@ -229,5 +229,11 @@ ggsave(filename = paste(here::here(), "WG_Revised_Runs/WHAM_Run29F-1_swapInitSel
 ```
 
 ## Comment
+Still needed to fix Albatross age 11+ at full selectivity to get model to converge. Initial run that freely estimated selectivity at age estimated this age at 1, but estimated a narrower range of intermediate ages were fully selected (so narrower range fixed at 1 here). 
 
+F, R, and SSB estimates were very similar for run 29F and 29F-1. The biggest difference between these runs was in the selectivity estimates which were slightly lower for both spring and the Bigelow fall indices.
+
+OSA age comp residuals had similar patterns and magnitudes for the fleet and all indices in run 29F and 29F-1. Other diagnostics were also very similar between these runs. 
+
+Mohn's rho values for SSB and Fbar were slightly larger in run 29F and slightly smaller for R. 
 

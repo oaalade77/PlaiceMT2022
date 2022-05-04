@@ -167,5 +167,8 @@ ggsave(filename = paste(here::here(), "WG_Revised_Runs/WHAM_Run29F-3_swapInitSel
 ```
 
 ## Comment
+Estimates of F and R were slightly lower and SSB slightly highter for run 29F-3 compared to run 29F. CVs around these estimates for R and CV were higher than in run 29F. 
 
+OSA residuals for fit to aggregate fleet and index data were similarly or very slighlty more normally distributed in run 29F-3 compared to 29F. OSA residuals for fit to age comp data were similarly distributed for these two runs and had similar patterns.
 
+AIC and Mohn's rho values were larger for run 29F than for run 29F-3. 

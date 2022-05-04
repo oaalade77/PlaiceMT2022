@@ -114,4 +114,8 @@ ReRun43A <- fit_wham(input = inputRerun, MakeADFun.silent = TRUE)
 ```
 
 ## Comment
+OSA residual patterns and distributions are similar in run 43A and 43 and the same was true for OSA residuals for fit to aggregate fleet and index data. 
 
+OSA residuals for fit to the AMO time series were not normally distributed. 
+
+The AIC was smaller but still within +/-2 of run 43 so this model would be considered equivalent, and this is reflected in the identical Mohn's rho values for R, SSB, and Fbar. 
