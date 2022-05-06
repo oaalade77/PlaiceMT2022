@@ -1,0 +1,208 @@
+---
+title: "WHAM_Run29B-1_changeESS"
+output: html_document
+date: '2022-05-03'
+---
+
+## Model description
+Full state-space model as in run 29B (revised data, fixed selectivity at intermediate ages, logistic fleet selectivity, age-specific index selectivity, iid selectivity random effect only for fleet, recruitment that is random about the mean), with NEFSC bottom trawl surveys split into Albatross (1980-2008, indices 1 and 3 for spring/fall) and Bigelow (2009-2019, indices 2 and 4 for spring/fall) time series, with NEFSC data is in Albatross AND Bigelow units, rather than using only Albatross units as in run 29. The aggregate index for this run was also in biomass units rather than abundance. 
+
+The effective sample size for the split ESS indices and fleet catch were changed in this run to reflect the model expectations from ASAP run 51a outlined, with ESS settings for ASAP run 51a, WHAM 29B and this run WHAM 29B-1 outlined below:
+
+| Run           | Fleet | Alb spring | Big spring | Alb fall | Big fall |
+| ASAP 51A      | 30    | 30         | 30         | 30       | 30       |
+| WHAM 29B      | 50    | 50         | 50         | 50       | 50       |
+| **Tried       | 40    | 40         | 40         | 50       | 60       | 
+| *WHAM 29B-1   | 100   | 40         | 40         | 50       | 60       | 
+*Increased fleet ESS to better reflect expectation in ASAP run 51a, index ESS settings were fine
+** Using Steve's recommendations for ESS based on ASAP run 51a did not converge
+
+### Load R packages
+```{r, echo=FALSE}
+library(tidyverse)
+library(wham)
+library(readxl)
+library(DataExplorer)
+```
+
+### Load data
+```{r}
+asap3 <- read_asap3_dat(paste(here::here(), "data", "PlaiceWHAM-2019_revised_NEFSC-LW-WAA_splitNEFSC-BigUnit_ASAP-ESS.DAT", sep="/"))
+```
+
+### Prepare model input
+```{r}
+NAA_re = list(sigma = "rec+1") # Full state-space model
+NAA_re$cor = "iid" # iid random effects
+NAA_re$recruit_model = 2 # recruitment is random about the mean
+NAA_re$recruit_pars = exp(10) #initial guess for mean recruitment
+
+# Setup initial selectivity model and parameters
+use_n_indices = 4
+modelsetup <- c(rep("logistic", asap3$dat$n_fleet_sel_blocks), rep("age-specific", use_n_indices))
+
+init_fleet_sel <- list(c(2,0.4)) # logistic parameters, based on model type
+init_index_sel <- lapply(1:use_n_indices, function(x) c(0.5, 0.5, 0.5, 1, 1, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5))
+
+# Setup fixed parameters
+fix_fleet_sel <- lapply(1:asap3$dat$n_fleets, function(x) NA) 
+fix_index_sel <- lapply(1:use_n_indices, function(x) NA) # Set up index object
+
+fix_index_sel[[1]] <- c(4,5) # Fix age 4 & 5 for for index 1 (NEFSC spring Albatross)
+fix_index_sel[[2]][1] <- 5 # Fix age  5 for for index 2 (NEFSC spring Bigelow)
+fix_index_sel[[3]][1] <- 4 # Fix age 4 for for index 3 (NEFSC fall Albatross)
+fix_index_sel[[4]] <- c(4,5) # Fix age 4 for for index 4 (NEFSC fall Bigelow)
+
+# Setup random effect by selectivity block (here: fleet, index1, index2, index3, index4)
+randeffect <- c(rep("iid", asap3$dat$n_fleet_sel_blocks), rep("none", 4)) # Don't include selectivity random effects for any surveys 
+
+# Setup selectivity list
+sel_list <- list(model = modelsetup, # list selectivity model for each fleet and index
+                 re = randeffect,
+                 initial_pars = c(init_fleet_sel, init_index_sel),
+                 fix_pars = c(fix_fleet_sel, fix_index_sel))
+
+input <- prepare_wham_input(asap3, NAA_re = NAA_re, selectivity = sel_list, model_name = "WHAM_Run29B1") 
+```
+
+### Save input
+```{r}
+# Save model data input
+saveRDS(input, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run29B-1_changeESS", "WHAM_Run29B-1_input.rds", sep="/"))
+```
+
+### Fit model, check convergence, and run diagnostics
+```{r}
+# Run with OSA residuals
+WHAM_Run29B1 <- fit_wham(input, MakeADFun.silent = TRUE) 
+check_convergence(WHAM_Run29B1)
+print(paste("Number of parameters", length(WHAM_Run29B1$par), sep=" "))
+
+plot_wham_output(mod=WHAM_Run29B1, out.type='html')
+# plot_wham_output(mod=WHAM_Run29B1, out.type='png', dir.main = paste(here::here(), "WHAM_Run29B1", sep="/"))
+```
+
+### Save output
+```{r}
+# Save fitted model
+saveRDS(WHAM_Run29B1, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run29B-1_changeESS", "WHAM_Run29B-1_model.rds", sep="/"))
+```
+
+### Rerun model using saved input data
+Load data from saved input RData and rerun model
+```{r}
+inputRerun <- readRDS(paste(here::here(), "WG_Revised_Runs",
+                     "WHAM_Run29B-1_changeESS/WHAM_Run29B-1_input.rds", sep="/"))
+
+# Rerun data
+ReRun29B1 <- fit_wham(input = inputRerun, MakeADFun.silent = TRUE)
+```
+
+### Compare AIC and Mohn's rho values & model estimates to run 29A (iid selectivity random effect for Albatross spring index + fleet) 
+```{r}
+modelRuns <- paste(here::here(), "WG_Revised_Runs",
+                   c("WHAM_Run29B_splitNEFSC-BigUnits-noSurvRandSel/WHAM_Run29B_model.rds",
+                     "WHAM_Run29B-1_changeESS/WHAM_Run29B-1_model.rds"), sep="/")
+
+# Read in model Rdata
+models <- lapply(modelRuns, readRDS)
+names(models) <- paste("Run", c("29B", "29B-1"), sep="")
+
+# Generate comparative diagnostics
+compare_wham_models(models, do.plot = TRUE, do.table=TRUE, fdir=paste(here::here(), "WG_Revised_Runs", "Comparison_Output", sep="/"))
+```
+
+### Plot Bigelow:Albatross catchability for spring and fall indices
+Lines 110-123 borrowed from plot_q() function used to generate default q plots in WHAM
+```{r}
+mod <- WHAM_Run29B1
+
+  if("sdrep" %in% names(mod)){
+    if("q_re" %in% mod$input$random){
+      se = as.list(mod$sdrep, "Std. Error", report=TRUE)$logit_q_mat
+    }else{
+      se = t(matrix(as.list(mod$sdrep, "Std. Error")$logit_q, nrow = NCOL(mod$rep$logit_q_mat), 
+      ncol = NROW(mod$rep$logit_q_mat)))
+    }
+    logit_q_lo = mod$rep$logit_q_mat - qnorm(0.975)*se
+    logit_q_hi = mod$rep$logit_q_mat + qnorm(0.975)*se
+    ### Retransform out of logit space
+    q = t(mod$input$data$q_lower + (mod$input$data$q_upper - mod$input$data$q_lower)/(1+exp(-t(mod$rep$logit_q_mat))))
+    q_lo = t(mod$input$data$q_lower + (mod$input$data$q_upper - mod$input$data$q_lower)/(1+exp(-t(logit_q_lo))))
+    q_hi = t(mod$input$data$q_lower + (mod$input$data$q_upper - mod$input$data$q_lower)/(1+exp(-t(logit_q_hi))))
+  }
+
+### Constant q over time series so pick first line and plot 2 ways:
+q <- q[1,]
+q_lo <- q_lo[1,]
+q_hi <- q_hi[1,]
+
+q_dat <- data.frame(q = q, q_lo = q_lo, q_hi = q_hi, index = c("Alb spring", "Big spring", "Alb fall", "Big fall"))
+
+# Plot q value with confidence bounds
+ggplot(q_dat) + 
+  geom_bar(aes(x=index, y=q), stat="identity") + 
+  scale_x_discrete(limits = c("Alb spring", "Big spring", "Alb fall", "Big fall")) + 
+  geom_errorbar(aes(index, ymin = q_lo, ymax = q_hi), width = 0.4, colour = "orange", size = 1.3) +
+  ylim(0,0.00022)
+ggsave(filename = paste(here::here(), "WG_Revised_Runs/WHAM_Run29B-1_changeESS/plots_png/q_barplot.png", sep="/"))
+
+# Plot ratio of bigelow to albatross q values
+springRatio <- q_dat[which(q_dat$index == "Big spring"), "q"]/ q_dat[which(q_dat$index == "Alb spring"), "q"]
+fallRatio <- q_dat[which(q_dat$index == "Big fall"), "q"]/ q_dat[which(q_dat$index == "Alb fall"), "q"]
+
+qRatio <- data.frame(qRatio = c(springRatio, fallRatio), Season = c("Spring", "Fall"))
+
+ggplot() +
+  geom_bar(data = qRatio, aes(x=Season, y = qRatio), stat = "identity") +
+  ylim(0,1.5)
+ggsave(filename = paste(here::here(), "WG_Revised_Runs/WHAM_Run29B-1_changeESS/plots_png/qRatio_barplot.png", sep="/"))
+```
+
+### Plot sel*catchability Bigelow:Albatross ratio
+```{r}
+# Read in model (need to read > 1 so subsetting works)
+modelRuns <- paste(here::here(), "WG_Revised_Runs",
+                   c("WHAM_Run29B-1_changeESS/WHAM_Run29B-1_model.rds",
+                     "WHAM_Run29F_splitNEFSC-BigUnits-nlAgeComp/WHAM_Run29F_model.rds",), sep="/")
+# Read in model Rdata
+models <- lapply(modelRuns, readRDS)
+names(models) <- paste("Run", c( "29B", "29F"), sep="")
+
+# Catchability at age: QAA [1list, index number, age/s]
+albSpringQ <- models$Run29B1$rep$QAA[1,1,]
+bigSpringQ <- models$Run29B1$rep$QAA[1,2,]
+albFallQ <- models$Run29B1$rep$QAA[1,3,]
+bigFallQ <- models$Run29B1$rep$QAA[1,4,]
+
+# Selectivity-at-age used for selectivity blocks - pick first row for indices since no random effect implemented (constant value over time series)
+albSpringSel <- models$Run29B1$rep$selAA[[2]][1,] # Albatross spring
+bigSpringSel <- models$Run29B1$rep$selAA[[3]][1,] # Bigelow spring
+albFallSel <- models$Run29B1$rep$selAA[[4]][1,] # Albatross fall
+bigFallSel <- models$Run29B1$rep$selAA[[5]][1,] # Bigelow fall
+
+# Multiply q*selectivity estimate
+albSpring <- albSpringQ*albSpringSel
+bigSpring <- bigSpringQ*bigSpringSel
+albFall <- albFallQ*albFallSel
+bigFall <- bigFallQ*bigFallSel
+
+# Plot spring Bigelow:Albatross ratio
+data.frame(age = c(1,2,3,4,5,6,7,8,9,10,11), albSpring = albSpring, bigSpring = bigSpring, albFall = albFall, bigFall = bigFall) %>%
+  ggplot() +
+  geom_bar(aes(x=age, y=bigSpring/albSpring), stat = "identity") + 
+  geom_hline(yintercept = 1, color="orange") + 
+  ggtitle("Spring Bigelow:Albatross Ratio")
+ggsave(filename = paste(here::here(), "WG_Revised_Runs/WHAM_Run29B-1_changeESS/plots_png/sel-q-Spring_barplot.png", sep="/"))
+
+# Plot fall Bigelow:Albatross ratio
+data.frame(age = c(1,2,3,4,5,6,7,8,9,10,11), albSpring = albSpring, bigSpring = bigSpring, albFall = albFall, bigFall = bigFall) %>%
+  ggplot() +
+  geom_bar(aes(x=age, y=bigFall/albFall), stat = "identity") + 
+  geom_hline(yintercept = 1, color="orange") +
+  ggtitle("Fall Bigelow:Albatross Ratio")
+ggsave(filename = paste(here::here(), "WG_Revised_Runs/WHAM_Run29B-1_changeESS/plots_png/sel-q-Fall_barplot.png", sep="/"))
+```
+
+## Comment
+
