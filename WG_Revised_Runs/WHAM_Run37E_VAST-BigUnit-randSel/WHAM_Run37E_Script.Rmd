@@ -5,7 +5,7 @@ date: '2022-04-27'
 ---
 
 ## Model description
-A full state-space model was implemented as in run 37 (logistic fleet selectivity, age-specific index selectivity, recruitment about the mean, fit to VAST index spring and fall indices, with a selectivity iid random effect for fleet and both indices) but the VAST data was updated based on a VAST run fit to raw survey data (NEFSC in Albatross units from 1980-2008 and Bigelow units from 2009-2019, and raw MENH and MADMF data). 
+A full state-space model was implemented as in run 37 (logistic fleet selectivity, recruitment about the mean, fit to VAST index spring and fall indices, with a selectivity iid random effect for fleet and both indices) but the VAST data was updated based on a VAST run fit to raw survey data (NEFSC in Albatross units from 1980-2008 and Bigelow units from 2009-2019, and raw MENH and MADMF data), and index selectivity was switched to logistic selectivity following an initial run that freely estimated age-specific selectivity. 
 
 Updated VAST indices based on run with raw data were taken from:
 SPRING numbers-at-age 1-1+
@@ -148,5 +148,11 @@ ReRun37E <- fit_wham(input = inputRerun, MakeADFun.silent = TRUE)
 ```
 
 ## Comment
+When selectivity was freely estimated at age for the spring and fall VAST indices, selectivity estimates generally increased with age rather than estimating a dome-shaped selectivity pattern as in other runs. For this reason, the selectivity pattern was changed to a logistic pattern for both indices and resulted in a model that converged.
 
+Mohn's rho values for R, SSB, and F were larger than those in runs 29B and 29F. 
+
+Observed-predicted residuals for the fleet followed a slightly different pattern than in run 29B and were overall smaller in magnitude across the time series. OSA residuals for fit to the aggregate catch were less normally distributed than in run 29B, but OSA residuals for fit to fleet age composition data were generally more normally distributed with the exception of some very large residuals that were attributed to age 10 and were generally large and positive. 
+
+OSA residuals for fit to aggregate indices were more normally distributed in the fall vs. the spring and OSA residuals for fit to age composition data showed a similar trend as the fleet, with age 10 residuals often very large and positive, but otherwise a fairly normal distribution. Observed-predicted residuals for the indices showed a better fit than prior VAST runs, indicating that poor fit in those runs could be a data issue.
 
