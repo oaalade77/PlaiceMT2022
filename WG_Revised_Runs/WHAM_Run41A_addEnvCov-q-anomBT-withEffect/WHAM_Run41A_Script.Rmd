@@ -1,22 +1,15 @@
 ---
 title: "WHAM_Run41A_addEnvCov-q-anomBT-withEffect"
 output: html_document
-date: '2022-04-28'
+date: '2022-05-05'
 ---
 
 ## Model description
-Model specified as in run 29B but is fit with an environmental covariate that has no effect so it can be directly compared to run 39A that incorporates this environmental effect on recruitment. Annual sea surface temperature anomaly was the environmental covariate considered here, with a 1 year lag (bottom temperature in year t impacts recruitment in year t+1) and a random walk process model.
+Model specified as in run 41 but incorporates the environmental effect on catchability for all indices. Annual bottom temperature anomaly was the environmental covariate considered here.
 
 
 ### Environmental covariate description
-!!! THIS RUN SHOULD US BT OR A BT ANOMALY RATHER THAN SST
-Raw sea surface temperature data used in the calculation of anomalies are available via the following:
-
-NOAA_ERSST_V5 data provided by the NOAA/OAR/ESRL PSL, Boulder, Colorado, USA, from their Web site at https://psl.noaa.gov/data/gridded/data.noaa.ersst.v5.html.
-
-NOAA High Resolution SST data provided by the NOAA/OAR/ESRL PSL, Boulder, Colorado, USA, from their Web site at https://psl.noaa.gov/data/gridded/data.noaa.oisst.v2.highres.html.
-
-Calculated sea surface temperature anomalies were provided by Adam Kemberling, GMRI (https://adamkemberling.github.io/oisst_mainstays/R/markdown_reports/GOM_Annual_Report.html). For use in this analysis, these anomalies were averaged for all survey strata in the Gulf of Maine (including 3 small strata in the NE that fall within Canadian waters and were exculded from other plaice stock assessment datasets) and Georges Bank to generate an annual anomaly and standard error for all years where data was availble for the entire year (1982-2019). 
+Annual bottom temperature anomalies were calculated by Jamie Behan using the GLORYS reanalysis product. A base period of 1981-2010 was used to calculate the temperature anomalies 
 
 
 ### Load R packages
@@ -32,11 +25,9 @@ library(DataExplorer)
 # ASAP data input
 asap3 <- read_asap3_dat(paste(here::here(), "data", "PlaiceWHAM-2019_revised_NEFSC-LW-WAA_splitNEFSC-BigUnit.DAT", sep="/"))
 
-# Load environmental data and add 3 years (1979-1981) of placeholder data that will not be used in model fitting (1st 2 years of data + 1979 since 1 year lag)
-anomSST <- read.csv(paste(here::here(), "data", "GOM_BG_mean_anom_se.csv", sep="/"))
-anomSST <- rbind(c(1981, -999, -999, -999, -999), anomSST)
-anomSST <- rbind(c(1980, -999, -999, -999, -999), anomSST)
-# anomSST <- rbind(c(1979, -999, -999, -999, -999), anomSST) # no lag
+# Load environmental data 
+BT <- read.csv(paste(here::here(), "data", "GLORYS_se.csv", sep="/"))
+BT <- BT %>% filter(Year>1979)
 ```
 
 ### Prepare model input
@@ -48,16 +39,16 @@ NAA_re$recruit_pars = exp(10) #initial guess for mean recruitment
 
 # Setup environmental covariate and options
   ecov <- list(
-    label = "SST_anomaly",
-    mean = as.matrix(anomSST$mean),
-    logsigma = as.matrix(anomSST$se),
-    year = as.numeric(anomSST$Year),
-    use_obs = matrix(c(FALSE, FALSE, FALSE, rep(TRUE, nrow(anomSST)-3)), ncol = 1, nrow=nrow(anomSST)), # use all obs except the first 2 (no data 1979 and 1980, not full year of data in 1981) 
+    label = "BT_GLORYS",
+    mean = as.matrix(BT$anomaly_bt),
+    logsigma = as.matrix(BT$se_anomaly),
+    year = as.numeric(BT$Year),
+    use_obs = matrix(c(rep(TRUE, nrow(BT))), ncol = 1, nrow=nrow(BT)), # use all obs except the first 2 (no data 1979 and 1980, not full year of data in 1981) 
     lag = 0, # No  lag for catchability effect
     #process_model = "ar1", # May want to try this for catchability
     process_model = "rw",
-    where = "q", # effect on catchability
-    how = 1, # link turned on
+    where = "q", # "q" when turned on
+    how = 1, # 1 when turned on
     indices = list(c(1,2,3,4)) # Indices to apply rand effect to NULL if not applying to an index (may want to exclude for Bigelow?)
   )
 
@@ -95,12 +86,12 @@ input <- prepare_wham_input(asap3, NAA_re = NAA_re, selectivity = sel_list, ecov
 ### Save input
 ```{r}
 # Save model data input
-saveRDS(input, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run41A_addEnvCov-anomSST-withEffect", "WHAM_Run41A_input.rds", sep="/"))
+saveRDS(input, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run41A_addEnvCov-q-anomBT-withEffect", "WHAM_Run41A_input.rds", sep="/"))
 ```
 
 ### Fit model, check convergence, and run diagnostics
 ```{r}
-WHAM_Run41A <- fit_wham(input, do.osa = FALSE, do.retro = TRUE) 
+WHAM_Run41A <- fit_wham(input, do.osa = TRUE, do.retro = TRUE) 
 check_convergence(WHAM_Run41A)
 print(paste("Number of parameters", length(WHAM_Run41A$par), sep=" "))
 
@@ -111,20 +102,25 @@ plot_wham_output(mod=WHAM_Run41A, out.type='html')
 ### Save output
 ```{r}
 # Save fitted model
-saveRDS(WHAM_Run41A, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run41A_addEnvCov-anomSST-withEffect", "WHAM_Run41A_model.rds", sep="/"))
+saveRDS(WHAM_Run41A, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run41A_addEnvCov-q-anomBT-withEffect", "WHAM_Run41A_model.rds", sep="/"))
 ```
 
 ### Rerun model using saved input data
 Load data from saved input RData and rerun model
 ```{r}
 inputRerun <- readRDS(paste(here::here(), "WG_Revised_Runs",
-                     "WHAM_Run41A_addEnvCov-anomSST-withEffect/WHAM_Run41A_input.rds", sep="/"))
+                     "WHAM_Run41A_addEnvCov-q-anomBT-withEffect/WHAM_Run41A_input.rds", sep="/"))
 
 # Rerun data
 ReRun41A <- fit_wham(input = inputRerun, MakeADFun.silent = TRUE)
 ```
 
 ## Comment
-Index 3 is not a perfectly straight line, but doesn't look well estimated given that there is basically no change over time for this index but there is variability in the other indices
 
+Catchability estimates for index 1,2, and 4 follow similar trends over time with some differences in magnitude. In contrast index 3 (Albatross fall) catchability estimates are fairly constant over time, with similar magnitude to estimates in run 44. 
 
+OSA residuals for fit to fleet and index age comp data had similar patterns, magnitudes, and distributions in run 44 and 44A. 
+
+OSA residuals for fit to aggregate fleet data were similarly distributed in runs 44 and 44A. OSA residuals for fit to aggregate index 1 (Albatross spring) were more normally distributed index 3 (Albatross fall) were slightly more normally distributed, while residuals for indices 2, and 4 were similarly distributed. Residual fit to the BT anomaly data was slightly more normally distributed in run 44A compared to run 44, but still was not particularly normally distributed. 
+
+SSB and recruitment estimates were generally slightly lower in run 41A than in run 41 and F estimates were slightly higher for the second half of the time series. CVs for SSB and F estimates were generally higher for run 41A. Fleet selectivity estimates were similar in both runs, but index selectivity estimates were higher slightly hiher for older ages for indes 2-4 but slightly lower for the same ages in index 1 (Albatross spring). 
