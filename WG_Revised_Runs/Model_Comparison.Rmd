@@ -80,9 +80,14 @@ modelRuns <- paste(here::here(), "WG_Revised_Runs",
                      "WHAM_Run29_splitNEFSC/WHAM_Run29_model.rds",
                      "WHAM_Run29A_splitNEFSC-BigUnits/WHAM_Run29A_model.rds",
                      "WHAM_Run29B_splitNEFSC-BigUnits-noSurvRandSel/WHAM_Run29B_model.rds",
+                     "WHAM_Run29B-1_changeESS/WHAM_Run29B-1_model.rds",
                      "WHAM_Run29C_splitNEFSC-biomass/WHAM_Run29C_model.rds",
-                     "WHAM_Run29DE_splitNEFSC-FreeSel-nlAgeComp/WHAM_Run29E_ln_acomp_model.rds", # Run 29D was exploratory so not included here
+                     #"WHAM_Run29DE_splitNEFSC-FreeSel-nlAgeComp/WHAM_Run29E_ln_acomp_model.rds", # Run 29D was exploratory so not included here
                      "WHAM_Run29F_splitNEFSC-BigUnits-nlAgeComp/WHAM_Run29F_model.rds",
+                     "WHAM_Run29F-1_swapInitSel/WHAM_Run29F-1_model.rds",
+                     "WHAM_Run29F-2_swapInitSel-randAlbFall/WHAM_Run29F-2_model.rds",
+                     "WHAM_Run29F-3_swapInitSel-fixAlbFall/WHAM_Run29F-3_model.rds",
+                     "WHAM_Run29F-4_splitNEFSC-BigUnits-nlAgeComp-fix1/WHAM_Run29F4_model.rds",
                      "WHAM_Run30_addMADMF/WHAM_Run30_model.rds",
                      "WHAM_Run31_addMENH/WHAM_Run31_model.rds",
                      "WHAM_Run32_addLPUE/WHAM_Run32_model.rds", 
@@ -90,14 +95,121 @@ modelRuns <- paste(here::here(), "WG_Revised_Runs",
                      "WHAM_Run34_addMENH-LPUE/WHAM_Run34_model.rds",
                      "WHAM_Run35_addMADMF-LPUE/WHAM_Run35_model.rds", 
                      "WHAM_Run37_VAST_ALL/WHAM_Run37_model.rds",
-                     "WHAM_Run37A_VAST_ALL-randSel/WHAM_Run37A_model.rds", "WHAM_Run37B_VAST_ALL-split/WHAM_Run37B_model.rds", "WHAM_Run37C_VAST_ALL-split-noRand/WHAM_Run37C_model.rds"), sep="/")
+                     "WHAM_Run37A_VAST_ALL-randSel/WHAM_Run37A_model.rds", 
+                     "WHAM_Run37B_VAST_ALL-split/WHAM_Run37B_model.rds", 
+                     "WHAM_Run37C_VAST_ALL-split-noRand/WHAM_Run37C_model.rds",
+                     "WHAM_Run37E_VAST-BigUnit-randSel/WHAM_Run37E_model.rds"), sep="/")
 
 # Read in model Rdata
 models <- lapply(modelRuns, readRDS)
-names(models) <- paste("Run", c(9, 10,11, 13,14,16, "16A",17,19,22, 23, "23A", 24, 25, 26, 27, "27A", 28, 29, "29A", "29B", "29C", "29E", "29F", 30:35, 37, "37A", "37B", "37C"), sep="")
+names(models) <- paste("Run", c(9, 10,11, 13,14,16, "16A",17,19,22, 23, "23A", 24, 25, 26, 27, "27A", 28, 29, "29A", "29B", "29B-1", "29C", "29E", "29F", "29F-1", "29F-2", "29F-3", "29F-4", 30, 31, 32, 34, 35, 37, "37A", "37B", "37C", "37E"), sep="")
 
 # Generate comparative diagnostics
 compare_wham_models(models, do.plot = FALSE, do.table=TRUE, fdir=paste(here::here(), "WG_Revised_Runs", "Comparison_Output", sep="/"))
+```
+AIC for run 32A
+```{r}
+modelRuns <- paste(here::here(), "WG_Revised_Runs", c("WHAM_Run32_addLPUE/WHAM_Run32_model.rds", 
+                     "WHAM_Run32A_addLPUE_qRand/WHAM_Run32A_model.rds"), sep="/")
+
+
+# Read in model Rdata
+models <- lapply(modelRuns, readRDS)
+names(models) <- paste("Run", c(32, "32A"), sep="")
+Run32A <- models$Run32A
+
+# Calculate AIC
+          k = length(Run32A$opt$par)
+ aic <-   2*(Run32A$opt$obj + k) # AIC
+        aic <- round(aic, 1)
+      
+      aic.tab <- cbind(aic)
+      colnames(aic.tab) <- c("AIC")
+```
+AIC for R-env runs BT temp FVCOM
+```{r}
+modelRuns2 <- paste(here::here(), "WG_Revised_Runs", c(                     "WHAM_Run38_addEnvCov-BT-noEffect/WHAM_Run38_model.rds"), sep="/")
+                     # "WHAM_Run38A_addEnvCov-BT-withEffect/WHAM_Run38A_model.rds",
+                     # "WHAM_Run38B_addEnvCov-BT-withEffect-2lag/WHAM_Run38B_model.rds"), sep="/")
+models2 <- lapply(modelRuns2, readRDS)
+names(models2) <- paste("Run", c(38))
+compare_wham_models(models2, do.plot = FALSE, do.table = TRUE, fdir=paste(here::here(), "WG_Revised_Runs", "Comparison_Output", sep="/"))
+```
+AIC for R-env runs SST anomaly
+```{r}
+modelRuns3 <- paste(here::here(), "WG_Revised_Runs",              c("WHAM_Run39_addEnvCov-anomSST-noEffect/WHAM_Run39_model.rds",
+                     "WHAM_Run39A_addEnvCov-anomSST-withEffect/WHAM_Run39A_model.rds"), sep="/")
+
+models3 <- lapply(modelRuns3, readRDS)
+names(models3) <- paste("Run", c(39, "39A"))
+compare_wham_models(models3, do.plot = FALSE, do.table = TRUE, fdir=paste(here::here(), "WG_Revised_Runs", "Comparison_Output", sep="/"))
+```
+AIC for q-env runs SST anomaly
+```{r}
+modelRuns <- paste(here::here(), "WG_Revised_Runs",              c("WHAM_Run41_addEnvCov-q-anomBT-noEffect/WHAM_Run41_model.rds",
+                     "WHAM_Run41A_addEnvCov-q-anomBT-withEffect/WHAM_Run41A_model.rds"), sep="/")
+
+models <- lapply(modelRuns, readRDS)
+names(models) <- paste("Run", c(41, "41A"))
+compare_wham_models(models, do.plot = FALSE, do.table = TRUE, fdir=paste(here::here(), "WG_Revised_Runs", "Comparison_Output", sep="/"))
+```
+AIC for R-env runs  NAO
+```{r}
+modelRuns <- paste(here::here(), "WG_Revised_Runs",              c("WHAM_Run42_addEnvCov-R-NAO-noEffect/WHAM_Run42_model.rds", 
+       "WHAM_Run42A_addEnvCov-R-NAO-withEffect/WHAM_Run42A_model.rds"), sep="/")
+
+# 42B calculated below
+
+models <- lapply(modelRuns, readRDS)
+names(models) <- paste("Run", c(42, "42A"))
+compare_wham_models(models, do.plot = FALSE, do.table = TRUE, fdir=paste(here::here(), "WG_Revised_Runs", "Comparison_Output", sep="/"))
+```
+AIC for run 42B
+```{r}
+modelRuns <- paste(here::here(), "WG_Revised_Runs", c("WHAM_Run38B_addEnvCov-BT-withEffect-2lag/WHAM_Run38B_model.rds",
+                                                      "WHAM_Run42B_addEnvCov-R-NAO-withEffect-2Lag/WHAM_Run42B_model.rds"), sep="/")
+
+
+# Read in model Rdata
+models <- lapply(modelRuns, readRDS)
+Run42B <- models$Run42B
+
+# Calculate AIC
+          k = length(Run42B$opt$par)
+ aic <-   2*(Run42B$opt$obj + k) # AIC
+        aic <- round(aic, 1)
+      
+      aic.tab <- cbind(aic)
+      colnames(aic.tab) <- c("AIC")
+    
+      rho <- mohns_rho(Run42B)[c("R","SSB","Fbar")]
+      rho <- round(rho, 4)
+      names(rho) <- paste0("rho_",c("R","SSB","Fbar"))
+      # apply(rho, 1, function(y) mean(abs(y)))
+    
+    tab <- c(aic.tab, as.matrix(rho, nrow=1))
+```
+AIC for R-env runs  AMO
+```{r}
+modelRuns <- paste(here::here(), "WG_Revised_Runs",              c("WHAM_Run43_addEnvCov-R-AMO-noEffect/WHAM_Run43_model.rds", 
+       "WHAM_Run43A_addEnvCov-R-AMO-withEffect/WHAM_Run43A_model.rds"), sep="/")
+
+# 42B calculated below
+
+models <- lapply(modelRuns, readRDS)
+names(models) <- paste("Run", c(42, "42A"))
+compare_wham_models(models, do.plot = FALSE, do.table = TRUE, fdir=paste(here::here(), "WG_Revised_Runs", "Comparison_Output", sep="/"))
+```
+AIC for R-env runs BT anomaly
+```{r}
+modelRuns <- paste(here::here(), "WG_Revised_Runs",              c("WHAM_Run44_addEnvCov-R-anomBT-noEffect/WHAM_Run44_model.rds", 
+       "WHAM_Run44A_addEnvCov-R-anomBT-withEffect/WHAM_Run44A_model.rds"), sep="/")
+
+# 42B calculated below
+
+models <- lapply(modelRuns, readRDS)
+names(models) <- paste("Run", c(44, "44A"))
+compare_wham_models(models, do.plot = FALSE, do.table = TRUE, fdir=paste(here::here(), "WG_Revised_Runs", "Comparison_Output", sep="/"))
 ```
 
 # Summary diagnostics for all except 10/11 (old data), 12 not invertible, 15 not working, 18/20/21 not invertible or not converged, 36 not converged with all indices
@@ -311,6 +423,65 @@ names(models) <- paste("Run", c(29,"29B"), sep="")
 compare_wham_models(models, do.plot = TRUE, do.table=TRUE, fdir=paste(here::here(), "WG_Revised_Runs", "Comparison_Output", sep="/"), plot.opts=list(which = c(1,2,6,7,8,9,10))) # plot.opts=list(which = 1) argument generates only the first plot - here looked at plots 1,2,6,7,8,9,10 (mostly 1,2,8)
 ```
 
+### Compare run 29Fs
+Compare 29F and 29F-1
+```{r}
+# File path
+modelRuns <- paste(here::here(), "WG_Revised_Runs",
+c("WHAM_Run29F_splitNEFSC-BigUnits-nlAgeComp/WHAM_Run29F_model.rds",
+  "WHAM_Run29F-1_swapInitSel/WHAM_Run29F-1_model.rds"), sep="/") 
+
+# Read in model Rdata
+models <- lapply(modelRuns, readRDS)
+names(models) <- paste("Run", c("29F","29F-1"), sep="") 
+
+# Generate comparative diagnostics
+compare_wham_models(models, do.plot = TRUE, do.table=TRUE, fdir=paste(here::here(), "WG_Revised_Runs", "Comparison_Output", sep="/")) 
+```
+Compare 29F and 29F-2
+```{r}
+# File path
+modelRuns <- paste(here::here(), "WG_Revised_Runs",
+c("WHAM_Run29F_splitNEFSC-BigUnits-nlAgeComp/WHAM_Run29F_model.rds",
+  "WHAM_Run29F-2_swapInitSel-randAlbFall/WHAM_Run29F-2_model.rds"), sep="/") 
+
+# Read in model Rdata
+models <- lapply(modelRuns, readRDS)
+names(models) <- paste("Run", c("29F","29F-2"), sep="") 
+
+# Generate comparative diagnostics
+compare_wham_models(models, do.plot = TRUE, do.table=TRUE, fdir=paste(here::here(), "WG_Revised_Runs", "Comparison_Output", sep="/")) 
+```
+Compare 29F and 29F-3
+```{r}
+# File path
+modelRuns <- paste(here::here(), "WG_Revised_Runs",
+c("WHAM_Run29F_splitNEFSC-BigUnits-nlAgeComp/WHAM_Run29F_model.rds",
+  "WHAM_Run29F-3_swapInitSel-fixAlbFall/WHAM_Run29F-3_model.rds"), sep="/") 
+
+# Read in model Rdata
+models <- lapply(modelRuns, readRDS)
+names(models) <- paste("Run", c("29F","29F-3"), sep="") 
+
+# Generate comparative diagnostics
+compare_wham_models(models, do.plot = TRUE, do.table=TRUE, fdir=paste(here::here(), "WG_Revised_Runs", "Comparison_Output", sep="/")) 
+```
+Compare 29F, 29F-2 and 29F-4
+```{r}
+# File path
+modelRuns <- paste(here::here(), "WG_Revised_Runs",
+c("WHAM_Run29F_splitNEFSC-BigUnits-nlAgeComp/WHAM_Run29F_model.rds",
+  "WHAM_Run29F-2_swapInitSel-randAlbFall/WHAM_Run29F-2_model.rds",
+  "WHAM_Run29F-4_splitNEFSC-BigUnits-nlAgeComp-fix1/WHAM_Run29F4_model.rds"), sep="/") 
+
+# Read in model Rdata
+models <- lapply(modelRuns, readRDS)
+names(models) <- paste("Run", c("29F","29F-2", "29F-4"), sep="") 
+
+# Generate comparative diagnostics
+compare_wham_models(models, do.plot = TRUE, do.table=TRUE, fdir=paste(here::here(), "WG_Revised_Runs", "Comparison_Output", sep="/")) 
+```
+
 ### Compare full NAA random effect (run 27) with models that add in other survey indices 
 ```{r}
 # File path
@@ -397,6 +568,139 @@ names(models) <- paste("Run", c(37, "37A"), sep="")
 compare_wham_models(models, do.plot = TRUE, do.table=TRUE, fdir=paste(here::here(), "WG_Revised_Runs", "Comparison_Output", sep="/")) # plot.opts=list(which = 1) argument generates only the first plot - here looked at plots 1,2,6,7,8,9,10
 ```
 
+### Compare Runs 38: with BT link to R
+```{r}
+# File path
+modelRuns <- paste(here::here(), "WG_Revised_Runs", c(#"WHAM_Run38_addEnvCov-BT-noEffect/WHAM_Run38_model.rds", 
+                                                      "WHAM_Run38A_addEnvCov-BT-withEffect/WHAM_Run38A_model.rds",
+                                                      "WHAM_Run38B_addEnvCov-BT-withEffect-2lag/WHAM_Run38B_model.rds"), sep="/")
+
+# Read in model Rdata
+models <- lapply(modelRuns, readRDS)
+names(models) <- paste("Run", c("38A", "38B"), sep="")
+
+# Generate comparative diagnostics
+compare_wham_models(list(Run38A, Run38B), do.plot = TRUE, do.table=TRUE, fdir=paste(here::here(), "WG_Revised_Runs", "Comparison_Output", sep="/"), calc.aic = FALSE)
+```
+
+
+### Compare Runs 39: with SST anomaly link to R
+```{r}
+# File path
+modelRuns <- paste(here::here(), "WG_Revised_Runs", c("WHAM_Run39_addEnvCov-anomSST-noEffect/WHAM_Run39_model.rds", 
+                                                      "WHAM_Run39A_addEnvCov-anomSST-withEffect/WHAM_Run39A_model.rds"), sep="/")
+
+# Read in model Rdata
+models <- lapply(modelRuns, readRDS)
+names(models) <- paste("Run", c(39, "39A"), sep="")
+
+# Generate comparative diagnostics
+compare_wham_models(models, do.plot = TRUE, do.table=TRUE, fdir=paste(here::here(), "WG_Revised_Runs", "Comparison_Output", sep="/"))
+```
+Compare to run 29B
+```{r}
+# File path
+modelRuns <- paste(here::here(), "WG_Revised_Runs", c("WHAM_Run39_addEnvCov-anomSST-noEffect/WHAM_Run39_model.rds", 
+                                                      "WHAM_Run39A_addEnvCov-anomSST-withEffect/WHAM_Run39A_model.rds",
+                                                      "WHAM_Run29B_splitNEFSC-BigUnits-noSurvRandSel/WHAM_Run29B_model.rds"), sep="/")
+
+# Read in model Rdata
+models <- lapply(modelRuns, readRDS)
+names(models) <- paste("Run", c(39, "39A", "29B"), sep="")
+
+# Generate comparative diagnostics
+compare_wham_models(models, do.plot = TRUE, do.table=FALSE, fdir=paste(here::here(), "WG_Revised_Runs", "Comparison_Output", sep="/"))
+```
+
+### Compare Runs 42: with NAO anomaly link to R
+```{r}
+# File path
+modelRuns <- paste(here::here(), "WG_Revised_Runs", c("WHAM_Run42_addEnvCov-R-NAO-noEffect/WHAM_Run42_model.rds", 
+                                                      "WHAM_Run42A_addEnvCov-R-NAO-withEffect/WHAM_Run42A_model.rds"), sep="/")
+                                                      # "WHAM_Run42B_addEnvCov-R-NAO-withEffect-2Lag/WHAM_Run42B_model.rds"), sep="/")
+
+# Read in model Rdata
+models <- lapply(modelRuns, readRDS)
+names(models) <- paste("Run", c(42, "42A"),sep="") #42B"), sep="")
+
+# Generate comparative diagnostics
+compare_wham_models(models, do.plot = TRUE, do.table=TRUE, fdir=paste(here::here(), "WG_Revised_Runs", "Comparison_Output", sep="/"))
+
+```
+Compare to 42B without AIC and table
+```{r}
+# File path
+modelRuns <- paste(here::here(), "WG_Revised_Runs", c("WHAM_Run42_addEnvCov-R-NAO-noEffect/WHAM_Run42_model.rds", 
+                                                      "WHAM_Run42A_addEnvCov-R-NAO-withEffect/WHAM_Run42A_model.rds",
+                                                      "WHAM_Run42B_addEnvCov-R-NAO-withEffect-2Lag/WHAM_Run42B_model.rds"), sep="/")
+
+# Read in model Rdata
+models <- lapply(modelRuns, readRDS)
+names(models) <- paste("Run", c(42, "42A", "42B"), sep="")
+
+# Generate comparative diagnostics
+compare_wham_models(models, do.plot = TRUE, do.table=FALSE, fdir=paste(here::here(), "WG_Revised_Runs", "Comparison_Output", sep="/"))
+```
+
+### Compare Runs 43: with AMO link to R
+```{r}
+# File path
+modelRuns <- paste(here::here(), "WG_Revised_Runs", c("WHAM_Run43_addEnvCov-R-AMO-noEffect/WHAM_Run43_model.rds", 
+                                                      "WHAM_Run43A_addEnvCov-R-AMO-withEffect/WHAM_Run43A_model.rds"), sep="/")
+
+# Read in model Rdata
+models <- lapply(modelRuns, readRDS)
+names(models) <- paste("Run", c(43, "43A"), sep="")
+
+# Generate comparative diagnostics
+compare_wham_models(models, do.plot = TRUE, do.table=TRUE, fdir=paste(here::here(), "WG_Revised_Runs", "Comparison_Output", sep="/"))
+```
+
+### Compare Runs 44: with BT anomaly link to R
+```{r}
+# File path
+modelRuns <- paste(here::here(), "WG_Revised_Runs", c("WHAM_Run44_addEnvCov-R-anomBT-noEffect/WHAM_Run44_model.rds", 
+                                                      "WHAM_Run44A_addEnvCov-R-anomBT-withEffect/WHAM_Run44A_model.rds"), sep="/")
+
+# Read in model Rdata
+models <- lapply(modelRuns, readRDS)
+names(models) <- paste("Run", c(44, "44A"), sep="")
+
+# Generate comparative diagnostics
+compare_wham_models(models, do.plot = TRUE, do.table=TRUE, fdir=paste(here::here(), "WG_Revised_Runs", "Comparison_Output", sep="/"))
+```
+
+### Compare Runs 41: with BT anomaly link to catchability
+```{r}
+# File path
+modelRuns <- paste(here::here(), "WG_Revised_Runs", c("WHAM_Run41_addEnvCov-q-anomBT-noEffect/WHAM_Run41_model.rds", 
+                                                      "WHAM_Run41A_addEnvCov-q-anomBT-withEffect/WHAM_Run41A_model.rds"), sep="/")
+
+# Read in model Rdata
+models <- lapply(modelRuns, readRDS)
+names(models) <- paste("Run", c(41, "41A"), sep="")
+
+# Generate comparative diagnostics
+compare_wham_models(models, do.plot = TRUE, do.table=TRUE, fdir=paste(here::here(), "WG_Revised_Runs", "Comparison_Output", sep="/"))
+```
+
+### Compare Runs 29B,39,41,42,43 - runs like 29B but fit to another env data set with no effect
+```{r}
+# File path
+modelRuns <- paste(here::here(), "WG_Revised_Runs", c("WHAM_Run29B_splitNEFSC-BigUnits-noSurvRandSel/WHAM_Run29B_model.rds",
+                                                      "WHAM_Run39_addEnvCov-anomSST-noEffect/WHAM_Run39_model.rds",
+                                                      "WHAM_Run41_addEnvCov-q-anomBT-noEffect/WHAM_Run41_model.rds",
+                                                      "WHAM_Run42_addEnvCov-R-NAO-noEffect/WHAM_Run42_model.rds",
+  "WHAM_Run43_addEnvCov-R-AMO-noEffect/WHAM_Run43_model.rds","WHAM_Run44_addEnvCov-R-anomBT-noEffect/WHAM_Run44_model.rds"), sep="/")
+
+# Read in model Rdata
+models <- lapply(modelRuns, readRDS)
+names(models) <- paste("Run", c("29B", 39, 41, 42, 43,44), sep="")
+
+# Generate comparative diagnostics
+compare_wham_models(models, do.plot = TRUE, do.table=FALSE, fdir=paste(here::here(), "WG_Revised_Runs", "Comparison_Output", sep="/"))
+```
+
 # Read in individuals
 ```{r}
 modelRuns <- paste(here::here(), "WG_Revised_Runs",
@@ -423,6 +727,9 @@ modelRuns <- paste(here::here(), "WG_Revised_Runs",
                      "WHAM_Run29B_splitNEFSC-BigUnits-noSurvRandSel/WHAM_Run29B_model.rds",
                      "WHAM_Run29C_splitNEFSC-biomass/WHAM_Run29C_model.rds",
                      "WHAM_Run29F_splitNEFSC-BigUnits-nlAgeComp/WHAM_Run29F_model.rds",
+                     "WHAM_Run29F-1_swapInitSel/WHAM_Run29F-1_model.rds",
+                     "WHAM_Run29F-2_swapInitSel-randAlbFall/WHAM_Run29F-2_model.rds",
+                     "WHAM_Run29F-3_swapInitSel-fixAlbFall/WHAM_Run29F-3_model.rds",
                      "WHAM_Run30_addMADMF/WHAM_Run30_model.rds",
                      "WHAM_Run31_addMENH/WHAM_Run31_model.rds",
                      "WHAM_Run32_addLPUE/WHAM_Run32_model.rds", 
@@ -430,11 +737,18 @@ modelRuns <- paste(here::here(), "WG_Revised_Runs",
                      "WHAM_Run34_addMENH-LPUE/WHAM_Run34_model.rds",
                      "WHAM_Run35_addMADMF-LPUE/WHAM_Run35_model.rds", 
                      "WHAM_Run37_VAST_ALL/WHAM_Run37_model.rds",
-                     "WHAM_Run37A_VAST_ALL-randSel/WHAM_Run37A_model.rds"), sep="/")
+                     "WHAM_Run37A_VAST_ALL-randSel/WHAM_Run37A_model.rds",
+                     "WHAM_Run38_addEnvCov-BT-noEffect/WHAM_Run38_model.rds",
+                     # "WHAM_Run38A_addEnvCov-BT-withEffect/WHAM_Run38A_model.rds",
+                     # "WHAM_Run38B_addEnvCov-BT-withEffect-2lag/WHAM_Run38B_model.rds",
+                     "WHAM_Run39_addEnvCov-anomSST-noEffect/WHAM_Run39_model.rds",
+                     "WHAM_Run39A_addEnvCov-anomSST-withEffect/WHAM_Run39A_model.rds"), sep="/")
+                     # "WHAM_Run41_addEnvCov-q-anomBT-noEffect/WHAM_Run41_model.rds",
+                     # "WHAM_Run41A_addEnvCov-q-anomBT-withEffect/WHAM_Run41A_model.rds"), sep="/")
 
 # Read in model Rdata
 models <- lapply(modelRuns, readRDS)
-names(models) <- paste("Run", c(9, 10,11, 13,14,16, "16A",17,19,22, 23, "23A", 24, 25, 26, 27, 28, 29, "29A", "29B", "29C", "29F", 30:35, 37, "37A"), sep="")
+names(models) <- paste("Run", c(9, 10,11, 13,14,16, "16A",17,19,22, 23, "23A", 24, 25, 26, 27, 28, 29, "29A", "29B", "29C", "29F", "29F1", "29F2", "29F3", 30:35, 37, "37A", 38, 39, "39A"), sep="")
 
 check_convergence(models$Run26)
 print(paste("Number of parameters", length(models$Run26$par), sep=" "))
