@@ -171,4 +171,4 @@ ReRun43 <- fit_wham(input = inputRerun, MakeADFun.silent = TRUE)
 ```
 
 ## Comment
-
+AIC score is within +/-2 of runs 43A so considered equivalent to this run (see scripts for run 43A for more specifics).
