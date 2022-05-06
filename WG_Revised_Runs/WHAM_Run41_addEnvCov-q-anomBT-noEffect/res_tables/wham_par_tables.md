@@ -432,18 +432,18 @@ header-includes:
    <td style="text-align:right;"> 0.166 </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> Ecov SST_anomaly: Ecov$_1$ </td>
-   <td style="text-align:right;"> -0.003 </td>
-   <td style="text-align:right;"> 0.383 </td>
-   <td style="text-align:right;"> -0.754 </td>
-   <td style="text-align:right;"> 0.748 </td>
+   <td style="text-align:left;"> Ecov BT_GLORYS: Ecov$_1$ </td>
+   <td style="text-align:right;"> -0.320 </td>
+   <td style="text-align:right;"> 0.428 </td>
+   <td style="text-align:right;"> -1.160 </td>
+   <td style="text-align:right;"> 0.519 </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> Ecov SST_anomaly: RW $\sigma$ </td>
-   <td style="text-align:right;"> 0.107 </td>
-   <td style="text-align:right;"> 0.075 </td>
-   <td style="text-align:right;"> 0.027 </td>
-   <td style="text-align:right;"> 0.421 </td>
+   <td style="text-align:left;"> Ecov BT_GLORYS: RW $\sigma$ </td>
+   <td style="text-align:right;"> 0.158 </td>
+   <td style="text-align:right;"> 0.081 </td>
+   <td style="text-align:right;"> 0.058 </td>
+   <td style="text-align:right;"> 0.430 </td>
   </tr>
 </tbody>
 </table>
