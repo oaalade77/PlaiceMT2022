@@ -79,6 +79,7 @@ Each run folder contains the following information:
 | WHAM_Run42B_addEnvCov-R-NAO-withEffect-2Lag | WG run identical to 42 but implements an effect of NAO on recruitment with a 2 year lag. |
 | WHAM_Run43_addEnvCov-R-AMO-noEffect | WG run similar to 29B, but also fit to AMO time series so comparable via AIC to runs that link recruitment to this covariate. |
 | WHAM_Run43A_addEnvCov-R-AMO-withEffect | WG run identical to 43 but implements and effect of AMO on recruitment with a 1 year lag. | 
+| WHAM_Run44_addEnvCov-R-anomBT-noEffect | WG run similar to 29B, but also fit to bottom temperature anomaly so comparable via AIC to runs that link recruitment to this environmental covariate. |
 
 ### ASAP re-runs for easy comparison with WHAM
 The following use data files from ASAP runs and re-run in WHAM so they can be easily compared and plotted with WHAM runs. Run numbering is inherited from the ASAP run for consistency.
