@@ -58,18 +58,27 @@ sel_list <- list(model = modelsetup, # list selectivity model for each fleet and
                  initial_pars = c(init_fleet_sel, init_index_sel),
                  fix_pars = c(fix_fleet_sel, fix_index_sel))
 
+#fix q at some safely large value
+catchability <- list(
+  initial_q = rep(2,use_n_indices))
+
 input <- prepare_wham_input(asap3, NAA_re = NAA_re, selectivity = sel_list, model_name = "WHAM_Run29F4", age_comp = "logistic-normal-miss0") # logistic normal age comp, 0s treated as missing
 
+#fix the q values
+input$map$logit_q = factor(rep(NA,use_n_indices)) #don't estimate q
+
 ##### Run model with freely estimated selectivity
-WHAM_Run29F4 <- fit_wham(input, MakeADFun.silent = TRUE, do.osa = FALSE) 
+WHAM_Run29F4 <- fit_wham(input, MakeADFun.silent = TRUE, do.osa = FALSE, do.retro=FALSE) 
 check_convergence(WHAM_Run29F4)
 print(paste("Number of parameters", length(WHAM_Run29F4$par), sep=" "))
 
 # ID ages that should be fixed at full selectivity
-WHAM_Run29F4$rep$selAA[2][[1]][1,] # Albatross spring, max sel = age 6
-WHAM_Run29F4$rep$selAA[3][[1]][1,] # Bigelow spring, max sel = age 5
-WHAM_Run29F4$rep$selAA[4][[1]][1,] # Albatross fall, max sel = age 4
-WHAM_Run29F4$rep$selAA[5][[1]][1,] # Bigelow fall, max sel = age 3
+#divide by max selectivity
+t(sapply(WHAM_Run29F4$rep$selAA[2:5], function(x) x[1,]/max(x[1,])))
+#WHAM_Run29F4$rep$selAA[2][[1]][1,] # Albatross spring, max sel = age 6
+#WHAM_Run29F4$rep$selAA[3][[1]][1,] # Bigelow spring, max sel = age 5
+#WHAM_Run29F4$rep$selAA[4][[1]][1,] # Albatross fall, max sel = age 4
+#WHAM_Run29F4$rep$selAA[5][[1]][1,] # Bigelow fall, max sel = age 3
 ```
 
 ### Prepare model input for full run
@@ -123,7 +132,12 @@ saveRDS(input, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run29F-4_splitN
 
 ### Fit model, check convergence, and run diagnostics
 ```{r}
+#checking fit before OSA, retro
+WHAM_Run29F4_basic <- fit_wham(input, MakeADFun.silent = TRUE, do.osa = FALSE, do.retro=FALSE) 
+check_convergence(WHAM_Run29F4)
+
 # Run with OSA residuals
+input$par = WHAM_Run29F4_basic$parList #start at the optimized values to save time
 WHAM_Run29F4 <- fit_wham(input, MakeADFun.silent = TRUE, do.osa = TRUE) 
 check_convergence(WHAM_Run29F4)
 print(paste("Number of parameters", length(WHAM_Run29F4$par), sep=" "))
