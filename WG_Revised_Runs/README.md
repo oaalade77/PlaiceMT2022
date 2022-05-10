@@ -67,12 +67,12 @@ Each run folder contains the following information:
 | WHAM_Run37C_VAST_ALL-split-noRand | WG run fit to split VAST indices as in run 37B but no index selectivity random effects were implemented. |
 | WHAM_Run37D_VAST_ALL-likeASAP50 | WG run with split indices and no index random effects as in run 37C, but VAST index data pulled from ASAP run 50. |
 | WHAM_Run37E_VAST-BigUnit-randSel | WG run fit to updated VAST indices based on raw data (NEFSC + MADMF + MENH), with logistic selectivity assumed for the fleet and both spring and fall indices. | 
-| WHAM_Run38_addEnvCov-BT-noEffect | WG run similar to run 29B, but also fit to bottom temperature data so comparable via AIC to runs that link R to this environmental covariate. |
-| WHAM_Run38A_addEnvCov-BT-withEffect | WG run identical to 38 but implements an effect of bottom temperature on recruitment with a 1 year lag. |
-| WHAM_Run38B_addEnvCov-BT-withEffect-2lag | WG run identical to 38 but implements an effect of bottom temperature on recruitment with a 2 year lag. |
+| WHAM_Run38_addEnvCov-BT-noEffect | Exploratory run similar to run 29B, but also fit to bottom temperature data so comparable via AIC to runs that link R to this environmental covariate. Small SE may have contributed to lack of convergence for this run and runs 38A and 38B, see runs 44-44A for model that fits to bottom temperature anomaly data instead. |
+| WHAM_Run38A_addEnvCov-BT-withEffect | Exploratory run identical to 38 but implements an effect of bottom temperature on recruitment with a 1 year lag. |
+| WHAM_Run38B_addEnvCov-BT-withEffect-2lag | Exploratory run identical to 38 but implements an effect of bottom temperature on recruitment with a 2 year lag. |
 | WHAM_Run39_addEnvCov-anomSST-noEffect | WG run similar to run 29B, but also fit to sea surface temperature anomaly data so comparable via AIC to runs that link R to this environmental covariate. | 
 | WHAM_Run39A_addEnvCov-anomSST-withEffect | WG run identical to 39 but implements an effect of sea surface temperature anomalies on recruitment with a 1 year lag. |
-| WHAM_Run40_splitNEFSC-BigUnits-randQ | WG run similar to 29B, but also implements a catchability random effect for the Albatross indices (model didn't converge with invertible hessian when also implemented for either spring or fall Bigelow indices). | 
+| WHAM_Run40_splitNEFSC-BigUnits-randQ | Exploratory run similar to 29B, but also implements a catchability random effect for the Albatross indices (model didn't converge with invertible hessian when also implemented for either spring or fall Bigelow indices). | 
 | WHAM_Run41_addEnvCov-q-anomBT-noEffect | WG run similar to 29B, but also fit to sea surface temperature anomaly data so comparable via AIC to runs that link catchability to this environmental covariate. | 
 | WHAM_Run41A_addEnvCov-q-anomBT-withEffect | WG run identical to 41 but implements an effect of sea surface temperature anomalies on catchability (q). As of 4/29/22 should probably be swapped for BT anomaly data but tested model setup here. |
 | WHAM_Run42_addEnvCov-R-NAO-noEffect | WG run similar to 29B, but also fit to NAO time series so comparable via AIC to runs that link recruitment to this covariate. |
