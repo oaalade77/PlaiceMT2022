@@ -6,6 +6,11 @@
 #'   \{indices - indexing numbers for the aggregate indices to drop to drop for MASE calculations}
 #'   \{index_paa - indexing numbers for the proportion at age indices to drop for MASE calculations}
 #' }
+#' 
+
+
+library(tidyverse)
+library(wham)
 
 hindcast = function(model, peel.max=7, horizon=c(1,3), drop=NULL, makeADFun.silent=TRUE){
   # check drop names and length
@@ -75,6 +80,7 @@ calc_hindcast_mase <- function(hindcast, horizon, drop){
     for(h in 1:n.h){    
       for(p in n.p:horizon[h]){
         mod = hindcast[[hc]]$peels[[p]]
+        # mod = hindcast$peels[[p]]
         yhat <- exp(mod$rep$pred_log_indices[nyrs-p+horizon[h], drop$indices[hc]])
         yhat_naive <- mod$env$data$agg_indices[nyrs-p, drop$indices[hc]]
         y <- mod$env$data$agg_indices[nyrs-p+horizon[h], drop$indices[hc]]
@@ -85,9 +91,9 @@ calc_hindcast_mase <- function(hindcast, horizon, drop){
   }
   
   # Filter any rows with a resid_naive value = 0 (no data at end of time series, e.g. because of truncated survey or missing data, will cause MASE value of INF since divide by 0)
-  checkMissing <- df %>% filter(resid_naive == 0) %>% nrow()
+  checkMissing <- df %>% dplyr::filter(resid_naive == 0) %>% nrow()
   if(checkMissing > 0){ # If there are peels with naive values of 0 print warning that data is likely missing at end of timeseries & the names of the indices to check for missing info
-    checkIndex <- df %>% filter(resid_naive == 0) %>% distinct(hindcast) %>% mutate_if(is.factor, as.character) %>% unlist() %>% paste(., " ")
+    checkIndex <- df %>% dplyr::filter(resid_naive == 0) %>% distinct(hindcast) %>% dplyr::mutate_if(is.factor, as.character) %>% unlist() %>% paste(., " ")
     warning("Check the following indices for missing data in the chosen horizon years (if missing, could result in MASE value of INF): " , checkIndex)
   }
   
