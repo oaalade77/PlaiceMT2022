@@ -1,7 +1,7 @@
 ---
 title: "WHAM_Run29F-4_splitNEFSC-BigUnits-nlAgeComp-fix1"
 output: html_document
-date: '2022-05-04'
+date: '2022-05-09'
 ---
 
 ## Model description
@@ -137,7 +137,7 @@ WHAM_Run29F4_basic <- fit_wham(input, MakeADFun.silent = TRUE, do.osa = FALSE, d
 check_convergence(WHAM_Run29F4)
 
 # Run with OSA residuals
-input$par = WHAM_Run29F4_basic$parList #start at the optimized values to save time
+input$par = WHAM_Run29F4_basic$parList #start at the optimized values (from run without OSA, retro) to save time
 WHAM_Run29F4 <- fit_wham(input, MakeADFun.silent = TRUE, do.osa = TRUE) 
 check_convergence(WHAM_Run29F4)
 print(paste("Number of parameters", length(WHAM_Run29F4$par), sep=" "))
