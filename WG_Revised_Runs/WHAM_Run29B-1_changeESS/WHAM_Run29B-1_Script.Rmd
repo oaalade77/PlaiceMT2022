@@ -205,4 +205,8 @@ ggsave(filename = paste(here::here(), "WG_Revised_Runs/WHAM_Run29B-1_changeESS/p
 ```
 
 ## Comment
+There were only minor differences between run 29B and 29B-1. 
+
+Estimates of F, R, SSB and reference points generally fell between those for run 27 and 29. CVs around estimates for SSB and F were lower than other runs for most of the time series but fell between those for run 27 and 29 towards the end of the time series.
+
 
