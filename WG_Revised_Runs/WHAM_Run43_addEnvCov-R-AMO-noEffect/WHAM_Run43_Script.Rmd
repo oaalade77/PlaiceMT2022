@@ -5,9 +5,7 @@ date: '2022-05-02'
 ---
 
 ## Model description
-Model specified as in run 29B with 2 major differences, 1) both age 4 and 5 were fixed at full selectivity for all indices (impacts Bigelow spring and Albatross fall) and 2) this run was fit with an environmental covariate that has no effect so it can be directly compared to run 38A that incorporates this environmental effect on recruitment. Mean annual bottom temperature was the environmental covariate considered here, with a 1 year lag (bottom temperature in year t impacts recruitment in year t+1) and a random walk process model.
-
-When the calculated standard error for the annual bottom temperature measurements were used (some of which were very small) this prevented the OSA resiudals for Ecov_obs from being generated so instead a standard error of 0.01 was used in all years (see line 41-42). 
+Model specified as in run 29B with 2 major differences, 1) both age 4 and 5 were fixed at full selectivity for all indices (impacts Bigelow spring and Albatross fall) and 2) this run was fit with an environmental covariate that has no effect so it can be directly compared to run 38A that incorporates this environmental effect on recruitment. The Atlantic Multidecadal Oscillation (AMO) was the environmental covariate considered here.
 
 ### Load R packages
 ```{r, echo=FALSE}
