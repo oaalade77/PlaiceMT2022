@@ -90,9 +90,7 @@ saveRDS(input, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run41B_addEnvCo
 
 ### Fit model, check convergence, and run diagnostics
 ```{r}
-temp <- fit_wham(input, do.osa = FALSE, do.retro = FALSE, MakeADFun.silent = TRUE) 
-check_convergence(temp)
-WHAM_Run41B <- fit_wham(input, do.osa = FALSE, do.retro = TRUE) 
+WHAM_Run41B <- fit_wham(input, do.osa = FALSE, do.retro = TRUE, MakeADFun.silent = TRUE) 
 check_convergence(WHAM_Run41B)
 print(paste("Number of parameters", length(WHAM_Run41B$par), sep=" "))
 
