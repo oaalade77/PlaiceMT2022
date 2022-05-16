@@ -1,6 +1,6 @@
 title: "WHAM_Run43A_addEnvCov-R-AMO-withEffect"
 output: html_document
-date: '2022-05-02'
+date: '2022-05-16'
 ---
 
 ## Model description
@@ -40,7 +40,7 @@ NAA_re$recruit_pars = exp(10) #initial guess for mean recruitment
   ecov <- list(
     label = "AMO",
     mean = as.matrix(AMO$mean),
-    logsigma = as.matrix(AMO$se),
+    logsigma = as.matrix(log(AMO$se)),
     year = as.numeric(AMO$Year),
     use_obs = matrix(c(FALSE, FALSE, FALSE, rep(TRUE, nrow(AMO)-3)), ncol = 1, nrow=nrow(AMO)), # use all obs except the first 3 (no data 1979, 1980, and 1981 not full year of data in 1981) 
     lag = 1, # AMO anomaly in year t impact R in year t+1
