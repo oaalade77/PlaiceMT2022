@@ -124,6 +124,12 @@ sel_list <- list(model = modelsetup, # list selectivity model for each fleet and
                  fix_pars = c(fix_fleet_sel, fix_index_sel))
 
 input <- prepare_wham_input(asap3, NAA_re = NAA_re, selectivity = sel_list, model_name = "WHAM_Run29F5", age_comp = "logistic-normal-miss0") # logistic normal age comp, 0s treated as missing
+
+temp = input$par$logit_selpars
+temp[] = as.integer(input$map$logit_selpars)
+temp[4,10:11] = temp[4,10]
+input$map$logit_selpars = factor(temp)
+
 ```
 
 ### Save input
@@ -136,8 +142,32 @@ saveRDS(input, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run29F-5_splitN
 ```{r}
 #checking fit before OSA, retro
 WHAM_Run29F5_basic <- fit_wham(input, MakeADFun.silent = TRUE, do.osa = FALSE, do.retro=FALSE) 
-check_convergence(WHAM_Run29F5)
+check_convergence(WHAM_Run29F5_basic)
+WHAM_Run29F4 = readRDS(paste(here::here(), "WG_Revised_Runs", "WHAM_Run29F-4_splitNEFSC-BigUnits-nlAgeComp-fix1", "WHAM_Run29F4_model.rds", sep="/"))
+length(WHAM_Run29F4$opt$par) + WHAM_Run29F4$opt$obj
+length(WHAM_Run29F5_basic$opt$par) + WHAM_Run29F5_basic$opt$obj
+WHAM_Run29F5_basic$sdrep
+WHAM_Run29F5_basic$rep$selAA[[4]][1,]
 
+randeffect <- c(rep("iid", asap3$dat$n_fleet_sel_blocks), c("none","none","ar1","none")) # Don't include selectivity random effects for any surveys 
+
+# Setup selectivity list
+sel_list <- list(model = modelsetup, # list selectivity model for each fleet and index
+                 re = randeffect,
+                 initial_pars = c(init_fleet_sel, init_index_sel),
+                 fix_pars = c(fix_fleet_sel, fix_index_sel))
+
+input <- prepare_wham_input(asap3, NAA_re = NAA_re, selectivity = sel_list, model_name = "WHAM_Run29F5", age_comp = "logistic-normal-miss0") # logistic normal age comp, 0s treated as missing
+# TJM: I believe I have uncovered a "bug" in the configuration of "ar1" with age-specific selectivity. When these are chosen, any logit_selpars that are estimated should be set to be a single "mean" value for the ar1 process. Doing this by hand below.
+temp = input$par$logit_selpars
+temp[] = as.integer(input$map$logit_selpars)
+temp[4,c(1:3,5:11)] = temp[4,3]
+input$map$logit_selpars = factor(temp)
+WHAM_Run29F5_ar1_AIV_Fall <- fit_wham(input, MakeADFun.silent = TRUE, do.osa = FALSE, do.retro=FALSE) 
+WHAM_Run29F4$rep$selAA[[4]][1,]
+WHAM_Run29F5_ar1_AIV_Fall$rep$selAA[[4]][1,]
+#TJM stopped here.
+#
 # Run with OSA residuals
 input$par = WHAM_Run29F5_basic$parList #start at the optimized values (from run without OSA, retro) to save time
 WHAM_Run29F5 <- fit_wham(input, MakeADFun.silent = TRUE, do.osa = TRUE) 
