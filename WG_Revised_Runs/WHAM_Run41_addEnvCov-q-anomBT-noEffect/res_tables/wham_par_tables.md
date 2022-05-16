@@ -433,17 +433,17 @@ header-includes:
   </tr>
   <tr>
    <td style="text-align:left;"> Ecov BT_GLORYS: Ecov$_1$ </td>
-   <td style="text-align:right;"> -0.320 </td>
-   <td style="text-align:right;"> 0.428 </td>
-   <td style="text-align:right;"> -1.160 </td>
-   <td style="text-align:right;"> 0.519 </td>
+   <td style="text-align:right;"> -0.606 </td>
+   <td style="text-align:right;"> 0.035 </td>
+   <td style="text-align:right;"> -0.674 </td>
+   <td style="text-align:right;"> -0.538 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> Ecov BT_GLORYS: RW $\sigma$ </td>
-   <td style="text-align:right;"> 0.158 </td>
-   <td style="text-align:right;"> 0.081 </td>
-   <td style="text-align:right;"> 0.058 </td>
-   <td style="text-align:right;"> 0.430 </td>
+   <td style="text-align:right;"> 0.481 </td>
+   <td style="text-align:right;"> 0.055 </td>
+   <td style="text-align:right;"> 0.385 </td>
+   <td style="text-align:right;"> 0.602 </td>
   </tr>
 </tbody>
 </table>
