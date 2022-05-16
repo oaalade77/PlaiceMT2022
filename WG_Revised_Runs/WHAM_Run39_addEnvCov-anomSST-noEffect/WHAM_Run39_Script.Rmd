@@ -1,7 +1,7 @@
 ---
 title: "WHAM_Run39_addEnvCov-anomSST-noEffect"
 output: html_document
-date: '2022-04-28'
+date: '2022-05-16'
 ---
 
 ## Model description
@@ -49,7 +49,7 @@ NAA_re$recruit_pars = exp(10) #initial guess for mean recruitment
   ecov <- list(
     label = "SST_anomaly",
     mean = as.matrix(anomSST$mean),
-    logsigma = as.matrix(anomSST$se),
+    logsigma = as.matrix(log(anomSST$se)),
     year = as.numeric(anomSST$Year),
     use_obs = matrix(c(FALSE, FALSE, FALSE, rep(TRUE, nrow(anomSST)-3)), ncol = 1, nrow=nrow(anomSST)), # use all obs except the first 2 (no data 1979 and 1980, not full year of data in 1981) 
     lag = 1, # SST anomaly in year t impact R in year t+1

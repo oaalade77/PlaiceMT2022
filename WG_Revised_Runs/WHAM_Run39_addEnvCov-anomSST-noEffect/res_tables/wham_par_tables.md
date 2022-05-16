@@ -433,17 +433,17 @@ header-includes:
   </tr>
   <tr>
    <td style="text-align:left;"> Ecov SST_anomaly: Ecov$_1$ </td>
-   <td style="text-align:right;"> -0.008 </td>
-   <td style="text-align:right;"> 0.379 </td>
-   <td style="text-align:right;"> -0.751 </td>
-   <td style="text-align:right;"> 0.735 </td>
+   <td style="text-align:right;"> -0.079 </td>
+   <td style="text-align:right;"> 0.939 </td>
+   <td style="text-align:right;"> -1.920 </td>
+   <td style="text-align:right;"> 1.761 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> Ecov SST_anomaly: RW $\sigma$ </td>
-   <td style="text-align:right;"> 0.105 </td>
-   <td style="text-align:right;"> 0.073 </td>
-   <td style="text-align:right;"> 0.027 </td>
-   <td style="text-align:right;"> 0.414 </td>
+   <td style="text-align:right;"> 0.542 </td>
+   <td style="text-align:right;"> 0.063 </td>
+   <td style="text-align:right;"> 0.432 </td>
+   <td style="text-align:right;"> 0.679 </td>
   </tr>
 </tbody>
 </table>
