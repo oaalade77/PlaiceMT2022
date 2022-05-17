@@ -1,0 +1,160 @@
+---
+title: "Plaice_Self_Test"
+output: html_document
+---
+
+# Self test candidate plaice models
+
+The following was adapted/coppied from Brian Stock's simulation test for butterfish and pulls from the following files: best_v4_1_sim.R, best_v4_2_fitsims.R, and best_v4_4_results.R
+
+Load packages
+```{r}
+library(wham)
+library(tidyverse)
+library(here)
+```
+
+Read in runs to self test
+```{r}
+# List of runs to self test (without projections)
+modelRuns <- paste(here::here(), "WG_Revised_Runs",
+                   c("WHAM_Run29F-2_swapInitSel-randAlbFall/WHAM_Run29F-2_model.rds",
+                     "WHAM_Run29F-4_splitNEFSC-BigUnits-nlAgeComp-fix1/WHAM_Run29F4_model.rds"), sep="/")
+
+# Read in model Rdata
+models <- lapply(modelRuns, readRDS)
+names(models) <- paste("Run", c("29F2", "29F4"), sep="")
+n.mods <- length(models)
+```
+
+Set up simulation settings
+```{r}
+# Number of sims
+n.sim <- 100
+
+# Set random seed for each simulation so replicable, save and read in so used for each model
+sim.seeds <- sample(1:1000000, n.sim, replace = FALSE)
+saveRDS(sim.seeds, file.path(paste(here::here(), "WG_Revised_Runs", "Plaice_Self_Test", "sim_seeds.rds", sep="/")))
+seeds <- readRDS(paste(here::here(), "WG_Revised_Runs", "Plaice_Self_Test", "sim_seeds.rds", sep="/"))
+```
+
+Simulate data using models from runs 29F-2 and 29F-4
+```{r}
+for(imod in 1:n.mods){ # Loop over models
+  # Set up storage for each model's simulations
+  simdata <- vector("list", n.sim)
+  
+  for(isim in 1:nsim){ # Loop over simulations for each model
+    print(paste0("Model: ", imod, "Sim: ", isim))
+    
+    set.seed(seeds[isim])
+    
+    simdata[[isim]] <- models[[imod]]$simulate(par=models[[imod]]$env$last.par.best, complete=TRUE)
+  } # end loop over model-specific simulations
+  
+  # Save data for each model's simulations
+  saveRDS(simdata, file = paste(here::here(), "WG_Revised_Runs", "Plaice_Self_Test", paste0("simdata_OM", names(models)[imod], ".rds"), sep="/"))
+  
+} # end loop over all models
+```
+
+
+Fit EM to OM simulated data
+```{r}
+for(imod in 1:n.mods){
+  # Read in OM data
+  simdata <- readRDS(paste(here::here(), "WG_Revised_Runs", "Plaice_Self_Test", paste0("simdata_OM", names(models)[imod], ".rds"), sep="/"))
+  
+  # Set up sims/years/ages based on OM data
+  n.sim = length(simdata)
+  n.years <- simdata[[1]]["n_years_model"]
+  n.ages <- simdata[[1]]["n_ages"]
+  
+  # Reload seeds
+  seeds <- readRDS(paste(here::here(), "WG_Revised_Runs", "Plaice_Self_Test", "sim_seeds.rds", sep="/"))
+  
+  options(warn=-1) # suppress warning messages
+  
+  # Set up storage for reps
+  sdreps <- vector("list", n.sim)
+  reps <- vector("list", n.sim)
+  res.colnames <- c("om","em","year","sim","F_fit","F_sim","SSB_fit","SSB_sim","catch_fit","catch_sim",paste0("NAA",1:n.ages),"R_sim")
+  results <- list(rep(list(matrix(NA, ncol = length(res.colnames), nrow = n.years)),n.sim)) # nested lists with preallocated matrices
+  
+  for(isim in 1:n.sim){ # Loop over model-specific simulation
+    print(paste0("OM: ", imod, " Sim: ", isim))
+    
+    # Set seed
+    set.seed(seeds[isim])
+    
+    # Read in estimation model (EM)
+    inputEM <- readRDS(paste(here::here())) #!!! not sure where the em comes from on line 70????
+    n.data <- length(inputEM$data)
+    
+    # process + obs errors (don't overwrite estimation model values here!!!)
+      # keep fixed effect param at optimized values from fit 
+      # simulate NAA (process error) and catch
+      # simulate index data (observation error)
+    n_sig <- inputEM$data$n_NAA_sigma 
+		n_sig_pointers <- inputEM$data$NAA_sigma_pointers
+		age_comp_model_fleets <- inputEM$data$age_comp_model_fleets
+		n_age_comp_pars_fleets <- inputEM$data$n_age_comp_pars_fleets
+		age_comp_model_indices <- inputEM$data$age_comp_model_indices
+		n_age_comp_pars_indices <- inputEM$data$n_age_comp_pars_indices
+    
+		# Overwrite storage with OM data for this simulation and store above input values that are unchanged
+    inputEM$data <- simdata[[isim]] # overwrite storage 
+    inputEM$data$n_NAA_sigma <- n_sig
+    inputEM$data$NAA_sigma_pointers <- n_sig_pointers
+    inputEM$data$age_comp_model_fleets <- age_comp_model_fleets
+    inputEM$data$n_age_comp_pars_fleets = n_age_comp_pars_fleets
+		inputEM$data$age_comp_model_indices = age_comp_model_indices
+		inputEM$data$n_age_comp_pars_indices = n_age_comp_pars_indices
+		ind.save <- c(1:n.data, match(c("F","SSB","pred_log_catch","NAA","log_FXSPR","FAA_tot","log_SSB_FXSPR","Fbar"), names(inputEM$data)))	
+		inputEM$data <- inputEM$data[ind.save]
+		
+		# Fit to simulated data from OM
+				fit2 <- tryCatch(fit_wham(input2, do.sdrep=F, do.osa=F, do.retro=F, do.proj=F, MakeADFun.silent=TRUE),
+					error = function(e) conditionMessage(e))
+				
+		# Deal with issues fitting EM to OM data
+		if(!'err' %in% names(fit2) & class(fit2) != "character"){
+			reps[[i]] <- fit2$rep
+			fit2$sdrep <- tryCatch(TMB::sdreport(fit2), # no bc
+							error = function(e) conditionMessage(e))
+			if(class(fit2$sdrep) == "sdreport"){
+				s2 <- summary(fit2$sdrep)
+				sdreps[[i]] <- s2
+				results[[i]] <- tryCatch(calc_results(om=om, em=em, sim=i, fit1=fit2, s1=s2),
+					error = function(e) conditionMessage(e))
+			} else {
+				results[[i]] <- "Error: sdreport failed, no results to calculate"
+				sdreps[[i]] <- fit2$sdrep # error message
+			}
+		} else {
+			results[[i]] <- "Error: model did not converge, no results to calculate"
+			if(class(fit2) != "character") reps[[i]] <- fit2$err # error message
+			if(class(fit2) == "character") reps[[i]] <- fit2
+			sdreps[[i]] <- "Error: model did not converge, sdreport not attempted"
+		}
+				
+		rm(list=c("input2","fit2")) # remove temporary input and fit data for model-specific simulation
+  } # End loop over model-specific simulations
+  
+  rm(list=c("simdata")) # Remove temporary data for model
+  
+  # Save results in a single matrix
+  saveRDS(results, file=paste(here::here(), "WG_Revised_Runs", "Plaice_Self_Test", paste0("fitresults_om",om,"_em",em,".rds"), sep="/")) # Fitted results
+  saveRDS(sdreps, file=paste(here::here(), "WG_Revised_Runs", "Plaice_Self_Test", paste0("sdreps_om",om,"_em",em,".rds"), sep="/"))
+  saveRDS(reps, file=paste(here::here(), "WG_Revised_Runs", "Plaice_Self_Test", paste0("reps_om",om,"_em",em,".rds"), sep="/"))
+  
+} # End loop over models
+```
+
+
+
+
+
+
+
+
