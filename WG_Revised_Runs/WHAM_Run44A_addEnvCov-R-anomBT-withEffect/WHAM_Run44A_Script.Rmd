@@ -117,7 +117,8 @@ ReRun44A <- fit_wham(input = inputRerun, MakeADFun.silent = TRUE)
 ## Comment
 Estimates of SSB and recruitment are slightly lower for run 44A than run 44. CVs around SSB, R, and F estimates are slightly higher at the end of the time series for run 44A. 
 
-OSA residuals for fit to aggregate fleet and indices were similarly distributed in runs 44 and 44A. The BT anomaly OSA residuals were not very normally distributed in either run. OSA age comp residuals have similar magnitudes and patterns for the fleet and all indices.
+OSA residuals for fit to aggregate fleet and indices were similarly distributed in runs 44 and 44A. OSA residuals for fit to age comp data were similar in magnitude and pattern in both run 44 and 44A. The BT anomaly OSA residuals were not calculated/plotted for this run. 
 
-AIC was larger in run 44A but still within 2 of the AIC score for run 44 so this run should be considered equivalent. 
+AIC was larger in run 44A but still within 2 of the AIC score for run 44 so this run should be considered equivalent. Mohn's rho values were larger than for run 44. Slight preference for run 44 since no major improvements in 44A. 
 
+Note: not all diagnostic plots were automatically generated for this run.
