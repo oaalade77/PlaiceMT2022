@@ -123,5 +123,5 @@ ReRun39 <- fit_wham(input = inputRerun, MakeADFun.silent = TRUE)
 ```
 
 ## Comment
-Minor differences with run 39A (see comments in that run script), AIC slightly larger for run 39A but within +/-2 so suggest no preference for the inclusion of SST anomaly effects.
+Minor differences with run 39A (see comments in that run script), AIC slightly larger than run 39A but no other obvious improvements in other model diagnostics so run 39 is still the preferable run.
 
