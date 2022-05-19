@@ -118,9 +118,13 @@ ReRun42A <- fit_wham(input = inputRerun, MakeADFun.silent = TRUE)
 ```
 
 ## Comment
+Model estimates of q, R, SSB, and F are similar for run 42 and 42A. CVs around R, and SSB estimates were slightly higher in run 42A towards the end of the time series.
 
-Model estimates of q, R, SSB, and F are similar for run 42 and 42A. OSA age comp residual patterns and distributions are also similar between these runs and the same is true for OSA residuals for fit to aggregate fleet and index data. 
+Fit to the NAO time series was better in run 42A than run 42, but observed-predicted residuals were larger in magnitude for run 42A. OSA residuals for fit to this covariate were much more normally distributed in this run than in run 42. 
 
-OSA residuals for fit to the NAO time series was not very normally distributed in either run 42 and 42A. 
+OSA age comp residual patterns and distributions are similar between these runs and the same is true for OSA residuals for fit to aggregate fleet and index data. 
 
-AIC was larger but still within 2 of the AIC score for run 42 so this run should be considered equivalent. 
+AIC was smaller for run 42A, but Mohn's rho values were larger except for F_bar. The lack of improvement in model fit to indices and generally larger Mohn's rho values suggest that model 42 should be preferred. The only major improvement was fit to the environmental covariate which alone is not enough to prefer this model over run 42. Collectively, this suggests that run 42 should remain the preferred model of these 2 runs.
+
+
+ 
