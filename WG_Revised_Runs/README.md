@@ -82,6 +82,16 @@ Each run folder contains the following information:
 | WHAM_Run43A_addEnvCov-R-AMO-withEffect | WG run identical to 43 but implements and effect of AMO on recruitment with a 1 year lag. | 
 | WHAM_Run44_addEnvCov-R-anomBT-noEffect | WG run similar to 29B, but also fit to BT anomaly data so comparable via AIC to runs that link recruitment to this covariate. |
 | WHAM_Run44A_addEnvCov-R-anomBT-withEffect | WG run identical to 44 but implements an effect of BT anomalies on recruitment with a 1 year lag. |
+| WHAM_Run46_addEnvCov-anomSST-noEffect-ar1 | WG run identical to run 39 fit to sea surface temperature anomaly data so comparable via AIC to runs that link recruitment to this covariate, but implement an ar1 process rather than a random walk. | 
+| WHAM_Run46A_addEnvCov-anomSST-withEffect-ar1 | WG run identical to run 39A with an effect of sea surface temperature anomaly on recruitment, but implement an ar1 process rather than random walk. | 
+| WHAM_Run47_addEnvCov-q-anomBT-noEffect | WG run identical to run 47 fit to bottom temperature anomaly data so comparable via AIC to runs that link recruitment to this covariate, but implement an ar1 process rather than a random walk. | 
+| WHAM_Run47A_addEnvCov-q-anomBT-withEffect-ar1 | WG run identical to run 41A with an effect of bottom temperature anomaly on catchability, but implement an ar1 process rather than random walk. | 
+| WHAM_Run48_addEnvCov-R-NAO-noEffect-ar1 | WG run identical to run 42 fit to NAO data so comparable via AIC to runs that link recruitment to this covariate, but implement an ar1 process rather than a random walk. |
+| WHAM_Run48A_addEnvCov-R-NAO-withEffect-ar1 | WG run identical to run 42A with an effect of NAO on recruitment, but implement an ar1 process rather than a random walk. |
+| WHAM_Run49_addEnvCov-R-AMO-noEffect-ar1 | WG run identical to run 43 fit to AMO data so comparable via AIC to runs that link recruitment to this covariate, but implement an ar1 process rather than a random walk. |
+| WHAM_Run49A_addEnvCov-R-AMO-withEffect-ar1 | WG run identical to run 43A with an effect of AMO on recruitment, but implement an ar1 process rather than a random walk. |
+| WHAM_Run50_addEnvCov-R-anomBT-noEffect-ar1 | WG run identical to run 44 fit to bottom temperature anomaly  so comparable via AIC to runs that link recruitment to this covariate, but implement an ar1 process rather than a random walk. | 
+| WHAM_Run50A_addEnvCov-R-anomBT-withEffect-ar1 | WG run identical to run 44 with an effect of bottom temperature anomaly on recruitment, but implement an ar1 process rather than a random walk. |
 
 ### ASAP re-runs for easy comparison with WHAM
 The following use data files from ASAP runs and re-run in WHAM so they can be easily compared and plotted with WHAM runs. Run numbering is inherited from the ASAP run for consistency.
