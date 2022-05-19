@@ -115,6 +115,6 @@ ReRun41 <- fit_wham(input = inputRerun, MakeADFun.silent = TRUE)
 ```
 
 ## Comment
-
+Minor differences with run 41A (see comments in that run script), particularly due to the catchability random effect. AIC was slightly larger than run 41A, but Mohn's rho values were slightly smaller and there no other obvious improvements in OSA residuals, suggesting that run 41 should still be the preferable run.
 
 
