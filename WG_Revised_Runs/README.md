@@ -97,3 +97,4 @@ The following use data files from ASAP runs and re-run in WHAM so they can be ea
 |---------------------------|---------------------------------------------|
 | Model_Comparison.Rmd | A script that reads in fitted model objects and generates comparison plots. |
 | Comparison_Output | A folder containing comparison plots that will be overwritten by any call to compare_wham_models() in Model_Comparison.Rmd, included here so any part of this script can be run to quickly regenerate plots as long as repo is cloned locally. | 
+| Plaice_Self_Test | A folder containing a script to run self tests for candidate models. |
