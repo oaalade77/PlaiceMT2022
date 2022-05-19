@@ -170,4 +170,4 @@ ReRun43 <- fit_wham(input = inputRerun, MakeADFun.silent = TRUE)
 ```
 
 ## Comment
-AIC score is within +/-2 of runs 43A so considered equivalent to this run (see scripts for run 43A for more specifics).
+There were no major differences with run 43A (see comments in that run script), except for worse fit to NAO time series in run 43. AIC was larger than run 43A, but Mohn's rho values for run 43 were smaller. The improvement in the AIC score for run 43A could be attributed to the improved fit to the NAO time series, but did not improve fit to any of the other indices so run 43 still appears to be a more appropriate model.
