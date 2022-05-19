@@ -1,3 +1,4 @@
+---
 title: "WHAM_Run43A_addEnvCov-R-AMO-withEffect"
 output: html_document
 date: '2022-05-16'
@@ -114,8 +115,11 @@ ReRun43A <- fit_wham(input = inputRerun, MakeADFun.silent = TRUE)
 ```
 
 ## Comment
-OSA residual patterns and distributions are similar in run 43A and 43 and the same was true for OSA residuals for fit to aggregate fleet and index data. 
+Fit to the AMO timeseries was better in run 43A than 43, with OSA residuals for fit to this data normally distributed in run 43A but not run 43.
 
-OSA residuals for fit to the AMO time series were not normally distributed. 
+OSA age comp residual patterns and distributions for are similar in run 43A and 43 and the same was true for OSA residuals for fit to aggregate fleet and index data. 
 
-The AIC was smaller but still within +/-2 of run 43 so this model would be considered equivalent, and this is reflected in the identical Mohn's rho values for R, SSB, and Fbar. 
+F, R, and SSB estimates were nearly identical, but CVs around these estimates were slightly higher for run 43A towards the end of the time series.
+
+Run 43A AIC was smaller than in run 43 but the Mohn's rho values for R, SSB, and Fbar were all larger than run 43. The only major improvement was fit to the environmental covariate which alone is not enough to prefer this model over run 43. Collectively, this suggests that run 43 should remain the preferred model of these 2 runs.
+
