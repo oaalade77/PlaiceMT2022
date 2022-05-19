@@ -122,13 +122,16 @@ ReRun39A <- fit_wham(input = inputRerun, MakeADFun.silent = TRUE)
 ```
 
 ## Comment
-Recruitment and SSB slightly lower at end of time series compared to run 39 which fits to SST anomaly data but does not include an effect on Recruitment. CVs around estimates of F, R, and SSB are slightly higher at the end of the time series. This has consequences for SSB at F40% and Yield at F40% reference points which are slightly lower than run 39. 
+There are slight differences between the catchability estimates between run 39 and 39A but selectivity estimates are similar across these runs.
 
-There are slightly differences between the catchability estimates between run 39 and 39A but selectivity estimates are similar across these runs.
+Fleet and index age comp OSA residuals are similar in magnitude and pattern for runs 39 and 39A. OSA residuals for fit to aggregate fleet and index data are similarly distributed across runs. OSA residuals for fit to the SST anomaly data are not normally distributed in either run. 
 
-Fleet and index OSA residuals for fit to aggregate data and age comp OSA residuals are similar across both run 39 and 39A. OSA residuals for fit to the SST anomaly data are somewhat normally distributed in both runs. 
+The magnitude of observed-predicted residuals for the fit to the environmental covariate follow a similar pattern but are larger in magnitude in run 39A than in run 39. 
 
 Mohn's rho values, including those for Recruitment are smaller for run 39 than 39A.
 
-Collectively, it does not appear that a SST anomaly effect on R with a 1 year lag improves model fit or diagnostics. 
+Recruitment and SSB slightly lower at end of time series compared to run 39 which fits to SST anomaly data but does not include an effect on Recruitment. CVs around estimates of F, R, and SSB are slightly higher at the end of the time series. This has consequences for SSB at F40% and Yield at F40% reference points which are slightly lower than run 39. 
+
+
+Although AIC was smaller for run 39A, there was not obvious improvement in OSA residuals or Mohn's rho values so it appears that run 39 is more appropriate based on most diagnostics.
 
