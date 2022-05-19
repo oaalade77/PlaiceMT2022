@@ -116,11 +116,12 @@ ReRun41A <- fit_wham(input = inputRerun, MakeADFun.silent = TRUE)
 ```
 
 ## Comment
-
-Catchability estimates for index 1,2, and 4 follow similar trends over time with some differences in magnitude. In contrast index 3 (Albatross fall) catchability estimates are fairly constant over time, with similar magnitude to estimates in run 44. 
+Catchability estimates in run 41A index 1,3, and 4 vary over time, while estimates for index 2 are nearly constant. General trends for the 3 varying indices follow similar patterns but on much different scales.
 
 OSA residuals for fit to fleet and index age comp data had similar patterns, magnitudes, and distributions in run 44 and 44A. 
 
-OSA residuals for fit to aggregate fleet data were similarly distributed in runs 44 and 44A. OSA residuals for fit to aggregate index 1 (Albatross spring) were more normally distributed index 3 (Albatross fall) were slightly more normally distributed, while residuals for indices 2, and 4 were similarly distributed. Residual fit to the BT anomaly data was slightly more normally distributed in run 44A compared to run 44, but still was not particularly normally distributed. 
+OSA residuals for fit to aggregate fleet data were similarly distributed in runs 41 and 41A. OSA residuals for fit to aggregate index 1 (Albatross spring) and index 3 (Albatross fall) were slightly less normally, while residuals for indices 2, and 4 were similarly distributed. Residual fit to the BT anomaly data was not very normally distributed in either run. 
 
-SSB and recruitment estimates were generally slightly lower in run 41A than in run 41 and F estimates were slightly higher for the second half of the time series. CVs for SSB and F estimates were generally higher for run 41A. Fleet selectivity estimates were similar in both runs, but index selectivity estimates were higher slightly hiher for older ages for indes 2-4 but slightly lower for the same ages in index 1 (Albatross spring). 
+SSB and recruitment estimates were generally slightly lower in run 41A than in run 41 and F estimates were slightly higher for the second half of the time series. CVs for SSB and F estimates were generally higher for run 41A. Fleet selectivity estimates were similar in both runs, but index selectivity estimates were higher slightly higher for older ages for indices 2-4 but slightly lower for the same ages in index 1 (Albatross spring). 
+
+Run 41A had a smaller AIC score than run 41, but also had higher Mohn's rho values. The lack of improvement in normality for OSA residuals in run 41A suggests that run 41 should still be preferred over run 41A despite the better AIC score for run 41A. 
