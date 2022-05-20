@@ -50,11 +50,13 @@ Each run folder contains the following information:
 | WHAM_Run29F-2_swapInitSel-randAlbFall | WG run identical to run 29F-1 but implement a selectivity random effect for the fall Albatross fall index. Also tried this while freely estimating Albatross fall age 11+ selectivity but that did not converge. | 
 | WHAM_Run29F-3_swapInitSel-fixAlbFall | WG run identical to run 29F-2 but does not include the Albatross fall selectiity random effect and fixed age 11+ for this index at the estimate from run 29B rather than at 1. | 
 | WHAM_Run29F-4_splitNEFSC-BigUnits-nlAgeComp-fix1 | WG run identical to run 29F but only fixes a single age at full selectivity based on a preliminary run that freely estimated selectivity at age but did not converge. | 
+| WHAM_Run29F-5_splitNEFSC-BigUnits-nlAgeComp-fix1-randSel | WG run identical to run 29F-4 but also implements an ar1 random effect on age (age-varying not time-varying) for the Albatross fall index. | 
 | WHAM_Run29G_splitNEFSC-BigUnits-dirmultAgeComp | Exploratory WG run as in run 29B but explores a dirichlet-multinomial age composition likelihood and changes effective sample size to 100. Did not converge.|
 | WHAM_Run29H_splitNEFSC-BigUnits-dirmultAgeComp | WG run building off run 29G that converges with a dirichlet-multinomial age composition likelihood and working OSA residuals. | 
 | WHAM_Run30_addMADMF | WG run with full state space model as in run 27 except selectivity random effect only implemented for the fleet, adds MADMF spring and fall indices in addition to NEFSC. FROM THIS RUN ON OSA RESIDUALS CALCULATED FOR FIT TO AGE COMP DATA! |
 | WHAM_Run31_addMENH | WG run with full state space model as in run 27, adds MENH spring and fall indices in addition to NEFSC. | 
 | WHAM_Run32_addLPUE | WG run with iid recruitment random effects as in run 25, adds LPUE index in addition to NEFSC. Iid selectivity random effects were implemented for the fleet and NEFSC indices, but selectivity for the LPUE index was assumed to mirror the fleet. |
+| WHAM_Run32A_addLPUE_qRand | WG run identical to run 32 but also implements a catchability random effect for the LPUE index. |
 | WHAM_Run33_addMADMF-MENH | WG run with full state space model as in run 27, but a selectivity random effect was implemented for only the fleet, adds both MADMF and MENH spring and fall indices. |
 | WHAM_Run34_addMENH-LPUE | WG run with iid recruitment random effects as in run 25 including selectivity random effects for the fleet and all indices, and adds both MENH and LPUE indices. Selectivity for the LPUE index was estimated independent of the fleet. |
 | WHAM_Run34A_addMENH-LPUE_mirrorLPUE | WG run identical to run 34 but the selectivity for the LPUE index was specified to mirror the fleet estimated selectivity-at-age. | 
@@ -84,7 +86,7 @@ Each run folder contains the following information:
 | WHAM_Run44A_addEnvCov-R-anomBT-withEffect | WG run identical to 44 but implements an effect of BT anomalies on recruitment with a 1 year lag. |
 | WHAM_Run46_addEnvCov-anomSST-noEffect-ar1 | WG run identical to run 39 fit to sea surface temperature anomaly data so comparable via AIC to runs that link recruitment to this covariate, but implement an ar1 process rather than a random walk. | 
 | WHAM_Run46A_addEnvCov-anomSST-withEffect-ar1 | WG run identical to run 39A with an effect of sea surface temperature anomaly on recruitment, but implement an ar1 process rather than random walk. | 
-| WHAM_Run47_addEnvCov-q-anomBT-noEffect | WG run identical to run 47 fit to bottom temperature anomaly data so comparable via AIC to runs that link recruitment to this covariate, but implement an ar1 process rather than a random walk. | 
+| WHAM_Run47_addEnvCov-q-anomBT-noEffect | WG run identical to run 41 fit to bottom temperature anomaly data so comparable via AIC to runs that link recruitment to this covariate, but implement an ar1 process rather than a random walk. | 
 | WHAM_Run47A_addEnvCov-q-anomBT-withEffect-ar1 | WG run identical to run 41A with an effect of bottom temperature anomaly on catchability, but implement an ar1 process rather than random walk. | 
 | WHAM_Run48_addEnvCov-R-NAO-noEffect-ar1 | WG run identical to run 42 fit to NAO data so comparable via AIC to runs that link recruitment to this covariate, but implement an ar1 process rather than a random walk. |
 | WHAM_Run48A_addEnvCov-R-NAO-withEffect-ar1 | WG run identical to run 42A with an effect of NAO on recruitment, but implement an ar1 process rather than a random walk. |
