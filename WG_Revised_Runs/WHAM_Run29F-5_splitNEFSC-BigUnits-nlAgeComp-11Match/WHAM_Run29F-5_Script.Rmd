@@ -5,11 +5,13 @@ date: '2022-05-12'
 ---
 
 ## Model description
-Model identical to run 29F (full state-space model, revised data, logistic fleet selectivity, age-specific index selectivity, recruitment that is random about the mean, with split Albatross and Bigelow indices and a logistic-normal age composition likelihood) but only a single age was fixed at full selectivity for each index. 
+Model identical to run 29F-4 (full state-space model, revised data, logistic fleet selectivity, age-specific index selectivity, recruitment that is random about the mean, with split Albatross and Bigelow indices and a logistic-normal age composition likelihood, only a single age was fixed at full selectivity for each index). 
 
-THE GOAL FOR THIS RUN IS TO FREELY ESTIMATE SELECTIVITY AT OLDER AGES BUT FORCE THE 11+ GROUP FOR ALBATROSS FALL TO MATCH THAT OF A YOUNGER AGE. 
+A single age was fixed at full selectivity for each index based on the preliminary run done for run 29F-4: age 6 for index 1 (Albatross spring), 5 for index 2 (Bigelow spring), age 4 for index 3 (Albatross fall) and age 3 for index 4 (Bigelow fall) fixed at full selectivity. 
 
-A preliminary run freely estimated parameters to ID what ages should have selectivity fixed at 1. This preliminary run did not converge, but suggested that ages 6 for index 1 (Albatross spring), 5 for index 2 (Bigelow spring), age 4 for index 3 (Albatross fall) and ages 3 for index 4 (Bigelow fall) should be fixed at full selectivity and were subsequently fixed at 1 in the full run for which results are recorded. 
+Here a preliminary run set selectivity for ages 10 and 11+ to be estimated as a single parameter. This resulted in a high parameter estimate for these ages (~0.97) which was considered high.
+
+Instead of estimating the same value for ages 10 and 11+, the full run implemented ar1 random effects on age (not time varying, just age varying) for the Albatross fall index. This led to a selectivity at age greater than earlier ages but not near 1.
 
 ### Load R packages
 ```{r, echo=FALSE}
@@ -24,67 +26,8 @@ library(DataExplorer)
 asap3 <- read_asap3_dat(paste(here::here(), "data", "PlaiceWHAM-2019_revised_NEFSC-LW-WAA_splitNEFSC-BigUnit.DAT", sep="/"))
 ```
 
-### Preliminary run with freely estimated selectivity
-Freely estimate selectivity-at-age for all indices to ID what ages to fix.
-```{r}
-##### Set up preliminary input with no selectivity parameters fixed
-NAA_re = list(sigma = "rec+1") # Full state-space model
-NAA_re$cor = "iid" # iid random effects
-NAA_re$recruit_model = 2 # recruitment is random about the mean
-NAA_re$recruit_pars = exp(10) #initial guess for mean recruitment
-
-# Setup initial selectivity model and parameters
-use_n_indices = 4
-modelsetup <- c(rep("logistic", asap3$dat$n_fleet_sel_blocks), rep("age-specific", use_n_indices))
-
-# Setup fixed parameters
-fix_fleet_sel <- lapply(1:asap3$dat$n_fleets, function(x) NA) 
-fix_index_sel <- lapply(1:use_n_indices, function(x) NA) # Set up index object
-
-# fix_index_sel[[1]] <- c(4) # Fix age 4  for for index 1 (NEFSC spring Albatross)
-# fix_index_sel[[2]] <- 5 # Fix age 4 & 5 for for index 2 (NEFSC spring Bigelow)
-# fix_index_sel[[3]] <- c(11) # Fix age 4, 5, and 11 for for index 3 (NEFSC fall Albatross)
-# fix_index_sel[[4]] <- 4 # Fix age 4  for for index 4 (NEFSC spring Bigelow)
-
-init_fleet_sel <- list(c(2,0.4)) # logistic parameters, based on model type
-init_index_sel <- lapply(1:use_n_indices, function(x) c(0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5))
-# for(i in 1:4) init_index_sel[[i]][fix_index_sel[[i]]] <- 1 # replace initial values for 1 for the ages where selectivity fixed
-
-
-# Setup random effect by selectivity block (here: fleet, index1, index2, index3, index4)
-randeffect <- c(rep("iid", asap3$dat$n_fleet_sel_blocks), rep("none", 4)) # Don't include selectivity random effects for any surveys 
-
-# Setup selectivity list
-sel_list <- list(model = modelsetup, # list selectivity model for each fleet and index
-                 re = randeffect,
-                 initial_pars = c(init_fleet_sel, init_index_sel),
-                 fix_pars = c(fix_fleet_sel, fix_index_sel))
-
-#fix q at some safely large value
-catchability <- list(
-  initial_q = rep(2,use_n_indices))
-
-input <- prepare_wham_input(asap3, NAA_re = NAA_re, selectivity = sel_list, model_name = "WHAM_Run29F5", age_comp = "logistic-normal-miss0") # logistic normal age comp, 0s treated as missing
-
-#fix the q values
-input$map$logit_q = factor(rep(NA,use_n_indices)) #don't estimate q
-
-##### Run model with freely estimated selectivity
-WHAM_Run29F5 <- fit_wham(input, MakeADFun.silent = TRUE, do.osa = FALSE, do.retro=FALSE) 
-check_convergence(WHAM_Run29F5)
-print(paste("Number of parameters", length(WHAM_Run29F5$par), sep=" "))
-
-# ID ages that should be fixed at full selectivity
-#divide by max selectivity
-t(sapply(WHAM_Run29F5$rep$selAA[2:5], function(x) x[1,]/max(x[1,])))
-#WHAM_Run29F5$rep$selAA[2][[1]][1,] # Albatross spring, max sel = age 6
-#WHAM_Run29F5$rep$selAA[3][[1]][1,] # Bigelow spring, max sel = age 5
-#WHAM_Run29F5$rep$selAA[4][[1]][1,] # Albatross fall, max sel = age 4
-#WHAM_Run29F5$rep$selAA[5][[1]][1,] # Bigelow fall, max sel = age 3
-```
-
-### Prepare model input for full run
-Fix only 1 age selectivity at 1 for each index based on highest estimated selectivity in preliminary run.
+### Prepare model input for preliminary run
+Fix only 1 age selectivity at 1 for each index based on highest estimated selectivity in preliminary run from run 29F-4 (same model structure except for treatment of Albatross fall age 10/11+). Albatross fall age 10 and 11+ were freely estimated but mapped so they have the same estimate.
 ```{r}
 NAA_re = list(sigma = "rec+1") # Full state-space model
 NAA_re$cor = "iid" # iid random effects
@@ -104,7 +47,7 @@ fix_index_sel <- lapply(1:use_n_indices, function(x) NA) # Set up index object
 # fix_index_sel[[3]] <- c(11) # Fix age 11 for for index 3 (NEFSC fall Albatross)
 # fix_index_sel[[4]] <- c(4) # Fix age 4  for for index 4 (NEFSC spring Bigelow)
 
-fix_index_sel[[1]] <- c(6) # Fix age 6  for for index 1 (NEFSC spring Albatross) # Based on preliminary run
+fix_index_sel[[1]] <- c(6) # Fix age 6  for for index 1 (NEFSC spring Albatross) # Based on preliminary run in run 29F-4 (same model structure except for treatment of Albatross fall age 10/11+ selectivity)
 fix_index_sel[[2]] <- c(5) # Fix age 5 for for index 2 (NEFSC spring Bigelow)
 fix_index_sel[[3]] <- c(4) # Fix age 4 for for index 3 (NEFSC fall Albatross)
 fix_index_sel[[4]] <- c(3) # Fix age 3  for for index 4 (NEFSC spring Bigelow)
@@ -125,6 +68,7 @@ sel_list <- list(model = modelsetup, # list selectivity model for each fleet and
 
 input <- prepare_wham_input(asap3, NAA_re = NAA_re, selectivity = sel_list, model_name = "WHAM_Run29F5", age_comp = "logistic-normal-miss0") # logistic normal age comp, 0s treated as missing
 
+# Change mapping for parameters so age 10 and 11 freely estimated but both estimated at same value
 temp = input$par$logit_selpars
 temp[] = as.integer(input$map$logit_selpars)
 temp[4,10:11] = temp[4,10]
@@ -132,24 +76,37 @@ input$map$logit_selpars = factor(temp)
 
 ```
 
-### Save input
+### Save preliminary input
 ```{r}
 # Save model data input
-saveRDS(input, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run29F-5_splitNEFSC-BigUnits-nlAgeComp-11Match", "WHAM_Run29F5_input.rds", sep="/"))
+saveRDS(input, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run29F-5_splitNEFSC-BigUnits-nlAgeComp-11Match", "WHAM_Run29F5_basic_input.rds", sep="/"))
 ```
 
-### Fit model, check convergence, and run diagnostics
+### Preliminary run and diagnostics: estimate Albatross fall age 10 & 11+ jointly
 ```{r}
 #checking fit before OSA, retro
 WHAM_Run29F5_basic <- fit_wham(input, MakeADFun.silent = TRUE, do.osa = FALSE, do.retro=FALSE) 
 check_convergence(WHAM_Run29F5_basic)
+
+# Compare number of parameters in run 29F-4 and 29F-5_basic
 WHAM_Run29F4 = readRDS(paste(here::here(), "WG_Revised_Runs", "WHAM_Run29F-4_splitNEFSC-BigUnits-nlAgeComp-fix1", "WHAM_Run29F4_model.rds", sep="/"))
 length(WHAM_Run29F4$opt$par) + WHAM_Run29F4$opt$obj
 length(WHAM_Run29F5_basic$opt$par) + WHAM_Run29F5_basic$opt$obj
+
+# Look at report and selectivity objects for 29F-5_basic run
 WHAM_Run29F5_basic$sdrep
 WHAM_Run29F5_basic$rep$selAA[[4]][1,]
+```
 
-randeffect <- c(rep("iid", asap3$dat$n_fleet_sel_blocks), c("none","none","ar1","none")) # Don't include selectivity random effects for any surveys 
+### Save output for preliminary run
+```{r}
+# Save fitted model
+saveRDS(WHAM_Run29F5_basic, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run29F-5_splitNEFSC-BigUnits-nlAgeComp-11Match", "WHAM_Run29F-5_basic_model.rds", sep="/"))
+```
+
+# Update model input for full run
+```{r}
+randeffect <- c(rep("iid", asap3$dat$n_fleet_sel_blocks), c("none","none","ar1","none")) # Apply ar1 selectivity random effect for Albatross fall index
 
 # Setup selectivity list
 sel_list <- list(model = modelsetup, # list selectivity model for each fleet and index
@@ -158,37 +115,50 @@ sel_list <- list(model = modelsetup, # list selectivity model for each fleet and
                  fix_pars = c(fix_fleet_sel, fix_index_sel))
 
 input <- prepare_wham_input(asap3, NAA_re = NAA_re, selectivity = sel_list, model_name = "WHAM_Run29F5", age_comp = "logistic-normal-miss0") # logistic normal age comp, 0s treated as missing
-# TJM: I believe I have uncovered a "bug" in the configuration of "ar1" with age-specific selectivity. When these are chosen, any logit_selpars that are estimated should be set to be a single "mean" value for the ar1 process. Doing this by hand below.
+
+# TJM: I believe I have uncovered a "bug" in the configuration of "ar1" with age-specific selectivity. When these are chosen, any logit_selpars that are estimated should be set to be a single "mean" value for the ar1 process. Doing this by hand below. # This also means the CI bounds are constant around this mean
 temp = input$par$logit_selpars
 temp[] = as.integer(input$map$logit_selpars)
 temp[4,c(1:3,5:11)] = temp[4,3]
 input$map$logit_selpars = factor(temp)
+```
+
+### Save input for full run
+```{r}
+# Save model data input
+saveRDS(input, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run29F-5_splitNEFSC-BigUnits-nlAgeComp-11Match", "WHAM_Run29F-5_input.rds", sep="/"))
+```
+
+### Full model run
+```{r}
+# Initial check that run converges and selectivity appropriately estimated
 WHAM_Run29F5_ar1_AIV_Fall <- fit_wham(input, MakeADFun.silent = TRUE, do.osa = FALSE, do.retro=FALSE) 
 WHAM_Run29F4$rep$selAA[[4]][1,]
 WHAM_Run29F5_ar1_AIV_Fall$rep$selAA[[4]][1,]
-#TJM stopped here.
-#
-# Run with OSA residuals
-input$par = WHAM_Run29F5_basic$parList #start at the optimized values (from run without OSA, retro) to save time
+
+# Full run with OSA residuals
+input$par = WHAM_Run29F5_ar1_AIV_Fall$parList #start at the optimized values (from run without OSA, retro) to save time
 WHAM_Run29F5 <- fit_wham(input, MakeADFun.silent = TRUE, do.osa = TRUE) 
 check_convergence(WHAM_Run29F5)
 print(paste("Number of parameters", length(WHAM_Run29F5$par), sep=" "))
+
+WHAM_Run29F5$rep$selAA[[4]][1,]
 
 plot_wham_output(mod=WHAM_Run29F5, out.type='html')
 # plot_wham_output(mod=WHAM_Run29F5, out.type='png', dir.main = paste(here::here(), "WHAM_Run29F5", sep="/"))
 ```
 
-### Save output
+### Save output for full run
 ```{r}
 # Save fitted model
-saveRDS(WHAM_Run29F5, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run29F-5_splitNEFSC-BigUnits-nlAgeComp-11Match", "WHAM_Run29F5_model.rds", sep="/"))
+saveRDS(WHAM_Run29F5, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run29F-5_splitNEFSC-BigUnits-nlAgeComp-11Match", "WHAM_Run29F-5_model.rds", sep="/"))
 ```
 
 ### Rerun model using saved input data
 Load data from saved input RData and rerun model
 ```{r}
 inputRerun <- readRDS(paste(here::here(), "WG_Revised_Runs",
-                     "WHAM_Run29F-5_splitNEFSC-BigUnits-nlAgeComp-11Match/WHAM_Run29F5_input.rds", sep="/"))
+                     "WHAM_Run29F-5_splitNEFSC-BigUnits-nlAgeComp-11Match/WHAM_Run29F-5_input.rds", sep="/"))
 
 # Rerun data
 ReRun29F5 <- fit_wham(input = inputRerun, MakeADFun.silent = TRUE)
@@ -246,10 +216,10 @@ ggsave(filename = paste(here::here(), "WG_Revised_Runs/WHAM_Run29F-5_splitNEFSC-
 # Read in model (need to read > 1 so subsetting works)
 modelRuns <- paste(here::here(), "WG_Revised_Runs",
                    c("WHAM_Run29B_splitNEFSC-BigUnits-noSurvRandSel/WHAM_Run29B_model.rds",
-                     "WHAM_Run29F-5_splitNEFSC-BigUnits-nlAgeComp-11Match/WHAM_Run29F5_model.rds"), sep="/")
+                     "WHAM_Run29F-5_splitNEFSC-BigUnits-nlAgeComp-11Match/WHAM_Run29F-5_model.rds"), sep="/")
 # Read in model Rdata
 models <- lapply(modelRuns, readRDS)
-names(models) <- paste("Run", c( "29B", "29F4"), sep="")
+names(models) <- paste("Run", c( "29B", "29F5"), sep="")
 
 # Catchability at age: QAA [1list, index number, age/s]
 albSpringQ <- models$Run29F5$rep$QAA[1,1,]
@@ -304,8 +274,8 @@ sel = do.call(rbind, lapply(WHAM_Run29F5$rep$selAA, function(x) apply(x,2,mean))
 
 data.frame(ages = ages, 
            sel = c(sel), 
-           lowerCI = c(0.007, 0.127, 0.249, 0.074, 0.000, 1, 0.142, 0.262, 0.287, 0.287, 0.331),
-           upperCI = c(0.022,	0.383,	0.737,	0.998, 1.000, 1,	0.992,	0.854,	0.858,	0.891,	0.779)) %>%
+           lowerCI = c(0.007, 0.132, 0.257, 0.045, 0.000, 0, 0.160, 0.262, 0.287, 0.289, 0.326),
+           upperCI = c(	0.022,	0.392,	0.752,	0.999,	1.000, 1, 0.989,	0.842,	0.844,	0.877, 	0.758)) %>%
   ggplot() +
   geom_line(aes(x=ages, y=sel)) + 
   geom_ribbon(aes(x=ages,ymin=lowerCI, ymax=upperCI), alpha=0.2) + 
@@ -319,8 +289,8 @@ sel = do.call(rbind, lapply(WHAM_Run29F5$rep$selAA, function(x) apply(x,2,mean))
 
 data.frame(ages = ages, 
            sel = c(sel), 
-           lowerCI = c(0.052, 0.217, 0.436, 0.057, 1, 0.488, 0.448, 0.421, 0.397, 0.373, 0.378),
-           upperCI = c(0.110, 0.441,	0.861,	1.000, 1, 0.937,	0.861,	0.829,	0.791,	0.753,	0.652)) %>%
+           lowerCI = c(0.052, 0.220, 0.439, 0.030, 1, 0.489, 0.446, 0.419, 0.394, 0.369, 0.374),
+           upperCI = c(0.111,	0.447,	0.869,	1.000, 1, 0.933, 0.854,	0.819,	0.780, 0.741,	0.640)) %>%
   ggplot() +
   geom_line(aes(x=ages, y=sel)) + 
   geom_ribbon(aes(x=ages,ymin=lowerCI, ymax=upperCI), alpha=0.2) + 
@@ -334,8 +304,8 @@ sel = do.call(rbind, lapply(WHAM_Run29F5$rep$selAA, function(x) apply(x,2,mean))
 
 data.frame(ages = ages, 
            sel = c(sel), 
-           lowerCI = c(0.123, 0.352, 0.510, 1, 0.537, 0.481, 0.315, 0.292, 0.282, 0.356, 0.000),
-           upperCI = c(0.217,	0.598,	0.970, 1,	0.950, 0.821,	0.546,	0.516,	0.510,	0.686,	1.000)) %>%
+           lowerCI = c(0.285, 0.285, 0.285, 1, 0.285, 0.285, 0.285, 0.285, 0.285, 0.285, 0.285),
+           upperCI = c(0.804,	0.804,	0.804, 1, 	0.804, 	0.804, 0.804,	0.804,	0.804,	0.804,	0.804)) %>%
   ggplot() +
   geom_line(aes(x=ages, y=sel)) + 
   geom_ribbon(aes(x=ages,ymin=lowerCI, ymax=upperCI), alpha=0.2) + 
@@ -349,8 +319,8 @@ sel = do.call(rbind, lapply(WHAM_Run29F5$rep$selAA, function(x) apply(x,2,mean))
 
 data.frame(ages = ages, 
            sel = c(sel), 
-           lowerCI = c(0.148, 0.194, 1, 0.027, 0.119, 0.200, 0.192, 0.180, 0.174, 0.170, 0.211),
-           upperCI = c(0.629,	0.873, 1,	0.999,	0.991, 0.918,	0.865,	0.847,	0.827,	0.970,	0.658)) %>%
+           lowerCI = c(0.148, 0.194, 1, 0.032, 0.129, 0.202, 0.192, 0.179, 0.173, 0.185, 0.207),
+           upperCI = c(0.630,	0.874, 1,	0.999,	0.989,	0.909, 0.853,	0.833,	0.812,	0.960,	0.640)) %>%
   ggplot() +
   geom_line(aes(x=ages, y=sel)) + 
   geom_ribbon(aes(x=ages,ymin=lowerCI, ymax=upperCI), alpha=0.2) + 
@@ -359,3 +329,8 @@ ggsave(filename = paste(here::here(), "WG_Revised_Runs", "WHAM_Run29F-5_splitNEF
 ```
 
 ## Comment
+Albatross fall selectivity estimates were slightly lower for all but age 4 (fixed at full selectivity) than run 29F-4 but were still freely estimated in run 29F-5. The bigelow fall index also had slightly lower selectivity estimates for age 5-11+.
+
+Age comp OSA residual distribution and patterns were similar across runs 29F-4 and 29F-5. OSA residuals for fit to aggregate fleet and index data were similarly or slightly more normally distributed than in run 29F-4. In particular, the OSA residuals for Albatross fall were more normally distributed.
+
+Mohn's rho values for R, SSB, and F_bar were larger than in run 29F-4, and the AIC value for run 29F-5 was larger. SSB estimates for these two runs were very similar but F and R estimates tended to be slightly lower across the time series which resulted in slightly lower reference points.
