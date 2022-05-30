@@ -115,7 +115,7 @@ ReRun47A <- fit_wham(input = inputRerun, MakeADFun.silent = TRUE)
 ```
 
 ## Comment
-Age comp OSA residuals for the fleet and all indices had similar magnitudes and patterns for run 47 and 47A. OSA residuals for fit to aggregate fleet and index data were similarly distributed in both runs except for Albatross fall which was slightly more normally distributed.
+Age comp OSA residuals for the fleet and all indices had similar magnitudes and patterns for run 47 and 47A. OSA residuals for fit to aggregate fleet and index data were similarly distributed in both runs except for Albatross fall which was slightly less normally distributed in run 47A compared to run 47.
 
 BT anomaly OSA residuals were not very normally distributed.
 
