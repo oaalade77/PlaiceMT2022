@@ -12,6 +12,6 @@ This folder contains all files relevant to WHAM run 29F-2. Files are described b
 | plots_png | Folder containing all diagnostic plots and model results. |
 | res_tables | Folder containing tables of model results. | 
 | WHAM_Run29F-2_Script_tjm.R | R script that reruns full model without OSA residuals and retrospective analysis for use in self test analysis. |
-| WHAM_Run29F-3_model_noosa_noretro_tjm.rds | Rdata object for full model rerun for use in self test analysis. |
+| WHAM_Run29F-2_model_noosa_noretro_tjm.rds | Rdata object for full model rerun for use in self test analysis. |
 
 
