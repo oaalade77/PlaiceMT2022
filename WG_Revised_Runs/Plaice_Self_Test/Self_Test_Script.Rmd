@@ -20,12 +20,14 @@ library(ggsci)
 # List of runs to self test (without projections)
 modelRuns <- paste(here::here(), "WG_Revised_Runs",
                    c("WHAM_Run29F-2_swapInitSel-randAlbFall/WHAM_Run29F-2_model.rds",
-                     "WHAM_Run29F-4_splitNEFSC-BigUnits-nlAgeComp-fix1/WHAM_Run29F4_model.rds",
-                     "WHAM_Run29F-5_splitNEFSC-BigUnits-nlAgeComp-11Match/WHAM_Run29F-5_model.rds"), sep="/")
+                     "WHAM_Run29F-4_splitNEFSC-BigUnits-nlAgeComp-fix1/WHAM_Run29F4_model.rds"),
+                     #"WHAM_Run29F-5_splitNEFSC-BigUnits-nlAgeComp-11Match/WHAM_Run29F-5_model.rds"), 
+  sep="/")
 
 # Read in model Rdata
 models <- lapply(modelRuns, readRDS)
-names(models) <- paste("Run", c("29F2", "29F4", "29F5"), sep="")
+names(models) <- paste("Run", c("29F2", "29F4"), sep="")
+#names(models) <- paste("Run", c("29F2", "29F4", "29F5"), sep="")
 n.mods <- length(models)
 ```
 
@@ -66,17 +68,20 @@ for(imod in 1:n.mods){ # Loop over models
 # Test smaller number of simulations
 n.sim <- 5
 
+#TJM: These are the only elements of input$data that need to be extracted from simulated data when the EM matches the OM
+obs_names = c("agg_catch","agg_indices", "catch_paa", "index_paa", "Ecov_obs", "obs", "obsvec")
+
 for(imod in 1:n.mods){
   # Read in OM data
   simdata <- readRDS(paste(here::here(), "WG_Revised_Runs", "Plaice_Self_Test", paste0("simdata_OM", names(models)[imod], ".rds"), sep="/"))
   
   # Set up sims/years/ages based on OM data
-  n.sim = length(simdata)
-  n.years <- simdata[[1]]["n_years_model"][[1]]
-  n.ages <- simdata[[1]]["n_ages"][[1]]
+  n.sim = length(simdata) #TJM: this changes n.sim defined above
+  n.years <- simdata[[1]]$n_years_model
+  n.ages <- simdata[[1]]$n_ages
   
-  # Reload seeds
-  seeds <- readRDS(paste(here::here(), "WG_Revised_Runs", "Plaice_Self_Test", "sim_seeds.rds", sep="/"))
+  # Reload seeds (TJM: not necessary unless "seeds" are changed for some reason)
+  #seeds <- readRDS(paste(here::here(), "WG_Revised_Runs", "Plaice_Self_Test", "sim_seeds.rds", sep="/"))
   
   options(warn=-1) # suppress warning messages
   
@@ -86,7 +91,9 @@ for(imod in 1:n.mods){
   res.colnames <- c("om","em","year","sim","F_fit","F_sim","SSB_fit","SSB_sim","catch_fit","catch_sim",paste0("NAA",1:n.ages),"R_sim")
   results <- list(rep(list(matrix(NA, ncol = length(res.colnames), nrow = n.years)),n.sim)) # nested lists with preallocated matrices
   
-  for(isim in 1:n.sim){ # Loop over model-specific simulation
+  #TJM: just doing 2 to test
+  #for(isim in 1:n.sim){ # Loop over model-specific simulation
+  for(isim in 1:2){ # Loop over model-specific simulation
     print(paste0("OM: ", imod, " Sim: ", isim))
     
     # Set seed
@@ -95,32 +102,35 @@ for(imod in 1:n.mods){
     # Read in estimation model (EM)
     EM <- readRDS(modelRuns[imod]) # Read in the EM 
     inputEM <- EM$input
-    n.data <- length(inputEM$data)
+    #n.data <- length(inputEM$data)
     
     # process + obs errors (don't overwrite estimation model values here!!!)
       # keep fixed effect param at optimized values from fit 
       # simulate NAA (process error) and catch
       # simulate index data (observation error)
-    n_sig <- inputEM$data$n_NAA_sigma 
-		n_sig_pointers <- inputEM$data$NAA_sigma_pointers
-		age_comp_model_fleets <- inputEM$data$age_comp_model_fleets
+    #n_sig <- inputEM$data$n_NAA_sigma 
+		#n_sig_pointers <- inputEM$data$NAA_sigma_pointers
+		#age_comp_model_fleets <- inputEM$data$age_comp_model_fleets
 		# n_age_comp_pars_fleets <- inputEM$data$n_age_comp_pars_fleets # Not part of input ???
-		age_comp_model_indices <- inputEM$data$age_comp_model_indices
+		#age_comp_model_indices <- inputEM$data$age_comp_model_indices
 		# n_age_comp_pars_indices <- inputEM$data$n_age_comp_pars_indices # Not part of input???
     
 		# Overwrite storage with OM data for this simulation and store (i.e. use OM data rather than data from initial EM fit), above input values are unchanged from initial EM fit
-    inputEM$data <- simdata[[isim]] # overwrite storage 
-    inputEM$data$n_NAA_sigma <- n_sig
-    inputEM$data$NAA_sigma_pointers <- n_sig_pointers
+    inputEM$data[obs_names] <- simdata[[isim]][obs_names] # overwrite storage 
+    # inputEM$data$n_NAA_sigma <- n_sig
+    # inputEM$data$NAA_sigma_pointers <- n_sig_pointers
     # inputEM$data$age_comp_model_fleets <- c(age_comp_model_fleets) # Causes error "NOT A VECTOR!" ???
     # inputEM$data$n_age_comp_pars_fleets = n_age_comp_pars_fleets # Not a part of input???
 		# inputEM$data$age_comp_model_indices = age_comp_model_indices # Causes error "NOT A VECTOR!" ???
 		# inputEM$data$n_age_comp_pars_indices = n_age_comp_pars_indices # Not a part of input???
-		
+inputEM$par = EM$parList		
 		# Save the data and several matching pieces of info
 		ind.save <- c(1:n.data, match(c("F","SSB","pred_log_catch","NAA","log_FXSPR","FAA_tot","log_SSB_FXSPR","Fbar"), names(inputEM$data)))	
-		inputEM$data <- inputEM$data[ind.save]
-		
+		#inputEM$data <- inputEM$data[ind.save]
+
+inputEM$map$logit_q = factor(rep(NA,length(inputEM$par$logit_q))) 
+  temp = fit_wham(inputEM, do.fit = F, do.sdrep=F, do.osa=F, do.retro=F, do.proj=F, MakeADFun.silent=TRUE)	
+temp = fit_wham(inputEM, do.sdrep=F, do.osa=F, do.retro=F, do.proj=F, MakeADFun.silent = TRUE)	
 		# Fit EM to simulated data from OM
 				fit2 <- tryCatch(fit_wham(inputEM, do.sdrep=F, do.osa=F, do.retro=F, do.proj=F, MakeADFun.silent=TRUE),
 					error = function(e) conditionMessage(e))
