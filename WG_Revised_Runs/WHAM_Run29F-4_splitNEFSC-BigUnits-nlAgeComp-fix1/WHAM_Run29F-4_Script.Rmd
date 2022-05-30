@@ -336,4 +336,4 @@ The model converged when only a single age was fixed at full selectivity, and th
 
 Catchability estimates are similar for run 29F-2 and 29F-4 but the CI for the Bigelow fall catchability estimate were much larger.
 
-Run 29F-4 OSA residuals for fit to aggregate fleet and catch data were similarly or slightly less normally distributed than in run 29F-2 which could be attributed to the Albatross fall selectivity random effect that was not applied in run 29F-4. OSA residuals for fit to age comp data had similar patterns and distributions in run 29F-2 and 29F-4. 
+Run 29F-4 OSA residuals for fit to aggregate fleet and index data were similarly or slightly less normally distributed than in run 29F-2 which could be attributed to the Albatross fall selectivity random effect that was not applied in run 29F-4. OSA residuals for fit to age comp data had similar patterns and distributions in run 29F-2 and 29F-4. 
