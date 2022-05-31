@@ -1,11 +1,13 @@
 #TJM: a lot of this is over-complicated because I think Brian Stock was doing cross-tests as well (fitting ems that don't match the oms)
 
+##### Load packages #####
 library(wham)
 library(tidyverse)
 library(here)
-library(ggplotFL)
+# library(ggplotFL) # Not available for this version of R, may need to revisit
 library(ggsci)
 
+##### Read in models to self test #####
 modelRuns <- paste(here::here(), "WG_Revised_Runs",
                    c("WHAM_Run29F-2_swapInitSel-randAlbFall/WHAM_Run29F-2_model_noosa_noretro_tjm.rds",
                      "WHAM_Run29F-4_splitNEFSC-BigUnits-nlAgeComp-fix1/WHAM_Run29F4_model_noosa_noretro_tjm.rds"),
@@ -18,6 +20,7 @@ names(models) <- paste("Run", c("29F2", "29F4"), sep="")
 #names(models) <- paste("Run", c("29F2", "29F4", "29F5"), sep="")
 n.mods <- length(models)
 
+##### Simulate data #####
 # Number of sims
 n.sim <- 100
 
@@ -46,9 +49,10 @@ for(imod in 1:n.mods){ # Loop over models
 
 
 
-### Fit EM to OM simulated data
+##### Fit EM to OM simulated data #####
 # Test smaller number of simulations
-n.sim <- 5
+# n.sim <- 3
+n.sim <- 100
 
 #TJM: These are the only elements of input$data that need to be extracted from simulated data when the EM matches the OM
 obs_names = c("agg_catch","agg_indices", "catch_paa", "index_paa", "Ecov_obs", "obs", "obsvec")
@@ -73,9 +77,9 @@ for(imod in 1:n.mods){
   res.colnames <- c("om","em","year","sim","F_fit","F_sim","SSB_fit","SSB_sim","catch_fit","catch_sim",paste0("NAA",1:n.ages),"R_sim")
 #  results <- list(rep(list(matrix(NA, ncol = length(res.colnames), nrow = n.years)),n.sim)) # nested lists with preallocated matrices
   
-  #TJM: just doing 2 to test
-  #for(isim in 1:n.sim){ # Loop over model-specific simulation
-  for(isim in 1:2){ # Loop over model-specific simulation
+  ###### Loop over simulations for self test ######
+  for(isim in 1:n.sim){ # Loop over model-specific simulation
+  # for(isim in 1:2){ # Loop over model-specific simulation #TJM: just doing 2 to test
     print(paste0("OM: ", imod, " Sim: ", isim))
     
     # Set seed
@@ -100,34 +104,59 @@ for(imod in 1:n.mods){
     #temp = fit_wham(inputEM, do.fit = F, do.sdrep=F, do.osa=F, do.retro=F, do.proj=F, MakeADFun.silent=TRUE)	
     #temp = fit_wham(inputEM, do.sdrep=F, do.osa=F, do.retro=F, do.proj=F, MakeADFun.silent = TRUE)	
     #cbind(simdata[[1]]$SSB, temp$rep$SSB)
+    
 		# Fit EM to simulated data from OM
     fit2 <- tryCatch(fit_wham(inputEM, do.sdrep=F, do.osa=F, do.retro=F, do.proj=F, MakeADFun.silent=TRUE),
       error = function(e) conditionMessage(e))
-				
-		# Deal with issues fitting EM to OM data
-		if(!'err' %in% names(fit2) & class(fit2) != "character"){
-			reps[[isim]] <- fit2$rep
-			fit2$sdrep <- tryCatch(TMB::sdreport(fit2), # no bc
-							error = function(e) conditionMessage(e))
-			if(class(fit2$sdrep) == "sdreport"){
-				sdreps[[isim]] <- list(
-          "Estimate_par" = as.list(fit2$sdrep, what = "Est"),
-          "SE_par" = as.list(fit2$sdrep, what = "Std"),
-          "Estimate_rep" = as.list(fit2$sdrep, what = "Est", report = TRUE),
-          "SE_rep" = as.list(fit2$sdrep, what = "Std", report = TRUE))
-				#I don't know what this calc_results function does
-        #results[[isim]] <- tryCatch(calc_results(om=om, em=em, sim=i, fit1=fit2, s1=s2),
-				#	error = function(e) conditionMessage(e))
-			} else {
-				#results[[i]] <- "Error: sdreport failed, no results to calculate"
-				sdreps[[i]] <- fit2$sdrep # error message
-			}
-		} else {
-			#results[[i]] <- "Error: model did not converge, no results to calculate"
-			if(class(fit2) != "character") reps[[i]] <- fit2$err # error message
-			if(class(fit2) == "character") reps[[i]] <- fit2
-			sdreps[[i]] <- "Error: model did not converge, sdreport not attempted"
-		}
+# # Original code that may be more complicated than needed - ARH				
+# 		# Deal with issues fitting EM to OM data
+# 		if(!'err' %in% names(fit2) & class(fit2) != "character"){ # If there are no errors in the fit run the sdreport
+# 			reps[[isim]] <- fit2$rep
+# 			fit2$sdrep <- tryCatch(TMB::sdreport(fit2), # no bc
+# 							error = function(e) conditionMessage(e))
+# 			if(class(fit2$sdrep) == "sdreport"){
+# 				sdreps[[isim]] <- list(
+#           "Estimate_par" = as.list(fit2$sdrep, what = "Est"),
+#           "SE_par" = as.list(fit2$sdrep, what = "Std"),
+#           "Estimate_rep" = as.list(fit2$sdrep, what = "Est", report = TRUE),
+#           "SE_rep" = as.list(fit2$sdrep, what = "Std", report = TRUE))
+# 				#I don't know what this calc_results function does so not used here
+#         #results[[isim]] <- tryCatch(calc_results(om=om, em=em, sim=i, fit1=fit2, s1=s2),
+# 				#	error = function(e) conditionMessage(e))
+# 			} else {
+# 				#results[[isim]] <- "Error: sdreport failed, no results to calculate"
+# 				sdreps[[isim]] <- fit2$sdrep # error message
+# 			}
+# 		} else {
+# 			#results[[isim]] <- "Error: model did not converge, no results to calculate"
+# 			if(class(fit2) != "character") reps[[isim]] <- fit2$err # error message # system is computationally singular: reciprocal condition number means hessian isn't invertible
+# 			if(class(fit2) == "character") reps[[isim]] <- fit2
+# 			sdreps[[isim]] <- "Error: model did not converge, sdreport not attempted"
+# 		}
+    
+    # !!!!!!!!!!!! START HERE WITH REVISIONS !!!!!!!!!!!!!!! - ARH
+    # Check if the hessian is invertible/positive definite
+    if(fit2$hessian == TRUE){ # If invertible/positive definite save results
+      reps[[isim]] <- fit2$rep
+      reps[[isim]]$hessian <- TRUE
+      
+      # Store sdreport
+      sdreps[[isim]] <- fit2$sdrep 
+      sdreps[[isim]]$hessian <- TRUE
+      
+    } else{ # If hessian isn't invertible/positive definite store the warning and the estimates to help ID parameters that contribute to this (likely selectivity  parameters)
+      # Store report
+      reps[[isim]] <- fit2$rep
+      reps[[isim]]$hessian <- FALSE
+      reps[[isim]]$error <- fit2$err
+      
+      # Store sdreport
+      sdreps[[isim]] <- fit2$sdrep 
+      sdreps[[isim]]$hessian <- FALSE
+      # ??? How do I find & save the warning printed when fit2$sdrep is printed to the screen???
+      
+    }
+    
 				
 		rm(list=c("inputEM","fit2")) # remove temporary input and fit data for model-specific simulation
   } # End loop over model-specific simulations
@@ -143,7 +172,15 @@ for(imod in 1:n.mods){
 
 #TJM STOPPED HERE.
 
-### Plot results of self test
+
+# Model 2 self test 2/3 did not converge, sdreport not attempted
+length(which(sdreps != "Error: model did not converge, sdreport not attempted"))
+sdreps[4] # Says converged but NaNs - no standard errors, I think there is a warning that the hessian isn't invertible but NOT an error so if statement not triggered to say not converged
+sdreps[100] # Seems to have converged with standard errors 
+
+
+
+##### Plot results of self test #####
 #Adapted from best_v4_4_results.R
 
 # Read in results into data frame
@@ -404,7 +441,7 @@ png(file.path(plots_dir,paste0("self_4_R.png")), width=7, height=3, units='in',r
 print(p)
 dev.off()
 
-```
+
 
 
 
