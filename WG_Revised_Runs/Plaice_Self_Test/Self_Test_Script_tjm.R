@@ -51,13 +51,16 @@ for(imod in 1:n.mods){ # Loop over models
 
 ##### Fit EM to OM simulated data #####
 # Test smaller number of simulations
-# n.sim <- 3
+# n.sim <- 5 # Only test 5 sims
 n.sim <- 100
 
 #TJM: These are the only elements of input$data that need to be extracted from simulated data when the EM matches the OM
 obs_names = c("agg_catch","agg_indices", "catch_paa", "index_paa", "Ecov_obs", "obs", "obsvec")
 
+
+
 for(imod in 1:n.mods){
+# for(imod in 2:n.mods){ # Only  run for second model since I know that tests 1-3 had fit2$err error and test 4 didn't have an error but still didn't have an invertible hessian. See if errors cause loop to break
   # Read in OM data
   simdata <- readRDS(paste(here::here(), "WG_Revised_Runs", "Plaice_Self_Test", paste0("simdata_OM", names(models)[imod], "_tjm.rds"), sep="/"))
   
@@ -79,8 +82,7 @@ for(imod in 1:n.mods){
   
   ###### Loop over simulations for self test ######
   for(isim in 1:n.sim){ # Loop over model-specific simulation
-  # for(isim in 1:2){ # Loop over model-specific simulation #TJM: just doing 2 to test
-    print(paste0("OM: ", imod, " Sim: ", isim))
+     print(paste0("OM: ", imod, " Sim: ", isim))
     
     # Set seed
     set.seed(seeds[isim])
@@ -105,12 +107,35 @@ for(imod in 1:n.mods){
     #temp = fit_wham(inputEM, do.sdrep=F, do.osa=F, do.retro=F, do.proj=F, MakeADFun.silent = TRUE)	
     #cbind(simdata[[1]]$SSB, temp$rep$SSB)
     
-		# Fit EM to simulated data from OM
-    fit2 <- tryCatch(fit_wham(inputEM, do.sdrep=F, do.osa=F, do.retro=F, do.proj=F, MakeADFun.silent=TRUE),
+		# Fit EM to simulated data from OM with sdreport - originally without
+    fit2 <- tryCatch(fit_wham(inputEM, do.sdrep=TRUE, do.osa=F, do.retro=F, do.proj=F, MakeADFun.silent=TRUE),
       error = function(e) conditionMessage(e))
+    
+    # Check if the hessian is invertible/positive definite
+    if(fit2$hessian == TRUE){ # If invertible/positive definite save results (report and sdreport)
+      reps[[isim]] <- fit2$rep
+      reps[[isim]]$hessian <- TRUE
+      
+      # Store sdreport
+      sdreps[[isim]] <- fit2$sdrep 
+      sdreps[[isim]]$hessian <- TRUE
+      
+    } else{ # If hessian isn't invertible/positive definite store the warning and the estimates to help ID parameters that contribute to this warning (likely selectivity  parameters)
+      # Store report
+      reps[[isim]] <- fit2$rep # May have additional errors stored in fit2$err
+      reps[[isim]]$hessian <- FALSE
+      reps[[isim]]$error <- fit2$err
+      
+      # Store sdreport
+      sdreps[[isim]] <- fit2$sdrep 
+      sdreps[[isim]]$hessian <- FALSE
+      # ??? How do I find & save the warning printed when fit2$sdrep is printed to the screen???
+    }
+    
+    
 # # Original code that may be more complicated than needed - ARH				
 # 		# Deal with issues fitting EM to OM data
-# 		if(!'err' %in% names(fit2) & class(fit2) != "character"){ # If there are no errors in the fit run the sdreport
+# 		if(!'err' %in% names(fit2) & class(fit2) != "character"){ # If there are no errors in the fit run the sdreport, and fit2 is a list
 # 			reps[[isim]] <- fit2$rep
 # 			fit2$sdrep <- tryCatch(TMB::sdreport(fit2), # no bc
 # 							error = function(e) conditionMessage(e))
@@ -134,28 +159,28 @@ for(imod in 1:n.mods){
 # 			sdreps[[isim]] <- "Error: model did not converge, sdreport not attempted"
 # 		}
     
-    # !!!!!!!!!!!! START HERE WITH REVISIONS !!!!!!!!!!!!!!! - ARH
-    # Check if the hessian is invertible/positive definite
-    if(fit2$hessian == TRUE){ # If invertible/positive definite save results
-      reps[[isim]] <- fit2$rep
-      reps[[isim]]$hessian <- TRUE
-      
-      # Store sdreport
-      sdreps[[isim]] <- fit2$sdrep 
-      sdreps[[isim]]$hessian <- TRUE
-      
-    } else{ # If hessian isn't invertible/positive definite store the warning and the estimates to help ID parameters that contribute to this (likely selectivity  parameters)
-      # Store report
-      reps[[isim]] <- fit2$rep
-      reps[[isim]]$hessian <- FALSE
-      reps[[isim]]$error <- fit2$err
-      
-      # Store sdreport
-      sdreps[[isim]] <- fit2$sdrep 
-      sdreps[[isim]]$hessian <- FALSE
-      # ??? How do I find & save the warning printed when fit2$sdrep is printed to the screen???
-      
-    }
+    # # !!!!!!!!!!!! START HERE WITH REVISIONS !!!!!!!!!!!!!!! - ARH
+    # # Check if the hessian is invertible/positive definite
+    # if(fit2$hessian == TRUE){ # If invertible/positive definite save results
+    #   reps[[isim]] <- fit2$rep
+    #   reps[[isim]]$hessian <- TRUE
+    #   
+    #   # Store sdreport
+    #   sdreps[[isim]] <- fit2$sdrep 
+    #   sdreps[[isim]]$hessian <- TRUE
+    #   
+    # } else{ # If hessian isn't invertible/positive definite store the warning and the estimates to help ID parameters that contribute to this (likely selectivity  parameters)
+    #   # Store report
+    #   reps[[isim]] <- fit2$rep
+    #   reps[[isim]]$hessian <- FALSE
+    #   reps[[isim]]$error <- fit2$err
+    #   
+    #   # Store sdreport
+    #   sdreps[[isim]] <- fit2$sdrep 
+    #   sdreps[[isim]]$hessian <- FALSE
+    #   # ??? How do I find & save the warning printed when fit2$sdrep is printed to the screen???
+    #   
+    # }
     
 				
 		rm(list=c("inputEM","fit2")) # remove temporary input and fit data for model-specific simulation
@@ -172,9 +197,95 @@ for(imod in 1:n.mods){
 
 #TJM STOPPED HERE.
 
+# Loop over models to generate summary statistics and plots for self-tests
+for(imod in 1:n.mods){
+  # Read in reps and simdata for specific model
+  simdata <- readRDS(paste(here::here(), "WG_Revised_Runs", "Plaice_Self_Test", paste0("simdata_OM", names(models)[imod], "_tjm.rds"), sep="/"))
+  # Read in rep data
+  reps <- readRDS(file=paste(here::here(), "WG_Revised_Runs", "Plaice_Self_Test", paste0("reps_", names(models)[imod],".rds"), sep="/"))
+  # Read in sdreps data
+  sdreps <- readRDS(file=paste(here::here(), "WG_Revised_Runs", "Plaice_Self_Test", paste0("sdreps_",names(models)[imod],".rds"), sep="/"))
+  
+  
+  # Loop over sims to pull out data needed for plotting - long form data by simulation
+  plotData <- NULL
+  for(isim in 1:n.sim){
+    tempData <- NULL # temp data storage for each sim
+    tempData$sim <- isim
+    tempData$hessian <- reps[[isim]]$hessian #5 works
+    tempData$estSSB <- reps[[isim]]$SSB/simdata[[isim]]$SSB
+    tempData$omSSB <- simdata[[isim]]$SSB
+    tempData$estF <- reps[[isim]]$Fbar # Confirm that this is correct F to compare???
+    tempData$omF <- simdata[[isim]]$Fbar # Confirm that this is correct F to compare???
+    tempData$estCat <- c(reps[[isim]]$pred_catch)
+    tempData$omCat <- c(simdata[[isim]]$agg_catch)
+    tempData$estR <- reps[[isim]]$NAA[,1]
+    tempData$omR <- simdata[[isim]]$NAA[,1]
+    tempData <- as.data.frame(tempData)
+    
+    plotData <- rbind(plotData, tempData)
+  }
+  
+  
+  ##### Fraction of self tests that had invertible hessian (i.e. convergence rate for self tests)
+  nsim <- plotData %>%
+    dplyr::summarize(nsim = length(unique(sim))) %>%
+    as.numeric()
+  convergeRate <- plotData %>% 
+    filter(hessian==TRUE) %>% 
+    dplyr::summarize(convergeRate = length(unique(sim))/nsim) %>% 
+    as.numeric()
+  print(paste(names(models[imod]), "convergence rate:", convergeRate)) # None of the self tests converged
+  
+  # Figure out relative error and plots here !!!!!! Not sure if I need to do relative error for each timeseries or each run???
+  
+  
+  
+  ##### Pick out parameters with consistent std errors = NaN 
+  # Pull out sdreport std error column
+  sdrepData <- NULL
+  for(isim in 1:nsim){
+    sdrepData <- cbind(sdrepData, summary(sdreps[[isim]], "fixed")[,2])
+  }
+  # Summarize counts of NaNs and append to sdrepData also add names
+  countNaN <- rowSums(sdrepData == "NaN")
+  sdrepData <- cbind(sdrepData, countNaN)
+  fixedPar <- names(countNaN)
+  sdrepData <- cbind(sdrepData, fixedPar)
+  parNumber <- paste("par",c(1:length(countNaN)),sdrepData[,"fixedPar"], sep="_")
+  sdrepData <- cbind(sdrepData, parNumber)
+  # sdrepData[,"parNumber"] <- factor(sdrepData[,"parNumber"], level = sdrepData[,"parNumber"])
+  
+  # Plot NaN counts against fixed parameters to ID those that are more problematic
+  sdrepData %>%
+    as.data.frame() %>%
+    ggplot() +
+    geom_bar(aes(x=parNumber, y=countNaN), stat="identity") +
+    coord_flip() +
+    scale_x_discrete(limits = c(sdrepData[,"parNumber"])) +
+    xlab("Fixed effect parameters from sdrep") +
+    ylab("NaN count (#/100 self tests)")
+  ggsave(filename = here::here("WG_Revised_Runs", "Plaice_Self_Test", "plots", paste0(names(models[imod]), "_sdrepNaNs", ".png")))
+  
+  # Print the names of parameters with >min NaN (i.e. all have at least 72 NaNs for model 29F-4 test)
+  print(paste0(names(models[imod]), "_problem_sdrepNaNs"))
+  sdrepData %>%
+    as.data.frame() %>%
+    filter(countNaN > min(range(countNaN))) %>%
+    rownames() %>% print()
+  
+  
+  
+} # End loop over models that were self-tested
+
+
+
+
+
+
 
 # Model 2 self test 2/3 did not converge, sdreport not attempted
-length(which(sdreps != "Error: model did not converge, sdreport not attempted"))
+length(which(sdreps$hessian == TRUE))
 sdreps[4] # Says converged but NaNs - no standard errors, I think there is a warning that the hessian isn't invertible but NOT an error so if statement not triggered to say not converged
 sdreps[100] # Seems to have converged with standard errors 
 
