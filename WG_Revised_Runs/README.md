@@ -75,8 +75,9 @@ Each run folder contains the following information:
 | WHAM_Run39_addEnvCov-anomSST-noEffect | WG run similar to run 29B, but also fit to sea surface temperature anomaly data so comparable via AIC to runs that link R to this environmental covariate. | 
 | WHAM_Run39A_addEnvCov-anomSST-withEffect | WG run identical to 39 but implements an effect of sea surface temperature anomalies on recruitment with a 1 year lag. |
 | WHAM_Run40_splitNEFSC-BigUnits-randQ | Exploratory run similar to 29B, but also implements a catchability random effect for the Albatross indices (model didn't converge with invertible hessian when also implemented for either spring or fall Bigelow indices). | 
-| WHAM_Run41_addEnvCov-q-anomBT-noEffect | WG run similar to 29B, but also fit to sea surface temperature anomaly data so comparable via AIC to runs that link catchability to this environmental covariate. | 
-| WHAM_Run41A_addEnvCov-q-anomBT-withEffect | WG run identical to 41 but implements an effect of sea surface temperature anomalies on catchability (q). As of 4/29/22 should probably be swapped for BT anomaly data but tested model setup here. |
+| WHAM_Run41_addEnvCov-q-anomBT-noEffect | WG run similar to 29B, but also fit to bottom temperature anomaly data so comparable via AIC to runs that link catchability to this environmental covariate. | 
+| WHAM_Run41A_addEnvCov-q-anomBT-withEffect | WG run identical to 41 but implements an effect of bottom temperature anomalies on catchability (q). |
+| WHAM_Run41B_addEnvCov-q-anomBT-withEffect-onlyFall | WG run identical to 41 but implements environment (bottom temperatury anomaly) effect on q for only the fall indices. | 
 | WHAM_Run42_addEnvCov-R-NAO-noEffect | WG run similar to 29B, but also fit to NAO time series so comparable via AIC to runs that link recruitment to this covariate. |
 | WHAM_Run42A_addEnvCov-R-NAO-withEffect | WG run identical to 42 but implements an effect of NAO on recruitment with a 1 year lag. | 
 | WHAM_Run42B_addEnvCov-R-NAO-withEffect-2Lag | WG run identical to 42 but implements an effect of NAO on recruitment with a 2 year lag. |
