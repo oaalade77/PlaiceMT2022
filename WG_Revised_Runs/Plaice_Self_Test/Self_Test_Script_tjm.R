@@ -111,6 +111,11 @@ for(imod in 1:n.mods){
     fit2 <- tryCatch(fit_wham(inputEM, do.sdrep=TRUE, do.osa=F, do.retro=F, do.proj=F, MakeADFun.silent=TRUE),
       error = function(e) conditionMessage(e))
     
+#testsim = readRDS(file.path(here::here(), "WG_Revised_Runs", "Plaice_Self_Test","testSim.rds"))
+#inputEM$data[obs_names] <- testsim[obs_names] # overwrite storage 
+#    fit2 <- tryCatch(fit_wham(inputEM, do.sdrep=TRUE, do.osa=F, do.retro=F, do.proj=F, MakeADFun.silent=TRUE),
+#      error = function(e) conditionMessage(e))
+
     # Check if the hessian is invertible/positive definite
     if(fit2$hessian == TRUE){ # If invertible/positive definite save results (report and sdreport)
       reps[[isim]] <- fit2$rep
