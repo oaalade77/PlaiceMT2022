@@ -9,8 +9,8 @@ library(ggsci)
 
 ##### Read in models to self test #####
 modelRuns <- paste(here::here(), "WG_Revised_Runs",
-                   c("WHAM_Run29F-2_swapInitSel-randAlbFall/WHAM_Run29F-2_model_noosa_noretro_tjm.rds",
-                     "WHAM_Run29F-4_splitNEFSC-BigUnits-nlAgeComp-fix1/WHAM_Run29F4_model_noosa_noretro_tjm.rds"),
+                   c("WHAM_Run29F-2_swapInitSel-randAlbFall/WHAM_Run29F-2_model_noosa_noretro_tjm.rds", # Use models fit with updated wham that fixes issue with logistic-normal in simulations
+                     "WHAM_Run29F-4_splitNEFSC-BigUnits-nlAgeComp-fix1/WHAM_Run29F4_model_noosa_noretro_tjm.rds"), 
                      #"WHAM_Run29F-5_splitNEFSC-BigUnits-nlAgeComp-11Match/WHAM_Run29F-5_model.rds"), 
   sep="/")
 
@@ -189,14 +189,15 @@ for(imod in 1:n.mods){
   rm(list=c("simdata")) # Remove temporary data for model
   
   # Save results in a single matrix
-  #saveRDS(results, file=paste(here::here(), "WG_Revised_Runs", "Plaice_Self_Test", paste0("fitresults_", names(models)[imod],".rds"), sep="/")) # Fitted results
-  saveRDS(sdreps, file=paste(here::here(), "WG_Revised_Runs", "Plaice_Self_Test", paste0("sdreps_",names(models)[imod],".rds"), sep="/"))
-  saveRDS(reps, file=paste(here::here(), "WG_Revised_Runs", "Plaice_Self_Test", paste0("reps_", names(models)[imod],".rds"), sep="/"))
+  # saveRDS(sdreps, file=paste(here::here(), "WG_Revised_Runs", "Plaice_Self_Test", paste0("sdreps_",names(models)[imod],".rds"), sep="/"))
+  # saveRDS(reps, file=paste(here::here(), "WG_Revised_Runs", "Plaice_Self_Test", paste0("reps_", names(models)[imod],".rds"), sep="/"))
   
 } # End loop over models
 
 #TJM STOPPED HERE.
 
+
+##### Summary Statistics #####
 # Loop over models to generate summary statistics and plots for self-tests
 for(imod in 1:n.mods){
   # Read in reps and simdata for specific model
@@ -277,9 +278,6 @@ for(imod in 1:n.mods){
   
   
 } # End loop over models that were self-tested
-
-
-
 
 
 
