@@ -211,7 +211,7 @@ ggplot() +
 ggsave(filename = paste(here::here(), "WG_Revised_Runs/WHAM_Run29F-5_splitNEFSC-BigUnits-nlAgeComp-11Match/plots_png/qRatio_barplot.png", sep="/"))
 ```
 
-### Plot sel*catchability Bigelow:Albatross ratio
+### Plot sel*catchability(precalculated as QAA output) Bigelow:Albatross ratio
 ```{r}
 # Read in model (need to read > 1 so subsetting works)
 modelRuns <- paste(here::here(), "WG_Revised_Runs",
@@ -227,30 +227,18 @@ bigSpringQ <- models$Run29F5$rep$QAA[1,2,]
 albFallQ <- models$Run29F5$rep$QAA[1,3,]
 bigFallQ <- models$Run29F5$rep$QAA[1,4,]
 
-# Selectivity-at-age used for selectivity blocks - pick first row for indices since no random effect implemented (constant value over time series)
-albSpringSel <- models$Run29F5$rep$selAA[[2]][1,] # Albatross spring
-bigSpringSel <- models$Run29F5$rep$selAA[[3]][1,] # Bigelow spring
-albFallSel <- models$Run29F5$rep$selAA[[4]][1,] # Albatross fall
-bigFallSel <- models$Run29F5$rep$selAA[[5]][1,] # Bigelow fall
-
-# Multiply q*selectivity estimate
-albSpring <- albSpringQ*albSpringSel
-bigSpring <- bigSpringQ*bigSpringSel
-albFall <- albFallQ*albFallSel
-bigFall <- bigFallQ*bigFallSel
-
 # Plot spring Bigelow:Albatross ratio
-data.frame(age = c(1,2,3,4,5,6,7,8,9,10,11), albSpring = albSpring, bigSpring = bigSpring, albFall = albFall, bigFall = bigFall) %>%
+data.frame(age = c(1,2,3,4,5,6,7,8,9,10,11), albSpringQ = albSpringQ, bigSpringQ = bigSpringQ, albFallQ = albFallQ, bigFallQ = bigFallQ) %>%
   ggplot() +
-  geom_bar(aes(x=age, y=bigSpring/albSpring), stat = "identity") + 
+  geom_bar(aes(x=age, y=bigSpringQ/albSpringQ), stat = "identity") + 
   geom_hline(yintercept = 1, color="orange") + 
   ggtitle("Spring Bigelow:Albatross Ratio")
 ggsave(filename = paste(here::here(), "WG_Revised_Runs/WHAM_Run29F-5_splitNEFSC-BigUnits-nlAgeComp-11Match/plots_png/sel-q-Spring_barplot.png", sep="/"))
 
 # Plot fall Bigelow:Albatross ratio
-data.frame(age = c(1,2,3,4,5,6,7,8,9,10,11), albSpring = albSpring, bigSpring = bigSpring, albFall = albFall, bigFall = bigFall) %>%
+data.frame(age = c(1,2,3,4,5,6,7,8,9,10,11), albSpringQ = albSpringQ, bigSpringQ = bigSpringQ, albFallQ = albFallQ, bigFallQ = bigFallQ) %>%
   ggplot() +
-  geom_bar(aes(x=age, y=bigFall/albFall), stat = "identity") + 
+  geom_bar(aes(x=age, y=bigFallQ/albFallQ), stat = "identity") + 
   geom_hline(yintercept = 1, color="orange") +
   ggtitle("Fall Bigelow:Albatross Ratio")
 ggsave(filename = paste(here::here(), "WG_Revised_Runs/WHAM_Run29F-5_splitNEFSC-BigUnits-nlAgeComp-11Match/plots_png/sel-q-Fall_barplot.png", sep="/"))
