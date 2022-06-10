@@ -126,190 +126,146 @@ print(paste("Number of parameters", length(WHAM_Run29F4$par), sep=" "))
 ### Save output
 # Save fitted model
 saveRDS(WHAM_Run29F4_basic, file=paste(here::here(), "WG_Revised_Runs", "WHAM_Run29F-4_splitNEFSC-BigUnits-nlAgeComp-fix1", "WHAM_Run29F4_model_noosa_noretro_tjm.rds", sep="/"))
-```
 
-### Rerun model using saved input data
-Load data from saved input RData and rerun model
-```{r}
-inputRerun <- readRDS(paste(here::here(), "WG_Revised_Runs",
-                     "WHAM_Run29F-4_splitNEFSC-BigUnits-nlAgeComp-fix1/WHAM_Run29F4_input.rds", sep="/"))
 
-# Rerun data
-ReRun29F4 <- fit_wham(input = inputRerun, MakeADFun.silent = TRUE)
-```
+# ### Rerun model using saved input data
+# # Load data from saved input RData and rerun model
+# 
+# inputRerun <- readRDS(paste(here::here(), "WG_Revised_Runs",
+#                      "WHAM_Run29F-4_splitNEFSC-BigUnits-nlAgeComp-fix1/WHAM_Run29F4_input.rds", sep="/"))
+# 
+# # Rerun data
+# ReRun29F4 <- fit_wham(input = inputRerun, MakeADFun.silent = TRUE)
 
-### Plot Bigelow:Albatross catchability for spring and fall indices
-Lines 110-123 borrowed from plot_q() function used to generate default q plots in WHAM
-```{r}
-mod <- WHAM_Run29F4
 
-  if("sdrep" %in% names(mod)){
-    if("q_re" %in% mod$input$random){
-      se = as.list(mod$sdrep, "Std. Error", report=TRUE)$logit_q_mat
-    }else{
-      se = t(matrix(as.list(mod$sdrep, "Std. Error")$logit_q, nrow = NCOL(mod$rep$logit_q_mat), 
-      ncol = NROW(mod$rep$logit_q_mat)))
-    }
-    logit_q_lo = mod$rep$logit_q_mat - qnorm(0.975)*se
-    logit_q_hi = mod$rep$logit_q_mat + qnorm(0.975)*se
-    ### Retransform out of logit space
-    q = t(mod$input$data$q_lower + (mod$input$data$q_upper - mod$input$data$q_lower)/(1+exp(-t(mod$rep$logit_q_mat))))
-    q_lo = t(mod$input$data$q_lower + (mod$input$data$q_upper - mod$input$data$q_lower)/(1+exp(-t(logit_q_lo))))
-    q_hi = t(mod$input$data$q_lower + (mod$input$data$q_upper - mod$input$data$q_lower)/(1+exp(-t(logit_q_hi))))
-  }
-
-### Constant q over time series so pick first line and plot 2 ways:
-q <- q[1,]
-q_lo <- q_lo[1,]
-q_hi <- q_hi[1,]
-
-q_dat <- data.frame(q = q, q_lo = q_lo, q_hi = q_hi, index = c("Alb spring", "Big spring", "Alb fall", "Big fall"))
-
-# Plot q value with confidence bounds
-ggplot(q_dat) + 
-  geom_bar(aes(x=index, y=q), stat="identity") + 
-  scale_x_discrete(limits = c("Alb spring", "Big spring", "Alb fall", "Big fall")) + 
-  geom_errorbar(aes(index, ymin = q_lo, ymax = q_hi), width = 0.4, colour = "orange", size = 1.3) +
-  ylim(0,0.00029)
-ggsave(filename = paste(here::here(), "WG_Revised_Runs/WHAM_Run29F-4_splitNEFSC-BigUnits-nlAgeComp-fix1/plots_png/q_barplot.png", sep="/"))
-
-# Plot ratio of bigelow to albatross q values
-springRatio <- q_dat[which(q_dat$index == "Big spring"), "q"]/ q_dat[which(q_dat$index == "Alb spring"), "q"]
-fallRatio <- q_dat[which(q_dat$index == "Big fall"), "q"]/ q_dat[which(q_dat$index == "Alb fall"), "q"]
-
-qRatio <- data.frame(qRatio = c(springRatio, fallRatio), Season = c("Spring", "Fall"))
-
-ggplot() +
-  geom_bar(data = qRatio, aes(x=Season, y = qRatio), stat = "identity") +
-  ylim(0,1.5)
-ggsave(filename = paste(here::here(), "WG_Revised_Runs/WHAM_Run29F-4_splitNEFSC-BigUnits-nlAgeComp-fix1/plots_png/qRatio_barplot.png", sep="/"))
-```
-
-### Plot sel*catchability Bigelow:Albatross ratio
-```{r}
-# Read in model (need to read > 1 so subsetting works)
-modelRuns <- paste(here::here(), "WG_Revised_Runs",
-                   c("WHAM_Run29B_splitNEFSC-BigUnits-noSurvRandSel/WHAM_Run29B_model.rds",
-                     "WHAM_Run29F-4_splitNEFSC-BigUnits-nlAgeComp-fix1/WHAM_Run29F4_model.rds"), sep="/")
-# Read in model Rdata
-models <- lapply(modelRuns, readRDS)
-names(models) <- paste("Run", c( "29B", "29F4"), sep="")
-
-# Catchability at age: QAA [1list, index number, age/s]
-albSpringQ <- models$Run29F4$rep$QAA[1,1,]
-bigSpringQ <- models$Run29F4$rep$QAA[1,2,]
-albFallQ <- models$Run29F4$rep$QAA[1,3,]
-bigFallQ <- models$Run29F4$rep$QAA[1,4,]
-
-# Selectivity-at-age used for selectivity blocks - pick first row for indices since no random effect implemented (constant value over time series)
-albSpringSel <- models$Run29F4$rep$selAA[[2]][1,] # Albatross spring
-bigSpringSel <- models$Run29F4$rep$selAA[[3]][1,] # Bigelow spring
-albFallSel <- models$Run29F4$rep$selAA[[4]][1,] # Albatross fall
-bigFallSel <- models$Run29F4$rep$selAA[[5]][1,] # Bigelow fall
-
-# Multiply q*selectivity estimate
-albSpring <- albSpringQ*albSpringSel
-bigSpring <- bigSpringQ*bigSpringSel
-albFall <- albFallQ*albFallSel
-bigFall <- bigFallQ*bigFallSel
-
-# Plot spring Bigelow:Albatross ratio
-data.frame(age = c(1,2,3,4,5,6,7,8,9,10,11), albSpring = albSpring, bigSpring = bigSpring, albFall = albFall, bigFall = bigFall) %>%
-  ggplot() +
-  geom_bar(aes(x=age, y=bigSpring/albSpring), stat = "identity") + 
-  geom_hline(yintercept = 1, color="orange") + 
-  ggtitle("Spring Bigelow:Albatross Ratio")
-ggsave(filename = paste(here::here(), "WG_Revised_Runs/WHAM_Run29F-4_splitNEFSC-BigUnits-nlAgeComp-fix1/plots_png/sel-q-Spring_barplot.png", sep="/"))
-
-# Plot fall Bigelow:Albatross ratio
-data.frame(age = c(1,2,3,4,5,6,7,8,9,10,11), albSpring = albSpring, bigSpring = bigSpring, albFall = albFall, bigFall = bigFall) %>%
-  ggplot() +
-  geom_bar(aes(x=age, y=bigFall/albFall), stat = "identity") + 
-  geom_hline(yintercept = 1, color="orange") +
-  ggtitle("Fall Bigelow:Albatross Ratio")
-ggsave(filename = paste(here::here(), "WG_Revised_Runs/WHAM_Run29F-4_splitNEFSC-BigUnits-nlAgeComp-fix1/plots_png/sel-q-Fall_barplot.png", sep="/"))
-```
-
-### Plot selectivity with CI 
-Borrowed code from plot.fleet.sel.blocks() for plot and par_tables_fn() for CI data
--currently pull CI mannually from WHAM Output Tables but would be good to automate so we can loop over indices
-```{r}
-dat <- WHAM_Run29F4$env$data
-ages = 1:dat$n_ages
-
-# Plot index selectivity (fleet doesn't have age-specific CI since logistic selectivity)
-sb_p = dat$selblock_pointer_indices #selblock pointer by year and index
-  # sb_p = dat$selblock_pointer_fleets #selblock pointer by year and fleet
-
-# Index 1
-i = 1
-blocks = unique(sb_p[,i])
-sel = do.call(rbind, lapply(WHAM_Run29F4$rep$selAA, function(x) apply(x,2,mean)))[blocks,,drop=FALSE]
-
-data.frame(ages = ages, 
-           sel = c(sel), 
-           lowerCI = c(0.007, 0.127, 0.249, 0.074, 0.000, 1, 0.142, 0.262, 0.287, 0.287, 0.331),
-           upperCI = c(0.022,	0.383,	0.737,	0.998, 1.000, 1,	0.992,	0.854,	0.858,	0.891,	0.779)) %>%
-  ggplot() +
-  geom_line(aes(x=ages, y=sel)) + 
-  geom_ribbon(aes(x=ages,ymin=lowerCI, ymax=upperCI), alpha=0.2) + 
-  ggtitle("Index 1 Selectivity")
-ggsave(filename = paste(here::here(), "WG_Revised_Runs", "WHAM_Run29F-4_splitNEFSC-BigUnits-nlAgeComp-fix1", "plots_png", "results", "Selectivity_index1_CI.png", sep="/"))
-
-# Index 2
-i = 2
-blocks = unique(sb_p[,i])
-sel = do.call(rbind, lapply(WHAM_Run29F4$rep$selAA, function(x) apply(x,2,mean)))[blocks,,drop=FALSE]
-
-data.frame(ages = ages, 
-           sel = c(sel), 
-           lowerCI = c(0.052, 0.217, 0.436, 0.057, 1, 0.488, 0.448, 0.421, 0.397, 0.373, 0.378),
-           upperCI = c(0.110, 0.441,	0.861,	1.000, 1, 0.937,	0.861,	0.829,	0.791,	0.753,	0.652)) %>%
-  ggplot() +
-  geom_line(aes(x=ages, y=sel)) + 
-  geom_ribbon(aes(x=ages,ymin=lowerCI, ymax=upperCI), alpha=0.2) + 
-  ggtitle("Index 2 Selectivity")
-ggsave(filename = paste(here::here(), "WG_Revised_Runs", "WHAM_Run29F-4_splitNEFSC-BigUnits-nlAgeComp-fix1", "plots_png", "results", "Selectivity_index2_CI.png", sep="/"))
-
-# Index 3
-i = 3
-blocks = unique(sb_p[,i])
-sel = do.call(rbind, lapply(WHAM_Run29F4$rep$selAA, function(x) apply(x,2,mean)))[blocks,,drop=FALSE]
-
-data.frame(ages = ages, 
-           sel = c(sel), 
-           lowerCI = c(0.123, 0.352, 0.510, 1, 0.537, 0.481, 0.315, 0.292, 0.282, 0.356, 0.000),
-           upperCI = c(0.217,	0.598,	0.970, 1,	0.950, 0.821,	0.546,	0.516,	0.510,	0.686,	1.000)) %>%
-  ggplot() +
-  geom_line(aes(x=ages, y=sel)) + 
-  geom_ribbon(aes(x=ages,ymin=lowerCI, ymax=upperCI), alpha=0.2) + 
-  ggtitle("Index 3 Selectivity")
-ggsave(filename = paste(here::here(), "WG_Revised_Runs", "WHAM_Run29F-4_splitNEFSC-BigUnits-nlAgeComp-fix1", "plots_png", "results", "Selectivity_index3_CI.png", sep="/"))
-
-# Index 4
-i = 4
-blocks = unique(sb_p[,i])
-sel = do.call(rbind, lapply(WHAM_Run29F4$rep$selAA, function(x) apply(x,2,mean)))[blocks,,drop=FALSE]
-
-data.frame(ages = ages, 
-           sel = c(sel), 
-           lowerCI = c(0.148, 0.194, 1, 0.027, 0.119, 0.200, 0.192, 0.180, 0.174, 0.170, 0.211),
-           upperCI = c(0.629,	0.873, 1,	0.999,	0.991, 0.918,	0.865,	0.847,	0.827,	0.970,	0.658)) %>%
-  ggplot() +
-  geom_line(aes(x=ages, y=sel)) + 
-  geom_ribbon(aes(x=ages,ymin=lowerCI, ymax=upperCI), alpha=0.2) + 
-  ggtitle("Index 4 Selectivity")
-ggsave(filename = paste(here::here(), "WG_Revised_Runs", "WHAM_Run29F-4_splitNEFSC-BigUnits-nlAgeComp-fix1", "plots_png", "results", "Selectivity_index4_CI.png", sep="/"))
-```
-
-## Comment
-The model converged when only a single age was fixed at full selectivity, and these ages overlapped with those fixed in runs 29F and 29F-2. Run 29F-4 had high uncertainty (CI range from at/near 0 to at/near 1) for Albatross spring age 5, Bigelow spring age 4, Albatross fall 11+ and Bigelow fall age 4. 
-
-| Run   | Albatross spring | Bigelow spring | Albatross fall | Bigelow fall |
-| 29F   | 4,5,6            | 4,5            | 4,11           | 3,4,5        |
-| 29F-2 |   5,6            |   5            | 4,11           | 3,4          |
-| 29F-4 |     6            |   5            | 4              | 3            |
-
-Catchability estimates are similar for run 29F-2 and 29F-4 but the CI for the Bigelow fall catchability estimate were much larger.
-
-Run 29F-4 OSA residuals for fit to aggregate fleet and catch data were similarly or slightly less normally distributed than in run 29F-2 which could be attributed to the Albatross fall selectivity random effect that was not applied in run 29F-4. OSA residuals for fit to age comp data had similar patterns and distributions in run 29F-2 and 29F-4. 
+# ### Plot Bigelow:Albatross catchability for spring and fall indices
+# Lines 110-123 borrowed from plot_q() function used to generate default q plots in WHAM
+# ```{r}
+# mod <- WHAM_Run29F4
+# 
+#   if("sdrep" %in% names(mod)){
+#     if("q_re" %in% mod$input$random){
+#       se = as.list(mod$sdrep, "Std. Error", report=TRUE)$logit_q_mat
+#     }else{
+#       se = t(matrix(as.list(mod$sdrep, "Std. Error")$logit_q, nrow = NCOL(mod$rep$logit_q_mat), 
+#       ncol = NROW(mod$rep$logit_q_mat)))
+#     }
+#     logit_q_lo = mod$rep$logit_q_mat - qnorm(0.975)*se
+#     logit_q_hi = mod$rep$logit_q_mat + qnorm(0.975)*se
+#     ### Retransform out of logit space
+#     q = t(mod$input$data$q_lower + (mod$input$data$q_upper - mod$input$data$q_lower)/(1+exp(-t(mod$rep$logit_q_mat))))
+#     q_lo = t(mod$input$data$q_lower + (mod$input$data$q_upper - mod$input$data$q_lower)/(1+exp(-t(logit_q_lo))))
+#     q_hi = t(mod$input$data$q_lower + (mod$input$data$q_upper - mod$input$data$q_lower)/(1+exp(-t(logit_q_hi))))
+#   }
+# 
+# ### Constant q over time series so pick first line and plot 2 ways:
+# q <- q[1,]
+# q_lo <- q_lo[1,]
+# q_hi <- q_hi[1,]
+# 
+# q_dat <- data.frame(q = q, q_lo = q_lo, q_hi = q_hi, index = c("Alb spring", "Big spring", "Alb fall", "Big fall"))
+# 
+# # Plot q value with confidence bounds
+# ggplot(q_dat) + 
+#   geom_bar(aes(x=index, y=q), stat="identity") + 
+#   scale_x_discrete(limits = c("Alb spring", "Big spring", "Alb fall", "Big fall")) + 
+#   geom_errorbar(aes(index, ymin = q_lo, ymax = q_hi), width = 0.4, colour = "orange", size = 1.3) +
+#   ylim(0,0.00029)
+# ggsave(filename = paste(here::here(), "WG_Revised_Runs/WHAM_Run29F-4_splitNEFSC-BigUnits-nlAgeComp-fix1/plots_png/q_barplot.png", sep="/"))
+# 
+# # Plot ratio of bigelow to albatross q values
+# springRatio <- q_dat[which(q_dat$index == "Big spring"), "q"]/ q_dat[which(q_dat$index == "Alb spring"), "q"]
+# fallRatio <- q_dat[which(q_dat$index == "Big fall"), "q"]/ q_dat[which(q_dat$index == "Alb fall"), "q"]
+# 
+# qRatio <- data.frame(qRatio = c(springRatio, fallRatio), Season = c("Spring", "Fall"))
+# 
+# ggplot() +
+#   geom_bar(data = qRatio, aes(x=Season, y = qRatio), stat = "identity") +
+#   ylim(0,1.5)
+# ggsave(filename = paste(here::here(), "WG_Revised_Runs/WHAM_Run29F-4_splitNEFSC-BigUnits-nlAgeComp-fix1/plots_png/qRatio_barplot.png", sep="/"))
+# ```
+# 
+# 
+# ### Plot selectivity with CI 
+# Borrowed code from plot.fleet.sel.blocks() for plot and par_tables_fn() for CI data
+# -currently pull CI mannually from WHAM Output Tables but would be good to automate so we can loop over indices
+# ```{r}
+# dat <- WHAM_Run29F4$env$data
+# ages = 1:dat$n_ages
+# 
+# # Plot index selectivity (fleet doesn't have age-specific CI since logistic selectivity)
+# sb_p = dat$selblock_pointer_indices #selblock pointer by year and index
+#   # sb_p = dat$selblock_pointer_fleets #selblock pointer by year and fleet
+# 
+# # Index 1
+# i = 1
+# blocks = unique(sb_p[,i])
+# sel = do.call(rbind, lapply(WHAM_Run29F4$rep$selAA, function(x) apply(x,2,mean)))[blocks,,drop=FALSE]
+# 
+# data.frame(ages = ages, 
+#            sel = c(sel), 
+#            lowerCI = c(0.007, 0.127, 0.249, 0.074, 0.000, 1, 0.142, 0.262, 0.287, 0.287, 0.331),
+#            upperCI = c(0.022,	0.383,	0.737,	0.998, 1.000, 1,	0.992,	0.854,	0.858,	0.891,	0.779)) %>%
+#   ggplot() +
+#   geom_line(aes(x=ages, y=sel)) + 
+#   geom_ribbon(aes(x=ages,ymin=lowerCI, ymax=upperCI), alpha=0.2) + 
+#   ggtitle("Index 1 Selectivity")
+# ggsave(filename = paste(here::here(), "WG_Revised_Runs", "WHAM_Run29F-4_splitNEFSC-BigUnits-nlAgeComp-fix1", "plots_png", "results", "Selectivity_index1_CI.png", sep="/"))
+# 
+# # Index 2
+# i = 2
+# blocks = unique(sb_p[,i])
+# sel = do.call(rbind, lapply(WHAM_Run29F4$rep$selAA, function(x) apply(x,2,mean)))[blocks,,drop=FALSE]
+# 
+# data.frame(ages = ages, 
+#            sel = c(sel), 
+#            lowerCI = c(0.052, 0.217, 0.436, 0.057, 1, 0.488, 0.448, 0.421, 0.397, 0.373, 0.378),
+#            upperCI = c(0.110, 0.441,	0.861,	1.000, 1, 0.937,	0.861,	0.829,	0.791,	0.753,	0.652)) %>%
+#   ggplot() +
+#   geom_line(aes(x=ages, y=sel)) + 
+#   geom_ribbon(aes(x=ages,ymin=lowerCI, ymax=upperCI), alpha=0.2) + 
+#   ggtitle("Index 2 Selectivity")
+# ggsave(filename = paste(here::here(), "WG_Revised_Runs", "WHAM_Run29F-4_splitNEFSC-BigUnits-nlAgeComp-fix1", "plots_png", "results", "Selectivity_index2_CI.png", sep="/"))
+# 
+# # Index 3
+# i = 3
+# blocks = unique(sb_p[,i])
+# sel = do.call(rbind, lapply(WHAM_Run29F4$rep$selAA, function(x) apply(x,2,mean)))[blocks,,drop=FALSE]
+# 
+# data.frame(ages = ages, 
+#            sel = c(sel), 
+#            lowerCI = c(0.123, 0.352, 0.510, 1, 0.537, 0.481, 0.315, 0.292, 0.282, 0.356, 0.000),
+#            upperCI = c(0.217,	0.598,	0.970, 1,	0.950, 0.821,	0.546,	0.516,	0.510,	0.686,	1.000)) %>%
+#   ggplot() +
+#   geom_line(aes(x=ages, y=sel)) + 
+#   geom_ribbon(aes(x=ages,ymin=lowerCI, ymax=upperCI), alpha=0.2) + 
+#   ggtitle("Index 3 Selectivity")
+# ggsave(filename = paste(here::here(), "WG_Revised_Runs", "WHAM_Run29F-4_splitNEFSC-BigUnits-nlAgeComp-fix1", "plots_png", "results", "Selectivity_index3_CI.png", sep="/"))
+# 
+# # Index 4
+# i = 4
+# blocks = unique(sb_p[,i])
+# sel = do.call(rbind, lapply(WHAM_Run29F4$rep$selAA, function(x) apply(x,2,mean)))[blocks,,drop=FALSE]
+# 
+# data.frame(ages = ages, 
+#            sel = c(sel), 
+#            lowerCI = c(0.148, 0.194, 1, 0.027, 0.119, 0.200, 0.192, 0.180, 0.174, 0.170, 0.211),
+#            upperCI = c(0.629,	0.873, 1,	0.999,	0.991, 0.918,	0.865,	0.847,	0.827,	0.970,	0.658)) %>%
+#   ggplot() +
+#   geom_line(aes(x=ages, y=sel)) + 
+#   geom_ribbon(aes(x=ages,ymin=lowerCI, ymax=upperCI), alpha=0.2) + 
+#   ggtitle("Index 4 Selectivity")
+# ggsave(filename = paste(here::here(), "WG_Revised_Runs", "WHAM_Run29F-4_splitNEFSC-BigUnits-nlAgeComp-fix1", "plots_png", "results", "Selectivity_index4_CI.png", sep="/"))
+# ```
+# 
+# ## Comment
+# The model converged when only a single age was fixed at full selectivity, and these ages overlapped with those fixed in runs 29F and 29F-2. Run 29F-4 had high uncertainty (CI range from at/near 0 to at/near 1) for Albatross spring age 5, Bigelow spring age 4, Albatross fall 11+ and Bigelow fall age 4. 
+# 
+# | Run   | Albatross spring | Bigelow spring | Albatross fall | Bigelow fall |
+# | 29F   | 4,5,6            | 4,5            | 4,11           | 3,4,5        |
+# | 29F-2 |   5,6            |   5            | 4,11           | 3,4          |
+# | 29F-4 |     6            |   5            | 4              | 3            |
+# 
+# Catchability estimates are similar for run 29F-2 and 29F-4 but the CI for the Bigelow fall catchability estimate were much larger.
+# 
+# Run 29F-4 OSA residuals for fit to aggregate fleet and catch data were similarly or slightly less normally distributed than in run 29F-2 which could be attributed to the Albatross fall selectivity random effect that was not applied in run 29F-4. OSA residuals for fit to age comp data had similar patterns and distributions in run 29F-2 and 29F-4. 
