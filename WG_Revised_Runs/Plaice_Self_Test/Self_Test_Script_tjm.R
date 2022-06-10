@@ -117,23 +117,19 @@ for(imod in 1:n.mods){
 #      error = function(e) conditionMessage(e))
 
     # Check if the hessian is invertible/positive definite
-    if(fit2$hessian == TRUE){ # If invertible/positive definite save results (report and sdreport)
-      reps[[isim]] <- fit2$rep
-      reps[[isim]]$hessian <- TRUE
-      
+    reps[[isim]]$error <- fit2$err #reports NULL if tryCatch completed without errors
+    reps[[isim]]$hessian = fit2$is_sdrep #reports TRUE or FALSE
+    reps[[isim]]$na_sdrep = fit2$na_sdrep #reports TRUE or FALSE when an inversion of the hessian occurs, but NAs for some SEs imply not really invertible.
+    reps[[isim]]$max_gr = max(abs(fit2$final_gradient)) #report the maximum absolute value of the gradient vector (big values correlate with bad hessians)
+    sdreps[[isim]]$hessian = fit2$is_sdrep
+    reps[[isim]] <- fit2$rep #this can get reported without having invertible hessian, report regardless
+    if(fit2$is_sdrep){ # If invertible/positive definite save results (report and sdreport)
       # Store sdreport
-      sdreps[[isim]] <- fit2$sdrep 
-      sdreps[[isim]]$hessian <- TRUE
-      
+      sdreps[[isim]] <- fit2$sdrep
     } else{ # If hessian isn't invertible/positive definite store the warning and the estimates to help ID parameters that contribute to this warning (likely selectivity  parameters)
       # Store report
-      reps[[isim]] <- fit2$rep # May have additional errors stored in fit2$err
-      reps[[isim]]$hessian <- FALSE
-      reps[[isim]]$error <- fit2$err
+#      reps[[isim]] <- fit2$rep # May have additional errors stored in fit2$err
       
-      # Store sdreport
-      sdreps[[isim]] <- fit2$sdrep 
-      sdreps[[isim]]$hessian <- FALSE
       # ??? How do I find & save the warning printed when fit2$sdrep is printed to the screen???
     }
     
