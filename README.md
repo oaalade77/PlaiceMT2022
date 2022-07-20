@@ -25,6 +25,7 @@ A folder containing ASAP input data files for WG modeling.
 | PlaiceWHAM-2019_revised_NEFSC-LW-WAA_2SelBlock.DAT | WG data file same revisions as above but includes two selectivity blocks for the fleet (1980-1999, 2000-2019). |
 | PlaiceWHAM-2019_revised_NEFSC-LW-WAA_2SelBlock_changeESS.DAT | WG data file same revisions as above but changes catch effective sample size from 100 to 30 and index ESS from 50 to 30 as in the ASAP run 12. |
 | PlaiceWHAM-2019_revised_NEFSC-LW-WAA_VPA-MAT.DAT | WG data file with same revisions as above and updated data EXCEPT for maturity which matches that in the VPA-WHAM bridge run (PlacieWHAM1-2019VPAINPUT.DAT). |
+| Format_Updated_Plaice_Data_revised.xlsx | Excel file used to format data for inclusion in .DAT files, sheets include description of source files from which data was compiled (i.e. files generated as part of ToR2&3). |
 
 ### WG_Revised
 A folder containing WG model runs with revised data: revised discards (estimated rather than imputed), accompanying changes in CAA, correct NEFSC survey NAA to include 11+ group rather than 10+, survey WAA use L-W calculation and resolve error so catch total is biomass rather than numbers. See folder's README for overview of specific runs.
