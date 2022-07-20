@@ -94,7 +94,9 @@ modelRuns <- paste(here::here(), "WG_Revised_Runs",
                      "WHAM_Run32_addLPUE/WHAM_Run32_model.rds", 
                      "WHAM_Run33_addMADMF-MENH/WHAM_Run33_model.rds",
                      "WHAM_Run34_addMENH-LPUE/WHAM_Run34_model.rds",
+                     "WHAM_Run34A_addMENH-LPUE_mirrorLPUE/WHAM_Run34A_model.rds",
                      "WHAM_Run35_addMADMF-LPUE/WHAM_Run35_model.rds", 
+                     "WHAM_Run35A_addMADMF-LPUE_mirrorLPUE/WHAM_Run35A_model.rds",
                      "WHAM_Run37_VAST_ALL/WHAM_Run37_model.rds",
                      "WHAM_Run37A_VAST_ALL-randSel/WHAM_Run37A_model.rds", 
                      "WHAM_Run37B_VAST_ALL-split/WHAM_Run37B_model.rds", 
@@ -103,7 +105,7 @@ modelRuns <- paste(here::here(), "WG_Revised_Runs",
 
 # Read in model Rdata
 models <- lapply(modelRuns, readRDS)
-names(models) <- paste("Run", c(9, 10,11, 13,14,16, "16A",17,19,22, 23, "23A", 24, 25, 26, 27, "27A", 28, 29, "29A", "29B", "29B-1", "29C",  "29F", "29F-1", "29F-2", "29F-3", "29F-4", "29H", 30, 31, 32, 33, 34, 35, 37, "37A", "37B", "37C", "37E"), sep="")
+names(models) <- paste("Run", c(9, 10,11, 13,14,16, "16A",17,19,22, 23, "23A", 24, 25, 26, 27, "27A", 28, 29, "29A", "29B", "29B-1", "29C",  "29F", "29F-1", "29F-2", "29F-3", "29F-4", "29H", 30, 31, 32, 33, 34, "34A", 35, "35A", 37, "37A", "37B", "37C", "37E"), sep="")
 
 # Generate comparative diagnostics
 compare_wham_models(models, do.plot = FALSE, do.table=TRUE, fdir=paste(here::here(), "WG_Revised_Runs", "Comparison_Output", sep="/"))
@@ -136,33 +138,39 @@ models2 <- lapply(modelRuns2, readRDS)
 names(models2) <- paste("Run", c(38))
 compare_wham_models(models2, do.plot = FALSE, do.table = TRUE, fdir=paste(here::here(), "WG_Revised_Runs", "Comparison_Output", sep="/"))
 ```
-AIC for R-env runs SST anomaly
+AIC for R-env runs SST anomaly - 39/39A comparable, 46/46A comparable
 ```{r}
 modelRuns3 <- paste(here::here(), "WG_Revised_Runs",              c("WHAM_Run39_addEnvCov-anomSST-noEffect/WHAM_Run39_model.rds",
-                     "WHAM_Run39A_addEnvCov-anomSST-withEffect/WHAM_Run39A_model.rds"), sep="/")
+                     "WHAM_Run39A_addEnvCov-anomSST-withEffect/WHAM_Run39A_model.rds",
+                     "WHAM_Run46_addEnvCov-anomSST-noEffect-ar1/WHAM_Run46_model.rds",
+                     "WHAM_Run46A_addEnvCov-anomSST-withEffect-ar1/WHAM_Run46A_model.rds"), sep="/")
 
 models3 <- lapply(modelRuns3, readRDS)
-names(models3) <- paste("Run", c(39, "39A"))
+names(models3) <- paste("Run", c(39, "39A", 46, "46A"))
 compare_wham_models(models3, do.plot = FALSE, do.table = TRUE, fdir=paste(here::here(), "WG_Revised_Runs", "Comparison_Output", sep="/"))
 ```
-AIC for q-env runs SST anomaly
+AIC for q-env runs SST anomaly - 41/41A comparable and 47/47A comparable
 ```{r}
 modelRuns <- paste(here::here(), "WG_Revised_Runs",              c("WHAM_Run41_addEnvCov-q-anomBT-noEffect/WHAM_Run41_model.rds",
-                     "WHAM_Run41A_addEnvCov-q-anomBT-withEffect/WHAM_Run41A_model.rds"), sep="/")
+                     "WHAM_Run41A_addEnvCov-q-anomBT-withEffect/WHAM_Run41A_model.rds",
+                     "WHAM_Run47_addEnvCov-q-anomBT-noEffect/WHAM_Run47_model.rds",
+                     "WHAM_Run47A_addEnvCov-q-anomBT-withEffect-ar1/WHAM_Run47A_model.rds"), sep="/")
 
 models <- lapply(modelRuns, readRDS)
-names(models) <- paste("Run", c(41, "41A"))
+names(models) <- paste("Run", c(41, "41A", 47, "47A"))
 compare_wham_models(models, do.plot = FALSE, do.table = TRUE, fdir=paste(here::here(), "WG_Revised_Runs", "Comparison_Output", sep="/"))
 ```
-AIC for R-env runs  NAO
+AIC for R-env runs  NAO - 42/42A comparable and 48/48A comparable
 ```{r}
 modelRuns <- paste(here::here(), "WG_Revised_Runs",              c("WHAM_Run42_addEnvCov-R-NAO-noEffect/WHAM_Run42_model.rds", 
-       "WHAM_Run42A_addEnvCov-R-NAO-withEffect/WHAM_Run42A_model.rds"), sep="/")
+       "WHAM_Run42A_addEnvCov-R-NAO-withEffect/WHAM_Run42A_model.rds",
+       "WHAM_Run48_addEnvCov-R-NAO-noEffect-ar1/WHAM_Run48_model.rds",
+       "WHAM_Run48A_addEnvCov-R-NAO-withEffect-ar1/WHAM_Run48A_model.rds"), sep="/")
 
 # 42B calculated below
 
 models <- lapply(modelRuns, readRDS)
-names(models) <- paste("Run", c(42, "42A"))
+names(models) <- paste("Run", c(42, "42A", 48, "48A"))
 compare_wham_models(models, do.plot = FALSE, do.table = TRUE, fdir=paste(here::here(), "WG_Revised_Runs", "Comparison_Output", sep="/"))
 ```
 AIC for run 42B
@@ -190,26 +198,30 @@ Run42B <- models$Run42B
     
     tab <- c(aic.tab, as.matrix(rho, nrow=1))
 ```
-AIC for R-env runs  AMO
+AIC for R-env runs  AMO - 43/43A comparable and 49/49A comparable
 ```{r}
 modelRuns <- paste(here::here(), "WG_Revised_Runs",              c("WHAM_Run43_addEnvCov-R-AMO-noEffect/WHAM_Run43_model.rds", 
-       "WHAM_Run43A_addEnvCov-R-AMO-withEffect/WHAM_Run43A_model.rds"), sep="/")
+       "WHAM_Run43A_addEnvCov-R-AMO-withEffect/WHAM_Run43A_model.rds",
+       "WHAM_Run49_addEnvCov-R-AMO-noEffect-ar1/WHAM_Run49_model.rds",
+       "WHAM_Run49A_addEnvCov-R-AMO-withEffect-ar1/WHAM_Run49A_model.rds"), sep="/")
 
 # 42B calculated below
 
 models <- lapply(modelRuns, readRDS)
-names(models) <- paste("Run", c(42, "42A"))
+names(models) <- paste("Run", c(43, "43A", 49, "49A"))
 compare_wham_models(models, do.plot = FALSE, do.table = TRUE, fdir=paste(here::here(), "WG_Revised_Runs", "Comparison_Output", sep="/"))
 ```
-AIC for R-env runs BT anomaly
+AIC for R-env runs BT anomaly - 44/44A comparable and 50/50A comparable
 ```{r}
 modelRuns <- paste(here::here(), "WG_Revised_Runs",              c("WHAM_Run44_addEnvCov-R-anomBT-noEffect/WHAM_Run44_model.rds", 
-       "WHAM_Run44A_addEnvCov-R-anomBT-withEffect/WHAM_Run44A_model.rds"), sep="/")
+       "WHAM_Run44A_addEnvCov-R-anomBT-withEffect/WHAM_Run44A_model.rds",
+       "WHAM_Run50_addEnvCov-R-anomBT-noEffect-ar1/WHAM_Run50_model.rds",
+       "WHAM_Run50A_addEnvCov-R-anomBT-withEffect-ar1/WHAM_Run50A_model.rds"), sep="/")
 
 # 42B calculated below
 
 models <- lapply(modelRuns, readRDS)
-names(models) <- paste("Run", c(44, "44A"))
+names(models) <- paste("Run", c(44, "44A", 50, "50A"))
 compare_wham_models(models, do.plot = FALSE, do.table = TRUE, fdir=paste(here::here(), "WG_Revised_Runs", "Comparison_Output", sep="/"))
 ```
 
@@ -391,6 +403,25 @@ names(models) <- paste("Run", c("29B", "29F"), sep="")
 compare_wham_models(models, do.plot = TRUE, do.table=TRUE, fdir=paste(here::here(), "WG_Revised_Runs", "Comparison_Output", sep="/")) # plot.opts=list(which = 1) argument generates only the first plot - here looked at plots 1,2,6,7,8,9,10
 ```
 
+#### Compare run 27, 29, 29A, 29B, 29C
+```{r}
+# File path
+modelRuns <- paste(here::here(), "WG_Revised_Runs",
+c("WHAM_Run27_Full-State-Space/WHAM_Run27_model.rds",
+  "WHAM_Run29_splitNEFSC/WHAM_Run29_model.rds", 
+  "WHAM_Run29A_splitNEFSC-BigUnits/WHAM_Run29A_model.rds",
+  "WHAM_Run29B_splitNEFSC-BigUnits-noSurvRandSel/WHAM_Run29B_model.rds",
+  "WHAM_Run29C_splitNEFSC-biomass/WHAM_Run29C_model.rds"), sep="/") # ,
+#   "Compare_ASAP_Run46B/Compare_ASAP_Run46B_model.rds"), sep="/")
+
+# Read in model Rdata
+models <- lapply(modelRuns, readRDS)
+names(models) <- paste("Run", c(27, 29, "29A", "29B", "29C"), sep="") # , "ASAP46B"), sep="")
+
+# Generate comparative diagnostics
+compare_wham_models(models, do.plot = TRUE, do.table=TRUE, fdir=paste(here::here(), "WG_Revised_Runs", "Comparison_Output", sep="/"), plot.opts=list(which = c(1,2,6,7,8,9,10))) # plot.opts=list(which = 1) argument generates only the first plot - here looked at plots 1,2,6,7,8,9,10 (mostly 1,2,8)
+```
+
 #### Compare run 27, 29, 29B, 29F 
 ```{r}
 # File path
@@ -495,6 +526,21 @@ c("WHAM_Run29F_splitNEFSC-BigUnits-nlAgeComp/WHAM_Run29F_model.rds",
 # Read in model Rdata
 models <- lapply(modelRuns, readRDS)
 names(models) <- paste("Run", c("29F","29F-2", "29F-4"), sep="") 
+
+# Generate comparative diagnostics
+compare_wham_models(models, do.plot = TRUE, do.table=TRUE, fdir=paste(here::here(), "WG_Revised_Runs", "Comparison_Output", sep="/")) 
+```
+Compare 29F, 29F-4 and 29F-5
+```{r}
+# File path
+modelRuns <- paste(here::here(), "WG_Revised_Runs",
+c("WHAM_Run29F_splitNEFSC-BigUnits-nlAgeComp/WHAM_Run29F_model.rds",
+  "WHAM_Run29F-4_splitNEFSC-BigUnits-nlAgeComp-fix1/WHAM_Run29F4_model.rds",
+  "WHAM_Run29F-5_splitNEFSC-BigUnits-nlAgeComp-11Match/WHAM_Run29F-5_model.rds"), sep="/") 
+
+# Read in model Rdata
+models <- lapply(modelRuns, readRDS)
+names(models) <- paste("Run", c("29F", "29F-4", "29F-5"), sep="") 
 
 # Generate comparative diagnostics
 compare_wham_models(models, do.plot = TRUE, do.table=TRUE, fdir=paste(here::here(), "WG_Revised_Runs", "Comparison_Output", sep="/")) 
@@ -660,6 +706,79 @@ names(models) <- paste("Run", c(42, "42A", "42B"), sep="")
 compare_wham_models(models, do.plot = TRUE, do.table=FALSE, fdir=paste(here::here(), "WG_Revised_Runs", "Comparison_Output", sep="/"))
 ```
 
+AIC & Mohn's rho for run 42B
+```{r}
+# File path
+modelRuns <- paste(here::here(), "WG_Revised_Runs", c("WHAM_Run42_addEnvCov-R-NAO-noEffect/WHAM_Run42_model.rds", 
+                                                      "WHAM_Run42A_addEnvCov-R-NAO-withEffect/WHAM_Run42A_model.rds",
+                                                      "WHAM_Run42B_addEnvCov-R-NAO-withEffect-2Lag/WHAM_Run42B_model.rds"), sep="/")
+
+# Read in model Rdata
+models <- lapply(modelRuns, readRDS)
+names(models) <- paste("Run", c(42, "42A", "42B"), sep="")
+Run42B <- models$Run42B
+
+# Calculate AIC
+          k = length(Run42B$opt$par)
+ aic <-   2*(Run42B$opt$obj + k) # AIC
+        aic <- round(aic, 1)
+      
+aic
+
+# Mohn's rho
+    rho <- mohns_rho(Run42B)[c("R", "SSB", "Fbar")]
+    rho <- round(rho, 4)
+    rho
+```
+Extra plots of predicted (rep$ecov_x) vs. observed ecov
+```{r}
+# File path
+modelRuns <- paste(here::here(), "WG_Revised_Runs", c("WHAM_Run42_addEnvCov-R-NAO-noEffect/WHAM_Run42_model.rds", 
+                                                      "WHAM_Run42A_addEnvCov-R-NAO-withEffect/WHAM_Run42A_model.rds",
+                                                      "WHAM_Run42B_addEnvCov-R-NAO-withEffect-2Lag/WHAM_Run42B_model.rds"), sep="/")
+
+# Read in model Rdata
+models <- lapply(modelRuns, readRDS)
+names(models) <- paste("Run", c(42, "42A", "42B"), sep="")
+
+ecovPlot <- NULL
+ecovPlot$pred42 <- models$Run42$rep$Ecov_x
+ecovPlot$obs42 <- models$Run42$input$data$Ecov_obs
+ecovPlot$pred42A <- models$Run42A$rep$Ecov_x
+ecovPlot$obs42A <- models$Run42A$input$data$Ecov_obs
+
+ecovPlot$obs42[which(ecovPlot$obs42 == -999)] <- 0
+ecovPlot %>% 
+  as.data.frame() %>%
+  ggplot() +
+  geom_line(aes(x=obs42, y=pred42)) # this looks bad, not as  
+
+ecovPlot$obs42A[which(ecovPlot$obs42A == -999)] <- 0
+ecovPlot %>% 
+  as.data.frame() %>%
+  ggplot() +
+  geom_line(aes(x=obs42A, y=pred42A))
+
+ecovPlot <- NULL
+ecovPlot$pred42B <- models$Run42B$rep$Ecov_x
+ecovPlot$obs42B <- models$Run42B$input$data$Ecov_obs
+
+ecovPlot$obs42B[which(ecovPlot$obs42B == -999)] <- 0
+ecovPlot %>% 
+  as.data.frame() %>%
+  ggplot() +
+  geom_line(aes(x=obs42B, y=pred42B))
+
+# Plot of ecov prediction vs. R
+plotData <- NULL
+plotData$ecovPred42A <- models$Run42A$rep$Ecov_x[-41]
+plotData$Recruitment <- models$Run42A$rep$NAA[,1]
+plotData %>%
+  as.data.frame() %>%
+  ggplot() +
+  geom_point(aes(x=Recruitment, y=ecovPred42A))
+```
+
 ### Compare Runs 43: with AMO link to R
 ```{r}
 # File path
@@ -702,6 +821,207 @@ names(models) <- paste("Run", c(41, "41A"), sep="")
 compare_wham_models(models, do.plot = TRUE, do.table=TRUE, fdir=paste(here::here(), "WG_Revised_Runs", "Comparison_Output", sep="/"))
 ```
 
+### Compare Runs 46: with SST anomaly link to R with ar1 process
+```{r}
+# File path
+modelRuns <- paste(here::here(), "WG_Revised_Runs", c("WHAM_Run46_addEnvCov-anomSST-noEffect-ar1/WHAM_Run46_model.rds", 
+                                                      "WHAM_Run46A_addEnvCov-anomSST-withEffect-ar1/WHAM_Run46A_model.rds"), sep="/")
+
+# Read in model Rdata
+models <- lapply(modelRuns, readRDS)
+names(models) <- paste("Run", c(46, "46A"), sep="")
+
+# Generate comparative diagnostics
+compare_wham_models(models, do.plot = TRUE, do.table=TRUE, fdir=paste(here::here(), "WG_Revised_Runs", "Comparison_Output", sep="/"))
+```
+Additional plot of ecov prediction vs. R
+```{r}
+# Plot of prediction vs. R
+plotData <- NULL
+plotData$ecovPred46A <- models$Run46A$rep$Ecov_x[-41]
+plotData$Recruitment <- models$Run46A$rep$NAA[,1]
+plotData$ecovObs46A <- models$Run46A$input$data$Ecov_obs[-41]
+  
+plotData %>%
+  as.data.frame() %>%
+  filter(ecovObs46A != -999) %>% 
+  ggplot() +
+  geom_point(aes(x=Recruitment, y=ecovPred46A), col = "red", alpha = 0.5)  + 
+  geom_point(aes(x=Recruitment, y=ecovObs46A), col="blue", alpha = 0.5)
+```
+### Compare Runs 47: with BT anomaly link to q with ar1 process
+```{r}
+# File path
+modelRuns <- paste(here::here(), "WG_Revised_Runs", c("WHAM_Run47_addEnvCov-q-anomBT-noEffect-ar1/WHAM_Run47_model.rds", 
+                                                      "WHAM_Run47A_addEnvCov-q-anomBT-withEffect-ar1/WHAM_Run47A_model.rds"), sep="/")
+
+# Read in model Rdata
+models <- lapply(modelRuns, readRDS)
+names(models) <- paste("Run", c(47, "47A"), sep="")
+
+# Generate comparative diagnostics
+compare_wham_models(models, do.plot = TRUE, do.table=TRUE, fdir=paste(here::here(), "WG_Revised_Runs", "Comparison_Output", sep="/"))
+```
+
+### Compare Runs 48: with NAO link to R with ar1 process
+```{r}
+# File path
+modelRuns <- paste(here::here(), "WG_Revised_Runs", c("WHAM_Run48_addEnvCov-R-NAO-noEffect-ar1/WHAM_Run48_model.rds", 
+                                                      "WHAM_Run48A_addEnvCov-R-NAO-withEffect-ar1/WHAM_Run48A_model.rds"), sep="/")
+
+# Read in model Rdata
+models <- lapply(modelRuns, readRDS)
+names(models) <- paste("Run", c(48, "48A"), sep="")
+
+# Generate comparative diagnostics
+compare_wham_models(models, do.plot = TRUE, do.table=TRUE, fdir=paste(here::here(), "WG_Revised_Runs", "Comparison_Output", sep="/"))
+```
+Compare 48 to 48B without AIC table
+```{r}
+# File path
+modelRuns <- paste(here::here(), "WG_Revised_Runs", c("WHAM_Run48_addEnvCov-R-NAO-noEffect-ar1/WHAM_Run48_model.rds", 
+                                                      "WHAM_Run48B_addEnvCov-R-NAO-withEffect-2Lag-ar1/WHAM_Run48B_model.rds"), sep="/")
+
+# Read in model Rdata
+models <- lapply(modelRuns, readRDS)
+names(models) <- paste("Run", c(48, "48B"), sep="")
+
+# Generate comparative diagnostics
+compare_wham_models(models, do.plot = TRUE, do.table=TRUE, calc.aic=FALSE, fdir=paste(here::here(), "WG_Revised_Runs", "Comparison_Output", sep="/"))
+```
+AIC for run 48B
+```{r}
+# File path
+modelRuns <- paste(here::here(), "WG_Revised_Runs", c("WHAM_Run48_addEnvCov-R-NAO-noEffect-ar1/WHAM_Run48_model.rds", 
+                                                      "WHAM_Run48B_addEnvCov-R-NAO-withEffect-2Lag-ar1/WHAM_Run48B_model.rds"), sep="/")
+
+# Read in model Rdata
+models <- lapply(modelRuns, readRDS)
+names(models) <- paste("Run", c(48, "48B"), sep="")
+Run48B <- models$Run48B
+
+# Calculate AIC
+          k = length(Run48B$opt$par)
+ aic <-   2*(Run48B$opt$obj + k) # AIC
+        aic <- round(aic, 1)
+      
+      aic.tab <- cbind(aic)
+      colnames(aic.tab) <- c("AIC")
+      
+# Mohn's rho
+    rho <- mohns_rho(Run48B)[c("R", "SSB", "Fbar")]
+    rho <- round(rho, 4)
+    rho
+```
+Extra plots of predicted (rep$ecov_x) vs. observed ecov
+```{r}
+modelRuns <- paste(here::here(), "WG_Revised_Runs", c("WHAM_Run48_addEnvCov-R-NAO-noEffect-ar1/WHAM_Run48_model.rds", 
+                                                      "WHAM_Run48A_addEnvCov-R-NAO-withEffect-ar1/WHAM_Run48A_model.rds",
+                                                      "WHAM_Run48B_addEnvCov-R-NAO-withEffect-2Lag-ar1/WHAM_Run48B_model.rds"), sep="/")
+
+# Read in model Rdata
+models <- lapply(modelRuns, readRDS)
+names(models) <- paste("Run", c(48, "48A", "48B"), sep="")
+
+ecovPlot <- NULL
+ecovPlot$pred48 <- models$Run48$rep$Ecov_x
+ecovPlot$obs48 <- models$Run48$input$data$Ecov_obs
+ecovPlot$pred48A <- models$Run48A$rep$Ecov_x
+ecovPlot$obs48A <- models$Run48A$input$data$Ecov_obs
+
+ecovPlot$obs48[which(ecovPlot$obs48 == -999)] <- 0
+ecovPlot %>% 
+  as.data.frame() %>%
+  ggplot() +
+  geom_line(aes(x=obs48, y=pred48)) # this looks bad, not as  
+
+ecovPlot$obs48A[which(ecovPlot$obs48A == -999)] <- 0
+ecovPlot %>% 
+  as.data.frame() %>%
+  ggplot() +
+  geom_line(aes(x=obs48A, y=pred48A))
+
+ecovPlot <- NULL
+ecovPlot$pred48B <- models$Run48B$rep$Ecov_x
+ecovPlot$obs48B <- models$Run48B$input$data$Ecov_obs
+
+ecovPlot$obs48B[which(ecovPlot$obs48B == -999)] <- 0
+ecovPlot %>% 
+  as.data.frame() %>%
+  ggplot() +
+  geom_line(aes(x=obs48B, y=pred48B))
+```
+Additional plot of ecov prediction vs. R
+```{r}
+# Plot of prediction vs. R
+plotData <- NULL
+plotData$ecovPred48A <- models$Run48A$rep$Ecov_x[-41]
+plotData$Recruitment <- models$Run48A$rep$NAA[,1]
+plotData$ecovObs48A <- models$Run48A$input$data$Ecov_obs[-41]
+  
+plotData %>%
+  as.data.frame() %>%
+  filter(ecovObs48A != -999) %>% 
+  ggplot() +
+  geom_point(aes(x=Recruitment, y=ecovPred48A), col = "red", alpha = 0.5)  + 
+  geom_point(aes(x=Recruitment, y=ecovObs48A), col="blue", alpha = 0.5)
+```
+
+### Compare Runs 49: with AMO link to R with ar1 process
+```{r}
+# File path
+modelRuns <- paste(here::here(), "WG_Revised_Runs", c("WHAM_Run49_addEnvCov-R-AMO-noEffect-ar1/WHAM_Run49_model.rds", 
+                                                      "WHAM_Run49A_addEnvCov-R-AMO-withEffect-ar1/WHAM_Run49A_model.rds"), sep="/")
+
+# Read in model Rdata
+models <- lapply(modelRuns, readRDS)
+names(models) <- paste("Run", c(49, "49A"), sep="")
+
+# Generate comparative diagnostics
+compare_wham_models(models, do.plot = TRUE, do.table=TRUE, fdir=paste(here::here(), "WG_Revised_Runs", "Comparison_Output", sep="/"))
+```
+Extra plots of predicted (rep$ecov_x) vs. observed ecov
+```{r}
+modelRuns <- paste(here::here(), "WG_Revised_Runs", c("WHAM_Run49_addEnvCov-R-AMO-noEffect-ar1/WHAM_Run49_model.rds", 
+                                                      "WHAM_Run49A_addEnvCov-R-AMO-withEffect-ar1/WHAM_Run49A_model.rds"), sep="/")
+
+# Read in model Rdata
+models <- lapply(modelRuns, readRDS)
+names(models) <- paste("Run", c(49, "49A"), sep="")
+
+ecovPlot <- NULL
+ecovPlot$pred49 <- models$Run49$rep$Ecov_x
+ecovPlot$obs49 <- models$Run49$input$data$Ecov_obs
+ecovPlot$pred49A <- models$Run49A$rep$Ecov_x
+ecovPlot$obs49A <- models$Run49A$input$data$Ecov_obs
+
+ecovPlot$obs49[which(ecovPlot$obs49 == -999)] <- 0
+ecovPlot %>% 
+  as.data.frame() %>%
+  ggplot() +
+  geom_line(aes(x=obs49, y=pred49)) # this looks bad, not as  
+
+ecovPlot$obs49A[which(ecovPlot$obs49A == -999)] <- 0
+ecovPlot %>% 
+  as.data.frame() %>%
+  ggplot() +
+  geom_line(aes(x=obs49A, y=pred49A))
+```
+
+### Compare Runs 50: with BT anomaly link to R with ar1 process
+```{r}
+# File path
+modelRuns <- paste(here::here(), "WG_Revised_Runs", c("WHAM_Run50_addEnvCov-R-anomBT-noEffect-ar1/WHAM_Run50_model.rds", 
+                                                      "WHAM_Run50A_addEnvCov-R-anomBT-withEffect-ar1/WHAM_Run50A_model.rds"), sep="/")
+
+# Read in model Rdata
+models <- lapply(modelRuns, readRDS)
+names(models) <- paste("Run", c(50, "50A"), sep="")
+
+# Generate comparative diagnostics
+compare_wham_models(models, do.plot = TRUE, do.table=TRUE, fdir=paste(here::here(), "WG_Revised_Runs", "Comparison_Output", sep="/"))
+```
+
 ### Compare Runs 29B,39,41,42,43 - runs like 29B but fit to another env data set with no effect
 ```{r}
 # File path
@@ -718,6 +1038,421 @@ names(models) <- paste("Run", c("29B", 39, 41, 42, 43,44), sep="")
 # Generate comparative diagnostics
 compare_wham_models(models, do.plot = TRUE, do.table=FALSE, fdir=paste(here::here(), "WG_Revised_Runs", "Comparison_Output", sep="/"))
 ```
+
+## Candidate run plots
+Compare 29F-2, 29F-4 and 29F-5
+```{r}
+# File path
+modelRuns <- paste(here::here(), "WG_Revised_Runs",
+c("WHAM_Run29F-2_swapInitSel-randAlbFall/WHAM_Run29F-2_model.rds",
+  "WHAM_Run29F-4_splitNEFSC-BigUnits-nlAgeComp-fix1/WHAM_Run29F4_model.rds",
+  "WHAM_Run29F-5_splitNEFSC-BigUnits-nlAgeComp-11Match/WHAM_Run29F-5_model.rds"), sep="/") 
+
+# Read in model Rdata
+models <- lapply(modelRuns, readRDS)
+names(models) <- paste("Run", c("29F2", "29F4", "29F5"), sep="") 
+
+# Generate comparative diagnostics
+compare_wham_models(models, do.plot = TRUE, do.table=TRUE, fdir=paste(here::here(), "WG_Revised_Runs", "Comparison_Output", sep="/")) 
+```
+QQ plots for aggregate fit
+```{r}
+# File path
+modelRuns <- paste(here::here(), "WG_Revised_Runs",
+c("WHAM_Run29F_splitNEFSC-BigUnits-nlAgeComp/WHAM_Run29F_model.rds",
+  "WHAM_Run29F-2_swapInitSel-randAlbFall/WHAM_Run29F-2_model.rds",
+  "WHAM_Run29F-4_splitNEFSC-BigUnits-nlAgeComp-fix1/WHAM_Run29F4_model.rds",
+  "WHAM_Run29F-5_splitNEFSC-BigUnits-nlAgeComp-11Match/WHAM_Run29F-5_model.rds"), sep="/") 
+
+# Read in model Rdata
+models <- lapply(modelRuns, readRDS)
+names(models) <- paste("Run", c("29F", "29F2", "29F4", "29F5"), sep="") 
+
+
+##### Revise plot.osa.residuals to plot qqplots only
+plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=72, od){
+  
+  # Fleet aggregate qq plot
+  origpar <- par(no.readonly = TRUE)
+  years <- mod$years
+  if("logcatch" %in% mod$osa$type){
+    dat <- subset(mod$osa, type=="logcatch")
+    dat$fleet <- factor(as.character(dat$fleet))
+    n.fleets <- length(table(dat$fleet))
+    plot.colors = mypalette(n.fleets)
+    for(f in 1:n.fleets){
+      tmp <- subset(dat, fleet==names(table(dat$fleet))[f])
+      if(do.tex) cairo_pdf(file.path(od, paste0("OSA_resid_catch_QQ_fleet_",f,".pdf")), family = fontfam, height = 10, width = 10)
+      if(do.png) png(filename = file.path(od, paste0("OSA_resid_catch_QQ_fleet_",f,'.png')), width = 10*res, height = 10*res, res = res, pointsize = 12, family = fontfam)
+      # par(mar=c(4,4,3,2), oma=c(1,1,1,1), mfrow=c(2,2))
+
+      # set plot lims using max residual for any component (easier to compare if all the same)
+      ylim.max <- max(abs(range(dat$residual, na.rm=TRUE)))
+      if(is.infinite(ylim.max)) {
+        cat("Infinite osa residuals for aggregate catch in fleet ", f, ", so using +/-10 for range of y axis \n")
+        ylim.max = 10
+      }
+      ylims <- c(-ylim.max, ylim.max)
+
+      # 4. QQ plot modified from car:::qqPlot.default
+      notNA <- tmp$residual[!is.na(tmp$residual)]
+      ord.x <- notNA[order(notNA)]
+      n <- length(ord.x)
+      P <- ppoints(n)
+      z <- qnorm(P, mean=0, sd=1)
+      FleetPlot <- plot(z, ord.x,  main="", type = "n", ylim = c(-3.25,3.75), xlim = c(-2.5,2.5), lwd = 5, cex = 5, cex.axis = 3, ylab = "", xlab="", xaxt="n") # xlab="Std Normal Quantiles", ylab="OSA Residual Quantiles",
+      grid(lty = 1, equilogs = FALSE)
+      box()
+      points(z, ord.x, col=plot.colors[f], pch=19, cex=4)
+      abline(0,1, col=plot.colors[f], lwd=5)
+      conf = 0.95
+      zz <- qnorm(1 - (1 - conf)/2)
+      SE <- (1/dnorm(z)) * sqrt(P * (1 - P)/n)
+      upper <- z + zz * SE
+      lower <- z - zz * SE
+      lines(z, upper, lty=2, col=plot.colors[f], lwd=5)
+      lines(z, lower, lty=2, col=plot.colors[f], lwd=5)
+
+      # title (paste0("OSA residual diagnostics: Fleet ",f), outer=T, line=-1)
+      if(do.tex | do.png) dev.off() else par(origpar)
+    }
+  }
+  
+  # Fleet age comp qq plot
+  if("catchpaa" %in% mod$osa$type) {
+    n.fleets <- mod$input$data$n_fleets
+    plot.colors = mypalette(n.fleets)
+    for(f in 1:n.fleets) if(any(mod$input$data$use_catch_paa[,f]==1)){
+      if(do.tex) cairo_pdf(file.path(od, paste0("OSA_resid_paa_QQ_fleet_",f,".pdf")), family = fontfam, height = 10, width = 10)
+      if(do.png) png(filename = file.path(od, paste0("OSA_resid_paa_QQ_fleet_",f,'.png')), width = 10*res, height = 10*res, res = res, pointsize = 12, family = fontfam)
+      
+      # par(mar=c(4,4,3,2), oma=c(1,1,1,1), mfrow=c(3,2))
+      yind = which(mod$input$data$use_catch_paa[,f] ==1)
+      tmp = mod$osa[c(mod$input$data$keep_Cpaa[f,yind,]+1),]
+      resids = vals = ages = pyears = cohorts = matrix(NA, nrow = mod$input$data$n_years_model, 
+        ncol = mod$input$data$n_ages)
+      resids[yind,] = tmp$residual
+      vals[yind,] = tmp$val
+      ages[yind,] = tmp$age
+      pyears[yind,] = mod$years[tmp$year]
+      cohorts[yind,] = tmp$cohort
+      if(mod$input$data$age_comp_model_fleets[f] %in% 3:7){
+        for(j in yind){
+          pos = which(vals[j,] > 1e-15)
+          resids[j,which(vals[j,] < 1e-15)] = NA #no resids for zeros
+          resids[j,max(pos)] = NA #remove last age class
+        }
+      } else {
+        resids[,NCOL(resids)] = NA #remove last age class, use zeros for multinom, dir-mult
+      }
+
+      # set plot lims using max residual for any component (easier to compare if all the same)
+      ylim.max <- max(abs(range(resids, na.rm=TRUE)))
+      if(is.infinite(ylim.max)) {
+        cat("Infinite osa residuals for catch proportions at age in fleet ", f, ", so using +/-10 for range of y axis \n")
+        ylim.max = 10
+      }
+      ylims <- c(-ylim.max, ylim.max)
+
+      # 6. QQ plot modified from car:::qqPlot.default
+      notNA <- resids[!is.na(resids)]
+      ord.x <- notNA[order(notNA)]
+      n <- length(ord.x)
+      P <- ppoints(n)
+      z <- qnorm(P, mean=0, sd=1)
+      plot(z, ord.x, main="", type = "n", ylim = c(-3.75,3.75), xlim = c(-3,3), lwd = 5, cex = 5, cex.axis = 3, ylab = "", xlab="", xaxt="n") # xlab="Std Normal Quantiles", ylab="OSA Residual Quantiles",
+      grid(lty = 1, equilogs = FALSE)
+      box()
+      points(z, ord.x, col=plot.colors[f], pch=19, cex=4)
+      abline(0,1, col=plot.colors[f], lwd=5)
+      conf = 0.95
+      zz <- qnorm(1 - (1 - conf)/2)
+      SE <- (1/dnorm(z)) * sqrt(P * (1 - P)/n)
+      upper <- z + zz * SE
+      lower <- z - zz * SE
+      lines(z, upper, lty=2, col=plot.colors[f], lwd=5)
+      lines(z, lower, lty=2, col=plot.colors[f], lwd=5)
+
+      #title (paste0("age composition OSA residual diagnostics: Fleet ",f), outer=T, line=-1)
+      if(do.tex | do.png) dev.off() else par(origpar)
+    }
+  }
+  
+  # Index plots aggregated data 
+  if("logindex" %in% mod$osa$type){
+    dat <- subset(mod$osa, type=="logindex")
+    dat$fleet <- factor(as.character(dat$fleet))
+    n.fleets <- length(table(dat$fleet))
+    plot.colors = mypalette(n.fleets)
+    for(f in 1:n.fleets){
+      tmp <- subset(dat, fleet==names(table(dat$fleet))[f])
+      if(do.tex) cairo_pdf(file.path(od, paste0("OSA_resid_catch_QQ_index_",f,".pdf")), family = fontfam, height = 10, width = 10)
+      if(do.png) png(filename = file.path(od, paste0("OSA_resid_catch_QQ_index_",f,'.png')), width = 10*res, height = 10*res, res = res, pointsize = 12, family = fontfam)
+      # par(mar=c(4,4,3,2), oma=c(1,1,1,1), mfrow=c(2,2))
+
+      # set plot lims using max residual for any component (easier to compare if all the same)
+      ylim.max <- max(abs(range(dat$residual, na.rm=TRUE)))
+      if(is.infinite(ylim.max)) {
+        cat("Infinite osa residuals for aggregate indices in  index ", f, ", so using +/-10 for range of y axis \n")
+        ylim.max = 10
+      }
+      ylims <- c(-ylim.max, ylim.max)
+
+      # make robust to missing years
+      tmp$year <- years[tmp$year]
+      tmp <- rbind(tmp[c("year","residual")], data.frame(year=years[!(years %in% tmp$year)], residual=rep(NA, length(years[!(years %in% tmp$year)]))))
+      tmp <- tmp[order(tmp$year),]
+
+      # 4. QQ plot modified from car:::qqPlot.default
+      notNA <- tmp$residual[!is.na(tmp$residual)]
+      ord.x <- notNA[order(notNA)]
+      n <- length(ord.x)
+      P <- ppoints(n)
+      z <- qnorm(P, mean=0, sd=1)
+      plot(z, ord.x, main="", type = "n", ylim = c(-3.25,3.75), xlim = c(-2.5,2.5), lwd = 5, cex = 5, cex.axis = 3, ylab = "", xlab="", xaxt="n") #  xlab="Std Normal Quantiles", ylab="OSA Residual Quantiles",
+      grid(lty = 1, equilogs = FALSE)
+      box()
+      points(z, ord.x, col=plot.colors[f], pch=19, cex=4)
+      abline(0,1, col=plot.colors[f], lwd=5)
+      conf = 0.95
+      zz <- qnorm(1 - (1 - conf)/2)
+      SE <- (1/dnorm(z)) * sqrt(P * (1 - P)/n)
+      upper <- z + zz * SE
+      lower <- z - zz * SE
+      lines(z, upper, lty=2, col=plot.colors[f], lwd=5)
+      lines(z, lower, lty=2, col=plot.colors[f], lwd=5)
+
+      # title (paste0("OSA residual diagnostics: Index ",f), outer=T, line=-1)
+      if(do.tex | do.png) dev.off() else par(origpar)
+    }
+  }
+  
+  # Index plots age comp
+  if("indexpaa" %in% mod$osa$type) {
+    dat <- subset(mod$osa, type=="indexpaa")
+    dat$fleet <- factor(as.character(dat$fleet))
+    dat$residual[which(is.infinite(dat$residual))] = NA #some happen for zeros or last age class
+    dat$residual[which(as.integer(dat$age) == mod$input$data$n_ages)] = NA #remove last age class
+    
+    n.indices <- mod$input$data$n_indices
+    plot.colors = mypalette(n.indices)
+
+    for(i in 1:n.indices) if(any(mod$input$data$use_index_paa[,i]==1)){
+      if(do.tex) cairo_pdf(file.path(od, paste0("OSA_resid_paa_QQ_index_",i,".pdf")), family = fontfam, height = 10, width = 10)
+      if(do.png) png(filename = file.path(od, paste0("OSA_resid_paa_QQ_index_",i,'.png')), width = 10*res, height = 10*res, res = res, pointsize = 12, family = fontfam)
+
+      # par(mar=c(4,4,3,2), oma=c(1,1,1,1), mfrow=c(3,2))
+      yind = which(mod$input$data$use_index_paa[,i] ==1)
+      tmp = mod$osa[c(mod$input$data$keep_Ipaa[i,yind,]+1),]
+      resids = vals = ages = pyears = cohorts = matrix(NA, nrow = mod$input$data$n_years_model, 
+        ncol = mod$input$data$n_ages)
+      resids[yind,] = tmp$residual
+      vals[yind,] = tmp$val
+      ages[yind,] = tmp$age
+      pyears[yind,] = mod$years[tmp$year]
+      cohorts[yind,] = tmp$cohort
+      if(mod$input$data$age_comp_model_indices[i] %in% 3:7){
+        for(j in yind){
+          pos = which(vals[j,] > 1e-15)
+          resids[j,which(vals[j,] < 1e-15)] = NA #no resids for zeros
+          resids[j,max(pos)] = NA #remove last age class
+        }
+      } else {
+        resids[,NCOL(resids)] = NA #remove last age class, use zeros for multinom, dir-mult
+      }
+
+      # set plot lims using max residual for any component (easier to compare if all the same)
+      ylim.max <- max(abs(range(resids, na.rm=TRUE)))
+      if(is.infinite(ylim.max)) {
+        cat("Infinite osa residuals for proportions at age in  index ", f, ", so using +/-10 for range of y axis \n")
+        ylim.max = 10
+      }
+      ylims <- c(-ylim.max, ylim.max)
+
+      # 6. QQ plot modified from car:::qqPlot.default
+      notNA <- resids[!is.na(resids)]
+      ord.x <- notNA[order(notNA)]
+      n <- length(ord.x)
+      P <- ppoints(n)
+      z <- qnorm(P, mean=0, sd=1)
+      plot(z, ord.x, main="", type = "n", ylim = c(-3.75,3.75), xlim = c(-3,3), lwd = 5, cex = 5, cex.axis = 3, ylab = "", xlab="", xaxt="n") # xlab="Std Normal Quantiles", ylab="OSA Residual Quantiles",
+      grid(lty = 1, equilogs = FALSE)
+      box()
+      points(z, ord.x, col=plot.colors[i], pch=19, cex=4)
+      abline(0,1, col=plot.colors[i], lwd=5)
+      conf = 0.95
+      zz <- qnorm(1 - (1 - conf)/2)
+      SE <- (1/dnorm(z)) * sqrt(P * (1 - P)/n)
+      upper <- z + zz * SE
+      lower <- z - zz * SE
+      lines(z, upper, lty=2, col=plot.colors[i], lwd=5)
+      lines(z, lower, lty=2, col=plot.colors[i], lwd=5)
+
+      # title (paste0("age composition OSA residual diagnostics: Index ",i), outer=T, line=-1)
+      if(do.tex | do.png) dev.off() else par(origpar)
+    }
+  }
+  
+  # Save plots as objects
+}
+
+##### Generate plots
+plot.osa.residuals(models$Run29F, do.png = TRUE, od = here::here("WG_Revised_Runs", "Comparison_Output", "Run29F")) 
+plot.osa.residuals(models$Run29F2, do.png = TRUE, od = here::here("WG_Revised_Runs", "Comparison_Output", "Run29F2")) 
+plot.osa.residuals(models$Run29F4, do.png = TRUE, od = here::here("WG_Revised_Runs", "Comparison_Output", "Run29F4")) 
+plot.osa.residuals(models$Run29F5, do.png = TRUE, od = here::here("WG_Revised_Runs", "Comparison_Output", "Run29F5")) 
+```
+Modify retro plots so same x/y scale across runs (also so NAA and NAA_age relative plots can be scaled by y.range2)
+```{r}
+plot.retro <- function(mod,y.range1,y.range2, alpha = 0.05, what = "SSB", age=NULL, do.tex = FALSE, do.png = FALSE, fontfam="", res = 72, od)
+{
+  origpar <- par(no.readonly = TRUE)
+  years = mod$years
+	n_years <- length(years) # don't use projections
+  npeels = length(mod$peels)
+  if(npeels)
+  {
+    if(what == "NAA_age") {
+      age.ind <- (1:mod$input$data$n_ages)[age] 
+      #age.ind <- match(age, mod$ages.lab)
+      what.print <- paste0(what, age)
+    } else {
+      what.print <- what
+    }
+
+    # standard retro plot
+    if(do.tex) cairo_pdf(file.path(od, paste0(what.print,"_retro.pdf")), family = fontfam, height = 10, width = 10)
+    if(do.png) png(filename = file.path(od, paste0(what.print,"_retro.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
+    plot.colors = mypalette(npeels+1)
+    tcol = col2rgb(plot.colors)
+    tcol = rgb(tcol[1,],tcol[2,],tcol[3,], maxColorValue = 255, alpha = 200)
+    if(what == "NAA_age"){
+      res = list(head(mod$rep[["NAA"]],n_years))
+      res[2:(npeels+1)] = lapply(mod$peels, function(x) x$rep[["NAA"]])
+    } else {
+      res = list(head(mod$rep[[what]],n_years))
+      res[2:(npeels+1)] = lapply(mod$peels, function(x) x$rep[[what]])
+    }
+    if(what == "NAA")
+    {
+      par(mfcol = c(ceiling(NCOL(res[[1]])/2),2))
+      for(i in 1:NCOL(res[[1]]))
+      {
+        y.range1 <- range(sapply(res, function(x) range(x[,i])))
+        plot(years,res[[1]][,i],lwd=1,col=plot.colors[1],type='l',xlab="Year",ylab=paste0("Numbers at age ", mod$ages.lab[i]),ylim=y.range1, cex.axis=2)
+        grid(col = gray(0.7), lty = 2)
+        for (j in 1:npeels)
+        {
+          lines(years[1:(n_years-j)],res[[j+1]][,i], col = tcol[j+1], lwd=4)
+          points(years[n_years-j],res[[j+1]][n_years-j,i],pch=16,col=plot.colors[j+1], lwd=4, cex=2)
+        }
+      }
+    }
+    if(what == "NAA_age") # only specified age
+    {
+      par(mfrow = c(1,1))
+      i = age.ind
+      y.range1 <- range(sapply(res, function(x) range(x[,i])))
+      plot(years,res[[1]][,i],lwd=1,col=plot.colors[1],type='l',xlab="Year",ylab=paste0("Numbers at age ", mod$ages.lab[i]),ylim=y.range1, cex.axis=2)
+      grid(col = gray(0.7), lty = 2)
+      for (j in 1:npeels)
+      {
+        lines(years[1:(n_years-j)],res[[j+1]][,i], col = tcol[j+1], lwd=4)
+        points(years[n_years-j],res[[j+1]][n_years-j,i],pch=16,col=plot.colors[j+1], lwd=4, cex=2)
+      }
+    }
+    if(what %in% c("SSB","Fbar"))
+    {
+      if(missing(y.range1)) y.range1 <- range(sapply(res, function(x) range(x)))
+      par(mfrow = c(1,1))
+      plot(years,res[[1]],lwd=1,col=plot.colors[1],type='l',xlab="Year",ylab=what,ylim=y.range1, cex.axis=2)
+      grid(col = gray(0.7), lty = 2)
+      for (i in 1:npeels)
+      {
+        lines(years[1:(n_years-i)],res[[i+1]], col = tcol[i+1], lwd=4)
+        points(years[n_years-i],res[[i+1]][n_years-i],pch=16,col=plot.colors[i+1], lwd=4, cex=2)
+      }
+    }
+    if(do.tex | do.png) dev.off() else par(origpar)
+
+    # relative retro plot
+    if(do.tex) cairo_pdf(file.path(od, paste0(what.print,"_retro_relative.pdf")), family = fontfam, height = 10, width = 10)
+    if(do.png) png(filename = file.path(od, paste0(what.print,"_retro_relative.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
+    # if(missing(y.lab)) y.lab = bquote(paste("Mohn's ", rho, "(",.(what),")"))
+    if(what %in% c("NAA","NAA_age")) rel.res = lapply(1:length(res), function(x) res[[x]]/res[[1]][1:(n_years - x + 1),] - 1)
+    if(what %in% c("SSB","Fbar")) rel.res = lapply(1:length(res), function(x) res[[x]]/res[[1]][1:(n_years - x + 1)] - 1)
+    rho.vals = mohns_rho(mod)
+
+    if(what == "NAA")
+    {
+      par(mfcol = c(ceiling(NCOL(rel.res[[1]])/2),2))
+      for(i in 1:NCOL(res[[1]]))
+      {
+        if(missing(y.range2)) y.range2 <- c(-1,max(sapply(rel.res, function(x) range(x[,i]))))
+        plot(years,rel.res[[1]][,i],lwd=1,col=plot.colors[1],type='l',xlab="Year",ylab=bquote(paste("Mohn's ", rho, "(Numbers at age ", .(mod$ages.lab[i]), ")")),ylim = y.range2, cex.axis=2)
+        grid(col = gray(0.7), lty = 2)
+        for (j in 1:npeels)
+        {
+          lines(years[1:(n_years-j)],rel.res[[j+1]][,i], col = tcol[j+1], lwd=4)
+          points(years[n_years-j],rel.res[[j+1]][n_years-j,i],pch=16,col=plot.colors[j+1], lwd=4, cex=2)
+        }
+        rho.nm = ifelse(i==1, "R",paste0("N",mod$ages.lab[i]))
+        rho.plot <- round(rho.vals[rho.nm],3)
+        legend("bottomleft", legend = bquote(rho == .(rho.plot)), bty = "n")
+      }
+    }
+    if(what == "NAA_age")
+    {
+      par(mfrow = c(1,1))
+      i = age.ind
+      if(missing(y.range2)) y.range2 <- c(-1,max(sapply(rel.res, function(x) range(x[,i]))))
+      plot(years,rel.res[[1]][,i],lwd=1,col=plot.colors[1],type='l',xlab="Year",ylab=bquote(paste("Mohn's ", rho, "(Numbers at age ", .(mod$ages.lab[i]), ")")),ylim = y.range2, cex.axis=2)
+      grid(col = gray(0.7), lty = 2)
+      for (j in 1:npeels)
+      {
+        lines(years[1:(n_years-j)],rel.res[[j+1]][,i], col = tcol[j+1], lwd=4)
+        points(years[n_years-j],rel.res[[j+1]][n_years-j,i],pch=16,col=plot.colors[j+1], lwd=4, cex=2)
+      }
+      rho.nm = ifelse(i==1, "R",paste0("N",mod$ages.lab[i]))
+      rho.plot <- round(rho.vals[rho.nm],3)
+      legend("bottomleft", legend = bquote(rho == .(rho.plot)), bty = "n")
+    }
+    if(what %in% c("SSB","Fbar"))
+    {
+      if(missing(y.range2)) y.range2 <- c(-1,max(sapply(rel.res, function(x) range(x))))
+      par(mfrow = c(1,1))
+      plot(years,rel.res[[1]],lwd=1,col="black",type='l',xlab="Year",ylab=bquote(paste("Mohn's ", rho, "(",.(what),")")),ylim=y.range2, cex.axis=2)
+      grid(col = gray(0.7), lty = 2)
+      for (i in 1:npeels)
+      {
+        lines(years[1:(n_years-i)],rel.res[[i+1]], col = tcol[i+1], lwd=4)
+        points(years[n_years-i],rel.res[[i+1]][n_years-i],pch=16,col=plot.colors[i+1], lwd=4, cex=2)
+      }
+      rho.plot <- round(rho.vals[what],3)
+      legend("bottomleft", legend = bquote(rho == .(rho.plot)), bty = "n")
+    }
+    if(do.tex | do.png) dev.off() else par(origpar)
+    # par(origpar)
+    return(rho.vals)
+  }
+}
+
+
+# SSB retro
+plot.retro(models$Run29F2, y.range2 = c(-0.2, 0.2), what="SSB", od = here::here("WG_Revised_Runs", "Comparison_Output", "Run29F2"), do.png = TRUE)
+plot.retro(models$Run29F4, y.range2 = c(-0.2, 0.2), what="SSB", od = here::here("WG_Revised_Runs", "Comparison_Output", "Run29F4"), do.png = TRUE)
+plot.retro(models$Run29F5, y.range2 = c(-0.2, 0.2), what="SSB", od = here::here("WG_Revised_Runs", "Comparison_Output", "Run29F5"), do.png = TRUE)
+# F retro
+plot.retro(models$Run29F2, y.range2 = c(-0.2, 0.25), what="Fbar", od = here::here("WG_Revised_Runs", "Comparison_Output", "Run29F2"), do.png = TRUE)
+plot.retro(models$Run29F4, y.range2 = c(-0.2, 0.25), what="Fbar", od = here::here("WG_Revised_Runs", "Comparison_Output", "Run29F4"), do.png = TRUE)
+plot.retro(models$Run29F5, y.range2 = c(-0.2, 0.25), what="Fbar", od = here::here("WG_Revised_Runs", "Comparison_Output", "Run29F5"), do.png = TRUE)
+# R retro
+plot.retro(models$Run29F2, y.range2 = c(-0.6, 1), what="NAA_age", age=1, od = here::here("WG_Revised_Runs", "Comparison_Output", "Run29F2"), do.png = TRUE)
+plot.retro(models$Run29F4, y.range2 = c(-0.6, 1), what="NAA_age", age=1, od = here::here("WG_Revised_Runs", "Comparison_Output", "Run29F4"), do.png = TRUE)
+plot.retro(models$Run29F5, y.range2 = c(-0.6, 1), what="NAA_age", age=1, od = here::here("WG_Revised_Runs", "Comparison_Output", "Run29F5"), do.png = TRUE)
+
+```
+
 
 # Read in individuals
 ```{r}
@@ -748,6 +1483,8 @@ modelRuns <- paste(here::here(), "WG_Revised_Runs",
                      "WHAM_Run29F-1_swapInitSel/WHAM_Run29F-1_model.rds",
                      "WHAM_Run29F-2_swapInitSel-randAlbFall/WHAM_Run29F-2_model.rds",
                      "WHAM_Run29F-3_swapInitSel-fixAlbFall/WHAM_Run29F-3_model.rds",
+                     "WHAM_Run29F-4_splitNEFSC-BigUnits-nlAgeComp-fix1/WHAM_Run29F4_model.rds",
+                     "WHAM_Run29F-5_splitNEFSC-BigUnits-nlAgeComp-11Match/WHAM_Run29F-5_basic_model.rds",
                      "WHAM_Run30_addMADMF/WHAM_Run30_model.rds",
                      "WHAM_Run31_addMENH/WHAM_Run31_model.rds",
                      "WHAM_Run32_addLPUE/WHAM_Run32_model.rds", 
@@ -760,16 +1497,47 @@ modelRuns <- paste(here::here(), "WG_Revised_Runs",
                      # "WHAM_Run38A_addEnvCov-BT-withEffect/WHAM_Run38A_model.rds",
                      # "WHAM_Run38B_addEnvCov-BT-withEffect-2lag/WHAM_Run38B_model.rds",
                      "WHAM_Run39_addEnvCov-anomSST-noEffect/WHAM_Run39_model.rds",
-                     "WHAM_Run39A_addEnvCov-anomSST-withEffect/WHAM_Run39A_model.rds"), sep="/")
+                     "WHAM_Run39A_addEnvCov-anomSST-withEffect/WHAM_Run39A_model.rds",
+                   "WHAM_Run44_addEnvCov-R-anomBT-noEffect/WHAM_Run44_model.rds", 
+                   "WHAM_Run44A_addEnvCov-R-anomBT-withEffect/WHAM_Run44A_model.rds"), sep="/")
                      # "WHAM_Run41_addEnvCov-q-anomBT-noEffect/WHAM_Run41_model.rds",
                      # "WHAM_Run41A_addEnvCov-q-anomBT-withEffect/WHAM_Run41A_model.rds"), sep="/")
 
 # Read in model Rdata
 models <- lapply(modelRuns, readRDS)
-names(models) <- paste("Run", c(9, 10,11, 13,14,16, "16A",17,19,22, 23, "23A", 24, 25, 26, 27, 28, 29, "29A", "29B", "29C", "29F", "29F1", "29F2", "29F3", 30:35, 37, "37A", 38, 39, "39A"), sep="")
+names(models) <- paste("Run", c(9, 10,11, 13,14,16, "16A",17,19,22, 23, "23A", 24, 25, 26, 27, 28, 29, "29A", "29B", "29C", "29F", "29F1", "29F2", "29F3", "29F4", "29F5_prelim", 30:35, 37, "37A", 38, 39, "39A", 44, "44A"), sep="")
 
 check_convergence(models$Run26)
 print(paste("Number of parameters", length(models$Run26$par), sep=" "))
 ```
 
+Extract SSB/R/F for Run 29F4
+```{r}
+# Run prior section first then you can run this code
+
+# Code borrowed from: wham/R/wham_plots_tables.R source WHAM code
+
+# Extract SSB
+temp = summary(models$Run29F4$sdrep )
+temp = temp[rownames(temp) == "log_SSB",]
+temp = exp(cbind(temp, temp[,1] + qnorm(0.975)*cbind(-temp[,2],temp[,2])))/1000
+
+# Full F
+mod = models$Run29F4
+std = summary(mod$sdrep)
+years_full <- mod$years_full
+  n_ages = mod$env$data$n_ages
+	faa.ind <- which(rownames(std) == "log_FAA_tot")
+	log.faa <- matrix(std[faa.ind,1], length(years_full), n_ages)
+	faa.cv <- matrix(std[faa.ind,2], length(years_full), n_ages)
+	age.full.f <- apply(log.faa,1, function(x) max(which(x == max(x))))
+  full.f.ind = cbind(1:length(years_full), age.full.f)
+	#full.f.ind <- c(age.full.f[1], n_ages + cumsum(age.full.f[-1]))
+  log.full.f <- log.faa[full.f.ind]
+  full.f.cv <- faa.cv[full.f.ind]
+  # log.f.ci <- log.full.f + cbind(qnorm(1-alpha/2)*full.f.cv, -qnorm(1-alpha/2)*full.f.cv) # Not used to calculate full.f so I commented out
+  full.f = exp(log.full.f)
+  
+  # Recruitment from WHAM_Run29F-4_splitNEFSC-BigUnits-nlAgeComp-fix1/res_tables/NAA_table.RDS result 
+```
 
