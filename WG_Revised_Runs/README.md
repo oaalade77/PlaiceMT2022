@@ -1,3 +1,5 @@
+Deleted model runs that were not part of the final Model selection from the 2022 RT
+
 ### WHAM plaice runs with revised data
 
 This folder contains all WHAM runs for the plaice based on revised data (uses estimated rather than imputed discards). Bridge runs can be found in [Plaice_Bridge_Run.Rmd](https://github.com/ahart1/PlaiceWG2021/blob/main/Plaice_Bridge_Run.Rmd) and runs 1-8 (corresponding to [ToR4 model runs 1-7](https://docs.google.com/spreadsheets/d/1OHxEXFMquQa4-iRyGyDGMu1hgSmvQvb5/edit#gid=72920202)) can be found in [Plaice_Baseline_UpdatedData_Runs.Rmd](https://github.com/ahart1/PlaiceWG2021/blob/main/Plaice_Baseline_UpdatedData_Runs.Rmd). For the sake of clarity moving forward, all runs based on revised data will be put in separate folders as detailed below.
