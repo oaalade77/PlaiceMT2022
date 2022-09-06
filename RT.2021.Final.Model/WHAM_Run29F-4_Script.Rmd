@@ -25,6 +25,8 @@ library(DataExplorer)
 ### Load data
 ```{r}
 
+run.osa <- FALSE # TRUE
+
 run.dir <- "RT.2021.Final.Model"
 dat.filename <- "PlaiceWHAM-2019_revised_NEFSC-LW-WAA_splitNEFSC-BigUnit.DAT"
 
@@ -152,54 +154,55 @@ input <- prepare_wham_input(asap3,
 saveRDS(input, file=file.path(run.dir, "WHAM_Run29F4_input.rds"))
 ```
 
-### Fit model, check convergence, and run diagnostics
+### Fit model, check convergence, run diagnostics and save output
 ```{r}
 
-# Run without OSA to check fit and retro 
-WHAM_Run29F4_basic <- fit_wham(input, MakeADFun.silent = TRUE, do.osa = FALSE, do.retro=FALSE) 
-check_convergence(WHAM_Run29F4_basic)
+if(run.osa == FALSE) 
+{
+  # Run without OSA to check fit and retro 
+  WHAM_Run29F4_basic <- fit_wham(input, MakeADFun.silent = TRUE, do.osa = FALSE, do.retro=FALSE) 
+  check_convergence(WHAM_Run29F4_basic)
+  
+  basic_dir <- file.path(run.dir, 'basic_results')
+  if(!dir.exists(basic_dir)) {dir.create(basic_dir)}
+  
+  plot_wham_output(mod=WHAM_Run29F4_basic, out.type='html')
+  plot_wham_output(mod=WHAM_Run29F4_basic, out.type='png', dir.main = basic_dir)
+  
+  saveRDS(WHAM_Run29F4_basic, file= file.path(run.dir, "WHAM_Run29F4_basic_model.rds"))
+}
 
-basic_dir <- file.path(run.dir, 'basic_results')
-if(!dir.exists(basic_dir)) {dir.create(basic_dir)}
 
-plot_wham_output(mod=WHAM_Run29F4_basic, out.type='html')
-plot_wham_output(mod=WHAM_Run29F4_basic, out.type='png', dir.main = basic_dir)
+if(run.osa == TRUE) 
+{
+  # Run with OSA residuals
+  input$par = WHAM_Run29F4_basic$parList #start at the optimized values (from run without OSA, retro) to save time
+  WHAM_Run29F4_osa <- fit_wham(input, MakeADFun.silent = TRUE, do.osa = TRUE) 
+  check_convergence(WHAM_Run29F4_osa)
+  print(paste("Number of parameters", length(WHAM_Run29F4_osa$par), sep=" "))
+  
+  osa_dir <- file.path(run.dir, 'osa_results')
+  if(!dir.exists(osa_dir)) {dir.create(osa_dir)}
+  
+  plot_wham_output(mod=WHAM_Run29F4_osa, out.type='html')
+  plot_wham_output(mod=WHAM_Run29F4_osa, out.type='png', dir.main = osa_dir)
 
-
-# Run with OSA residuals
-input$par = WHAM_Run29F4_basic$parList #start at the optimized values (from run without OSA, retro) to save time
-WHAM_Run29F4_osa <- fit_wham(input, MakeADFun.silent = TRUE, do.osa = TRUE) 
-check_convergence(WHAM_Run29F4_osa)
-print(paste("Number of parameters", length(WHAM_Run29F4_osa$par), sep=" "))
-
-osa_dir <- file.path(run.dir, 'osa_results')
-if(!dir.exists(osa_dir)) {dir.create(osa_dir)}
-
-plot_wham_output(mod=WHAM_Run29F4_osa, out.type='html')
-plot_wham_output(mod=WHAM_Run29F4_osa, out.type='png', dir.main = osa_dir)
+  saveRDS(WHAM_Run29F4_osa, file= file.path(run.dir, "WHAM_Run29F4_osa_model.rds"))
+}
 
 ```
 
-### Save output
-```{r}
-# Save fitted models
-
-# Basic
-saveRDS(WHAM_Run29F4_basic, file= file.path(run.dir, "WHAM_Run29F4_basic_model.rds"))
-
-# OSA
-saveRDS(WHAM_Run29F4_osa, file= file.path(run.dir, "WHAM_Run29F4_osa_model.rds"))
-```
-
-<!-- ### Rerun model using saved input data -->
+<!-- ### Rerun model using saved input data --> -->
 <!-- ???? WHY IS THIS MODEL RERUN -->
 <!-- Load data from saved input RData and rerun model -->
-<!-- ```{r} -->
-<!-- inputRerun <- readRDS(file.path(run.dir, "WHAM_Run29F4_input.rds")) -->
+``` {r}
 
-<!-- # Rerun data -->
-<!-- ReRun29F4 <- fit_wham(input = inputRerun, MakeADFun.silent = TRUE) -->
-<!-- ``` -->
+# inputRerun <- readRDS(file.path(run.dir, "WHAM_Run29F4_input.rds")) -->
+# Rerun data
+# ReRun29F4 <- fit_wham(input = inputRerun, MakeADFun.silent = TRUE) -->
+
+```
+
 
 ### Plot Bigelow: Albatross catchability for spring and fall indices
 Lines 110-123 borrowed from plot_q() function used to generate default q plots in WHAM
@@ -290,83 +293,84 @@ ggsave(filename = file.path(run.dir, "sel-q-Fall_barplot.png"))
 ### Plot selectivity with CI 
 Borrowed code from plot.fleet.sel.blocks() for plot and par_tables_fn() for CI data
 -currently pull CI manually from WHAM Output Tables but would be good to automate so we can loop over indices
+NEED TO UPDATE FOR MT IF WANT TO USE
 ```{r}
-dat <- WHAM_Run29F4$env$data
-ages = 1:dat$n_ages
-
-# Plot index selectivity (fleet doesn't have age-specific CI since logistic selectivity)
-sb_p = dat$selblock_pointer_indices #selblock pointer by year and index
-  # sb_p = dat$selblock_pointer_fleets #selblock pointer by year and fleet
-
-# Index 1
-i = 1
-blocks = unique(sb_p[,i])
-sel = do.call(rbind, lapply(WHAM_Run29F4$rep$selAA, function(x) apply(x,2,mean)))[blocks,,drop=FALSE]
-
-data.frame(ages = ages, 
-           sel = c(sel), 
-           lowerCI = c(0.007, 0.127, 0.249, 0.074, 0.000, 1, 0.142, 0.262, 0.287, 0.287, 0.331),
-           upperCI = c(0.022,	0.383,	0.737,	0.998, 1.000, 1,	0.992,	0.854,	0.858,	0.891,	0.779)) %>%
-  ggplot() +
-  geom_line(aes(x=ages, y=sel)) + 
-  geom_ribbon(aes(x=ages,ymin=lowerCI, ymax=upperCI), alpha=0.2) + 
-  ggtitle("Index 1 Selectivity")
-ggsave(filename = paste(here::here(), "WG_Revised_Runs", "WHAM_Run29F-4_splitNEFSC-BigUnits-nlAgeComp-fix1", "plots_png", "results", "Selectivity_index1_CI.png", sep="/"))
-
-# Index 2
-i = 2
-blocks = unique(sb_p[,i])
-sel = do.call(rbind, lapply(WHAM_Run29F4$rep$selAA, function(x) apply(x,2,mean)))[blocks,,drop=FALSE]
-
-data.frame(ages = ages, 
-           sel = c(sel), 
-           lowerCI = c(0.052, 0.217, 0.436, 0.057, 1, 0.488, 0.448, 0.421, 0.397, 0.373, 0.378),
-           upperCI = c(0.110, 0.441,	0.861,	1.000, 1, 0.937,	0.861,	0.829,	0.791,	0.753,	0.652)) %>%
-  ggplot() +
-  geom_line(aes(x=ages, y=sel)) + 
-  geom_ribbon(aes(x=ages,ymin=lowerCI, ymax=upperCI), alpha=0.2) + 
-  ggtitle("Index 2 Selectivity")
-ggsave(filename = paste(here::here(), "WG_Revised_Runs", "WHAM_Run29F-4_splitNEFSC-BigUnits-nlAgeComp-fix1", "plots_png", "results", "Selectivity_index2_CI.png", sep="/"))
-
-# Index 3
-i = 3
-blocks = unique(sb_p[,i])
-sel = do.call(rbind, lapply(WHAM_Run29F4$rep$selAA, function(x) apply(x,2,mean)))[blocks,,drop=FALSE]
-
-data.frame(ages = ages, 
-           sel = c(sel), 
-           lowerCI = c(0.123, 0.352, 0.510, 1, 0.537, 0.481, 0.315, 0.292, 0.282, 0.356, 0.000),
-           upperCI = c(0.217,	0.598,	0.970, 1,	0.950, 0.821,	0.546,	0.516,	0.510,	0.686,	1.000)) %>%
-  ggplot() +
-  geom_line(aes(x=ages, y=sel)) + 
-  geom_ribbon(aes(x=ages,ymin=lowerCI, ymax=upperCI), alpha=0.2) + 
-  ggtitle("Index 3 Selectivity")
-ggsave(filename = paste(here::here(), "WG_Revised_Runs", "WHAM_Run29F-4_splitNEFSC-BigUnits-nlAgeComp-fix1", "plots_png", "results", "Selectivity_index3_CI.png", sep="/"))
-
-# Index 4
-i = 4
-blocks = unique(sb_p[,i])
-sel = do.call(rbind, lapply(WHAM_Run29F4$rep$selAA, function(x) apply(x,2,mean)))[blocks,,drop=FALSE]
-
-data.frame(ages = ages, 
-           sel = c(sel), 
-           lowerCI = c(0.148, 0.194, 1, 0.027, 0.119, 0.200, 0.192, 0.180, 0.174, 0.170, 0.211),
-           upperCI = c(0.629,	0.873, 1,	0.999,	0.991, 0.918,	0.865,	0.847,	0.827,	0.970,	0.658)) %>%
-  ggplot() +
-  geom_line(aes(x=ages, y=sel)) + 
-  geom_ribbon(aes(x=ages,ymin=lowerCI, ymax=upperCI), alpha=0.2) + 
-  ggtitle("Index 4 Selectivity")
-ggsave(filename = paste(here::here(), "WG_Revised_Runs", "WHAM_Run29F-4_splitNEFSC-BigUnits-nlAgeComp-fix1", "plots_png", "results", "Selectivity_index4_CI.png", sep="/"))
+# dat <- WHAM_Run29F4$env$data
+# ages = 1:dat$n_ages
+# 
+# # Plot index selectivity (fleet doesn't have age-specific CI since logistic selectivity)
+# sb_p = dat$selblock_pointer_indices #selblock pointer by year and index
+#   # sb_p = dat$selblock_pointer_fleets #selblock pointer by year and fleet
+# 
+# # Index 1
+# i = 1
+# blocks = unique(sb_p[,i])
+# sel = do.call(rbind, lapply(WHAM_Run29F4$rep$selAA, function(x) apply(x,2,mean)))[blocks,,drop=FALSE]
+# 
+# data.frame(ages = ages, 
+#            sel = c(sel), 
+#            lowerCI = c(0.007, 0.127, 0.249, 0.074, 0.000, 1, 0.142, 0.262, 0.287, 0.287, 0.331),
+#            upperCI = c(0.022,	0.383,	0.737,	0.998, 1.000, 1,	0.992,	0.854,	0.858,	0.891,	0.779)) %>%
+#   ggplot() +
+#   geom_line(aes(x=ages, y=sel)) + 
+#   geom_ribbon(aes(x=ages,ymin=lowerCI, ymax=upperCI), alpha=0.2) + 
+#   ggtitle("Index 1 Selectivity")
+# ggsave(filename = paste(here::here(), "WG_Revised_Runs", "WHAM_Run29F-4_splitNEFSC-BigUnits-nlAgeComp-fix1", "plots_png", "results", "Selectivity_index1_CI.png", sep="/"))
+# 
+# # Index 2
+# i = 2
+# blocks = unique(sb_p[,i])
+# sel = do.call(rbind, lapply(WHAM_Run29F4$rep$selAA, function(x) apply(x,2,mean)))[blocks,,drop=FALSE]
+# 
+# data.frame(ages = ages, 
+#            sel = c(sel), 
+#            lowerCI = c(0.052, 0.217, 0.436, 0.057, 1, 0.488, 0.448, 0.421, 0.397, 0.373, 0.378),
+#            upperCI = c(0.110, 0.441,	0.861,	1.000, 1, 0.937,	0.861,	0.829,	0.791,	0.753,	0.652)) %>%
+#   ggplot() +
+#   geom_line(aes(x=ages, y=sel)) + 
+#   geom_ribbon(aes(x=ages,ymin=lowerCI, ymax=upperCI), alpha=0.2) + 
+#   ggtitle("Index 2 Selectivity")
+# ggsave(filename = paste(here::here(), "WG_Revised_Runs", "WHAM_Run29F-4_splitNEFSC-BigUnits-nlAgeComp-fix1", "plots_png", "results", "Selectivity_index2_CI.png", sep="/"))
+# 
+# # Index 3
+# i = 3
+# blocks = unique(sb_p[,i])
+# sel = do.call(rbind, lapply(WHAM_Run29F4$rep$selAA, function(x) apply(x,2,mean)))[blocks,,drop=FALSE]
+# 
+# data.frame(ages = ages, 
+#            sel = c(sel), 
+#            lowerCI = c(0.123, 0.352, 0.510, 1, 0.537, 0.481, 0.315, 0.292, 0.282, 0.356, 0.000),
+#            upperCI = c(0.217,	0.598,	0.970, 1,	0.950, 0.821,	0.546,	0.516,	0.510,	0.686,	1.000)) %>%
+#   ggplot() +
+#   geom_line(aes(x=ages, y=sel)) + 
+#   geom_ribbon(aes(x=ages,ymin=lowerCI, ymax=upperCI), alpha=0.2) + 
+#   ggtitle("Index 3 Selectivity")
+# ggsave(filename = paste(here::here(), "WG_Revised_Runs", "WHAM_Run29F-4_splitNEFSC-BigUnits-nlAgeComp-fix1", "plots_png", "results", "Selectivity_index3_CI.png", sep="/"))
+# 
+# # Index 4
+# i = 4
+# blocks = unique(sb_p[,i])
+# sel = do.call(rbind, lapply(WHAM_Run29F4$rep$selAA, function(x) apply(x,2,mean)))[blocks,,drop=FALSE]
+# 
+# data.frame(ages = ages, 
+#            sel = c(sel), 
+#            lowerCI = c(0.148, 0.194, 1, 0.027, 0.119, 0.200, 0.192, 0.180, 0.174, 0.170, 0.211),
+#            upperCI = c(0.629,	0.873, 1,	0.999,	0.991, 0.918,	0.865,	0.847,	0.827,	0.970,	0.658)) %>%
+#   ggplot() +
+#   geom_line(aes(x=ages, y=sel)) + 
+#   geom_ribbon(aes(x=ages,ymin=lowerCI, ymax=upperCI), alpha=0.2) + 
+#   ggtitle("Index 4 Selectivity")
+# ggsave(filename = paste(here::here(), "WG_Revised_Runs", "WHAM_Run29F-4_splitNEFSC-BigUnits-nlAgeComp-fix1", "plots_png", "results", "Selectivity_index4_CI.png", sep="/"))
 ```
 
 ## Comment
-The model converged when only a single age was fixed at full selectivity, and these ages overlapped with those fixed in runs 29F and 29F-2. Run 29F-4 had high uncertainty (CI range from at/near 0 to at/near 1) for Albatross spring age 5, Bigelow spring age 4, Albatross fall 11+ and Bigelow fall age 4. 
+<!-- The model converged when only a single age was fixed at full selectivity, and these ages overlapped with those fixed in runs 29F and 29F-2. Run 29F-4 had high uncertainty (CI range from at/near 0 to at/near 1) for Albatross spring age 5, Bigelow spring age 4, Albatross fall 11+ and Bigelow fall age 4.  -->
 
-| Run   | Albatross spring | Bigelow spring | Albatross fall | Bigelow fall |
-| 29F   | 4,5,6            | 4,5            | 4,11           | 3,4,5        |
-| 29F-2 |   5,6            |   5            | 4,11           | 3,4          |
-| 29F-4 |     6            |   5            | 4              | 3            |
+<!-- | Run   | Albatross spring | Bigelow spring | Albatross fall | Bigelow fall | -->
+<!-- | 29F   | 4,5,6            | 4,5            | 4,11           | 3,4,5        | -->
+<!-- | 29F-2 |   5,6            |   5            | 4,11           | 3,4          | -->
+<!-- | 29F-4 |     6            |   5            | 4              | 3            | -->
 
-Catchability estimates are similar for run 29F-2 and 29F-4 but the CI for the Bigelow fall catchability estimate were much larger.
+<!-- Catchability estimates are similar for run 29F-2 and 29F-4 but the CI for the Bigelow fall catchability estimate were much larger. -->
 
-Run 29F-4 OSA residuals for fit to aggregate fleet and catch data were similarly or slightly less normally distributed than in run 29F-2 which could be attributed to the Albatross fall selectivity random effect that was not applied in run 29F-4. OSA residuals for fit to age comp data had similar patterns and distributions in run 29F-2 and 29F-4. 
+<!-- Run 29F-4 OSA residuals for fit to aggregate fleet and catch data were similarly or slightly less normally distributed than in run 29F-2 which could be attributed to the Albatross fall selectivity random effect that was not applied in run 29F-4. OSA residuals for fit to age comp data had similar patterns and distributions in run 29F-2 and 29F-4.  -->
