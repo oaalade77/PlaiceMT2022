@@ -155,7 +155,7 @@ input <- prepare_wham_input(asap3,
 ### Save input
 ```{r}
 # Save model data input
-saveRDS(input, file=file.path(run.dir, paste(run.name, "rds", sep='.')) )
+saveRDS(input, file=file.path(run.dir, paste(run.name, "input.rds", sep='_')) )
 ```
 
 ### Fit model, check convergence, run diagnostics and save output
@@ -268,24 +268,18 @@ bigSpringSel <- mod$rep$selAA[[3]][1,] # Bigelow spring
 albFallSel <- mod$rep$selAA[[4]][1,] # Albatross fall
 bigFallSel <- mod$rep$selAA[[5]][1,] # Bigelow fall
 
-# Multiply q*selectivity estimate
-albSpring <- albSpringQ*albSpringSel
-bigSpring <- bigSpringQ*bigSpringSel
-albFall <- albFallQ*albFallSel
-bigFall <- bigFallQ*bigFallSel
-
 # Plot spring Bigelow:Albatross ratio
-data.frame(age = 1:nage, albSpring = albSpring, bigSpring = bigSpring, albFall = albFall, bigFall = bigFall) %>%
+data.frame(age = 1:nage, albSpring = albSpringSel, bigSpring = bigSpringSel, albFall = albFallSel, bigFall = bigFallSel) %>%
   ggplot() +
-  geom_bar(aes(x=age, y=bigSpring/albSpring), stat = "identity") + 
+  geom_bar(aes(x=age, y=bigSpringSel/albSpringSel), stat = "identity") + 
   geom_hline(yintercept = 1, color="orange") + 
   ggtitle("Spring Bigelow:Albatross Ratio")
 ggsave(filename = file.path(run.dir, "sel-q-Spring_barplot.png"))
 
 # Plot fall Bigelow:Albatross ratio
-data.frame(age = 1:nage, albSpring = albSpring, bigSpring = bigSpring, albFall = albFall, bigFall = bigFall) %>%
+data.frame(age = 1:nage, albSpring = albSpringSel, bigSpring = bigSpringSel, albFall = albFallSel, bigFall = bigFallSel) %>%
   ggplot() +
-  geom_bar(aes(x=age, y=bigFall/albFall), stat = "identity") + 
+  geom_bar(aes(x=age, y=bigFallSel/albFallSel), stat = "identity") +
   geom_hline(yintercept = 1, color="orange") +
   ggtitle("Fall Bigelow:Albatross Ratio")
 ggsave(filename = file.path(run.dir, "sel-q-Fall_barplot.png"))
