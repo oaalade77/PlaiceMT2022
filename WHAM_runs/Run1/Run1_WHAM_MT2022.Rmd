@@ -162,13 +162,13 @@ saveRDS(input, file=file.path(run.dir, paste(run.name, "input.rds", sep='_')) )
 ```{r}
 
 # First Run without OSA to check fit and retro 
-WHAM_basic <- fit_wham(input, MakeADFun.silent = TRUE, do.osa = FALSE, do.retro=FALSE) 
+WHAM_basic <- fit_wham(input, MakeADFun.silent = TRUE, do.osa = FALSE, do.retro=TRUE) 
 check_convergence(WHAM_basic)
   
 basic_dir <- file.path(run.dir, 'basic_results')
 if(!dir.exists(basic_dir)) {dir.create(basic_dir)}
   
-plot_wham_output(mod=WHAM_basic, out.type='html', dir.main = basic_dir)
+#plot_wham_output(mod=WHAM_basic, out.type='html', dir.main = basic_dir)
 plot_wham_output(mod=WHAM_basic, out.type='png', dir.main = basic_dir)
   
 saveRDS(WHAM_basic, file= file.path(run.dir, paste(run.name, "basic_model.rds", sep='_')))
