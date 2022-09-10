@@ -1,0 +1,12 @@
+
+Warning message for F75
+
+Warning messages:
+1: In check_projF(mod) :
+  Changing initial values for estimating FXSPR used to define F in projection years 2023,2024.
+2: In cbind(y, mod$env$data$which_F_age) :
+  number of rows of result is not a multiple of vector length (arg 1)
+3: In round(exp(mod$rep$log_FXSPR[y]), 4) != round(mod$rep$FAA_tot[cbind(y,  :
+  longer object length is not a multiple of shorter object length
+4: In check_projF(mod) :
+  Still bad initial values and estimates of FXSPR used to define F in projection years 2023,2024,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA.
