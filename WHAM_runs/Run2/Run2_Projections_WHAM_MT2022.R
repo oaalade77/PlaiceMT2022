@@ -52,7 +52,7 @@ proj40.fit = fit_wham(proj40, do.retro=FALSE, do.osa=FALSE)
 f40.dir <- file.path(proj.dir, "F40")
 if(!dir.exists(f40.dir)) {dir.create(f40.dir)}
 plot_wham_output(proj40.fit, dir.main = f40.dir, out.type = "png")
-saveRDS(proj40.fit, file = file.path(f40.dir, "WHAM_basic.proj.F40.rds"))
+saveRDS(proj40.fit, file = file.path(f40.dir, paste(run.name,"Proj_F40.rds",sep=".")))
 
 
 
@@ -74,7 +74,7 @@ proj75.fit = fit_wham(proj75, do.retro=FALSE, do.osa=FALSE)
 f75.dir <- file.path(proj.dir, "F75")
 if(!dir.exists(f75.dir)) {dir.create(f75.dir)}
 plot_wham_output(proj75.fit, dir.main = f75.dir, out.type = "png")
-saveRDS(proj75.fit, file = file.path(f75.dir, "WHAM_basic.proj.F75.rds"))
+saveRDS(proj75.fit, file = file.path(f75.dir, paste(run.name,"Proj_F75.rds",sep=".")))
 
 
 
@@ -98,7 +98,7 @@ proj0.fit = fit_wham(proj0, do.retro=FALSE, do.osa=FALSE)
 f0.dir <- file.path(proj.dir, "F0")
 if(!dir.exists(f0.dir)) {dir.create(f0.dir)}
 plot_wham_output(proj0.fit, dir.main = f0.dir, out.type = "png")
-saveRDS(proj0.fit, file = file.path(f0.dir, "WHAM_basic.proj.F0.rds"))
+saveRDS(proj0.fit, file = file.path(f0.dir, paste(run.name,"Proj_F0.rds",sep=".")))
 
 
 
@@ -119,7 +119,7 @@ projterm.fit = fit_wham(proj.term, do.retro=FALSE, do.osa=FALSE)
 fterm.dir <- file.path(proj.dir, "Fterm")
 if(!dir.exists(fterm.dir)) {dir.create(fterm.dir)}
 plot_wham_output(projterm.fit, dir.main = fterm.dir, out.type = "png")
-saveRDS(projterm.fit, file = file.path(fterm.dir, "WHAM_basic.proj.Fterm.rds"))
+saveRDS(projterm.fit, file = file.path(fterm.dir, paste(run.name,"Proj_Fterm.rds",sep=".")))
 
 
 
