@@ -1,8 +1,4 @@
-*.RData
 .Rproj.user
 *.Rproj
 *.Rhistory
-*.png
-*.rds
-*.html
 .DS_Store
