@@ -3,12 +3,11 @@ rm(list=ls())
 ls()
 
 library(tidyverse)
-library(plyr)
 
 run.dir <- "WHAM_runs/Run2"
 run.name <- "WHAM_MT_Run2"
 
-proj.name <- 'Fterm'
+proj.name <- 'F0' # 'F75' 'Fterm' 'F40'
 
 
 ################################
@@ -136,7 +135,8 @@ write.csv(proj.summary, file.path(proj.dir, paste(proj.name,"Projection.summary.
 
 
 ### Save final workspace
-save.image(file.path(proj.dir, paste(proj.name,"Projections.RDATA",sep=".")))
+rm(WHAM_basic, WHAM_input, WHAM_proj)
 
+save.image(file.path(proj.dir, paste(proj.name,"Projections.RDATA",sep=".")))
 
 
