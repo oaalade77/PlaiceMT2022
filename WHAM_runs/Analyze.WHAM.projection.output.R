@@ -8,7 +8,7 @@ library(plyr)
 run.dir <- "WHAM_runs/Run2"
 run.name <- "WHAM_MT_Run2"
 
-proj.name <- 'F40'
+proj.name <- 'Fterm'
 
 
 ################################
@@ -28,27 +28,27 @@ proj.dir <- file.path(run.dir, "projections", proj.name)
 ### Import model input, fit and projection files
 
 WHAM_basic <- readRDS(file.path(run.dir, model.rds))
-input <- readRDS(file.path(run.dir, input.rds))
-proj.fit <- readRDS(file.path(proj.dir, proj.rds))
+WHAM_input <- readRDS(file.path(run.dir, input.rds))
+WHAM_proj <- readRDS(file.path(proj.dir, proj.rds))
 
 
 ### Extract years and ages
 
-model.yrs <- as.character(proj.fit$input$years)
+model.yrs <- as.character(WHAM_proj$input$years)
 model.lyr <- tail(model.yrs,1)
-all.yrs <- as.character(proj.fit$input$years_full)
+all.yrs <- as.character(WHAM_proj$input$years_full)
 proj.yrs <- all.yrs[!all.yrs %in% model.yrs]
 tot.years <- length(all.yrs)
 
-nage <- proj.fit$input$data$n_ages
-ages.labels <- proj.fit$input$ages.lab
+nage <- WHAM_proj$input$data$n_ages
+ages.labels <- WHAM_proj$input$ages.lab
 
 
 
 ### Projection outputs: Yield, SSB, F and recruitment
 
 # sdreport file
-sdrep <- summary(proj.fit$sdrep)
+sdrep <- summary(WHAM_proj$sdrep)
   head(sdrep)
   dim(sdrep)
   unique(rownames(sdrep))
@@ -73,7 +73,7 @@ catch.proj <- as.data.frame(sdrep[rownames(sdrep) == "log_catch_proj", ]) %>%
 
 
 # Observed catch from model years
-obs.catch <- data.frame(input$data$agg_catch) 
+obs.catch <- data.frame(WHAM_input$data$agg_catch) 
   rownames(obs.catch) <- model.yrs
   colnames(obs.catch) <- 'est'
   
@@ -129,21 +129,7 @@ proj.summary <- cbind.data.frame(Year = rep(proj.yrs, 4),
 proj.summary
 
 
-# ### Write csv files
-# 
-# if(proj.name == 'F40')
-# {
-#   # Model summary
-#   write.csv(rel.status, file.path(res_dir, "Relative.stock.status.csv"))
-#   write.csv(termyr.ests, file.path(res_dir, "Terminal.yr.ests.csv"))
-#   write.csv(brps, file.path(res_dir, "Reference.points.csv"), row.names = FALSE)
-# 
-#   write.csv(ssb.allyrs[model.yrs,], file.path(res_dir, "SSB.ests.csv"))
-#   write.csv(Fmax.allyrs[model.yrs,], file.path(res_dir, "F.ests.csv"))
-#   write.csv(catch.allyrs[model.yrs,], file.path(res_dir, "Observed.catch.csv"))
-#   write.csv(Rect.allyrs[model.yrs,], file.path(res_dir, "Rect.ests.csv"))
-# }
-# 
+
 # Projection summary
 write.csv(proj.summary, file.path(proj.dir, paste(proj.name,"Projection.summary.csv",sep=".")), row.names = FALSE)
 
