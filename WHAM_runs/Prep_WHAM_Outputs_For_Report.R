@@ -175,6 +175,15 @@ f.text <- create.brp.text('Fproxy', 2)
 
 proj40 <- readRDS(file.path(run.dir,"projections/F40", f40.rds))
 
+# # Terminal year estimates and relative status
+# relF.termyr <- relF[model.lyr,]
+# relSSB.termyr <- relSSB[model.lyr,]
+# 
+# rel.status <- data.frame(rbind(relF = relF.termyr, relSSB = relSSB.termyr))
+# termyr.ests <- data.frame(rbind('F' = F.yr[model.lyr,], SSB = SSB.yr[model.lyr,]))
+
+
+
 # # Create text for SSB projections
 # proj.yrs <- proj.env$proj.yrs
 # proj.ssb <- proj.env$ssb.table[,proj.yrs]
