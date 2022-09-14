@@ -7,7 +7,7 @@ library(tidyverse)
 run.dir <- "WHAM_runs/Run2"
 run.name <- "WHAM_MT_Run2"
 
-proj.name <- 'F0' # 'F75' 'Fterm' 'F40'
+proj.name <- 'F40' # 'F0' # 'F75' 'Fterm' 'F40'
 
 
 ################################
@@ -121,7 +121,7 @@ catch.allyrs[proj.yrs, table.ests]
 
 proj.summary <- cbind.data.frame(Year = rep(proj.yrs, 4),
                 bind_rows("SSB" = round(ssb.allyrs[proj.yrs, table.ests],0), 
-                          "F" = round(Fmax.allyrs[proj.yrs, table.ests],2),
+                          "F" = round(Fmax.allyrs[proj.yrs, table.ests],3),
                           "Catch" = round(catch.allyrs[proj.yrs, table.ests],0),
                           "Rect" = round(Rect.allyrs[proj.yrs, table.ests],0),
                           .id="Parameter") ) 
