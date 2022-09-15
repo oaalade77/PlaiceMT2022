@@ -4,11 +4,11 @@ library(wham)
 
 
 ### Run details
-# run.dir <- "WHAM_runs/Run2"
-# run.name <- "WHAM_MT_Run2"
+run.dir <- "WHAM_runs/Run3"
+run.name <- "WHAM_MT_Run3"
 
-run.dir <- "RT.2022.BridgeRuns/Run3"
-run.name <- "WHAM_MT_BRun3"
+# run.dir <- "RT.2022.BridgeRuns/Run3"
+# run.name <- "WHAM_MT_BRun3"
 
 
 
@@ -92,8 +92,8 @@ calc.uncertainty <- function(series)  {
 # Annual F
 F.yr <- 
   bind_cols(Year = model.yrs, 
-            log.est = as.vector(WHAM_basic.ests[[var]]),
-            log.se = as.vector(WHAM_basic.sd[[var]])
+            log.est = as.vector(WHAM_basic.ests[['log_F']]),
+            log.se = as.vector(WHAM_basic.sd[['log_F']])
   ) %>%
   calc.uncertainty() %>%
   mutate( relF = est/Fproxy )
