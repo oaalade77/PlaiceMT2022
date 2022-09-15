@@ -142,6 +142,8 @@ proj.ssb.text <- apply(proj.ssb, 1, function(x) {
 
 
 ### Create model results tables
+
+# Current model
 model.summary <- SSB.yr %>%
   select(Year, est, CV) %>%
   rename(SSB = est,
@@ -153,6 +155,7 @@ model.summary <- SSB.yr %>%
   rename(Rect = est,
          Rect.CV = CV)   
 
+# Previous model
 prev.model.summary <- prev.SSB.yr %>%
   select(Year, est, CV) %>%
   rename(prev.SSB = est,
@@ -164,17 +167,32 @@ prev.model.summary <- prev.SSB.yr %>%
   rename(prev.Rect = est,
          prev.Rect.CV = CV)   
 
-            
+# Combined dataset            
 comb.model.summary <- full_join(
   model.summary,
   prev.model.summary
 )
 
+# Round numbers for output
+whole.cols <- c("Year", "SSB","Rect","prev.SSB","prev.Rect")
+dec.cols <- colnames(comb.model.summary)[!colnames(comb.model.summary) %in% whole.cols]
+
+comb.model.summary.round <- comb.model.summary %>%
+  mutate(across(all_of(whole.cols), round, 0)) %>%
+  mutate(across(all_of(dec.cols), round, 3)) 
+  
 
 
 ### Save and output results
-write.csv(comb.model.summary, file.path(run.dir, paste(run.name, "Model.Summary.For.Report.csv")), row.names=FALSE)
+write.csv(comb.model.summary.round, file.path(run.dir, paste(run.name, "Model.Summary.For.Report.csv")), row.names=FALSE)
 save.image(file.path(run.dir, paste(run.name, "Outputs.For.Report.RDATA", sep='.')))
+
+
+### Save to copies to report directory on network
+net.dir <- '//net.nefsc.noaa.gov/home0/kcurti/Other_Species/Am.Plaice/data'
+
+write.csv(comb.model.summary.round, file.path(net.dir, "model.results.csv"), row.names=FALSE)
+save.image(file.path(net.dir, paste(run.name, "Outputs.For.Report.RDATA", sep='.')))
 
 
 
