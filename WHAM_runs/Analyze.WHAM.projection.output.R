@@ -4,8 +4,8 @@ ls()
 
 library(tidyverse)
 
-run.dir <- "WHAM_runs/Run2"
-run.name <- "WHAM_MT_Run2"
+run.dir <- "WHAM_runs/Run3"
+run.name <- "WHAM_MT_Run3"
 
 proj.name <- 'F40' # 'F0' # 'F75' 'Fterm' 'F40'
 
