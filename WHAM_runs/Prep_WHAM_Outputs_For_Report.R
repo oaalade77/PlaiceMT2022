@@ -6,134 +6,88 @@ library(wham)
 ### Current assessment details
 run.dir <- "WHAM_runs/Run2"
 run.name <- "WHAM_MT_Run2"
+proj.name <- 'F40'
 
 
 ### Previous assessment details
-prev.run.dir <- "RT.2021.Final.Model"
-prev.run.name <- "WHAM_Run29F4"
+prev.run.dir <- "RT.2022.BridgeRuns/Run3"
+prev.run.name <- "WHAM_MT_BRun3"
 
 
 
 ######################################################
 
 
-### Read in current model, projection and input files
 
-model.rds <- paste(run.name, "basic_model.rds", sep="_")
-input.rds <- paste(run.name, "input.rds", sep="_")
-f40.rds <- paste(run.name, "Proj_F40.rds", sep='.')
+### Load R workspaces for current model created from 1) Analyze.WHAM_basic.Outputs.R and 2) Analyze.WHAM.projection.output.R
+  # Also load workspace from previous model created from Analyze.WHAM_basic.Outputs.R
 
-WHAM_basic <- readRDS(file.path(run.dir, model.rds))
-input <- readRDS(file.path(run.dir, input.rds))
-proj40 <- readRDS(file.path(run.dir, "projections/F40",f40.rds))
+# WHAM_basic results
+basic.env <- new.env()
+basic.dir <- file.path(run.dir, 'basic_results')
+load(file.path(basic.dir, paste(run.name,"WHAM_basic.Outputs.RDATA",sep='.')), envir = basic.env)
 
+# Projections
+proj.env <- new.env()
+proj.dir <- file.path(run.dir, "projections", proj.name)
+load(file.path(proj.dir, paste(proj.name,"Projections.RDATA",sep=".")), envir = proj.env)
 
-
-### Model specs
-
-model.yrs <- input$years
-model.lyr <- tail(model.yrs,1)
-model.nyrs <- length(model.yrs)
-nage <- input$data$n_ages
-ages.labels <- input$ages.lab
+# Previous assessment
+prev.env <- new.env()
+load(file.path(prev.run.dir, 'basic_results', paste(prev.run.name,"WHAM_basic.Outputs.RDATA",sep='.')), envir = prev.env)
 
 
 
-### Current Model estimates
+### Extract current model estimates
 
-# Estimates and standard deviations from sdreport
-WHAM_basic.ests <- as.list(WHAM_basic$sdrep, what = "Est", report = TRUE)
-WHAM_basic.sd <- as.list(WHAM_basic$sdrep, what = "Std", report = TRUE)
-
+# Time series estimates
+SSB.yr <- basic.env$SSB.yr
+F.yr <- basic.env$F.yr
+Rect.yr <- basic.env$Rect.yr
 
 # Reference points
-Fproxy <- as.vector(exp(WHAM_basic.ests$log_FXSPR_static))
-  names(Fproxy) <- 'est'
+Fproxy <- basic.env$Fproxy
+SSBproxy.vec <- basic.env$SSBproxy.vec
+MSYproxy.vec <- basic.env$MSYproxy.vec  
 
-SSBproxy.vec <- data.frame(log.est = WHAM_basic.ests$log_SSB_FXSPR_static,
-                           log.se  = WHAM_basic.sd$log_SSB_FXSPR_static) %>%
-  mutate( est = exp(log.est),
-          lo = exp(log.est - qnorm(0.975)*log.se),
-          hi = exp(log.est + qnorm(0.975)*log.se)
-  )
+# Terminal year estimates
+termyr.ests.with.cis <- basic.env$termyr.ests
+termyr.ssb  <- termyr.ests.with.cis %>% filter(Parameter == "SSB") %>% select(est) %>% pull()  
+termyr.f    <- termyr.ests.with.cis %>% filter(Parameter == "F") %>% select(est) %>% pull()  
+termyr.rect <- termyr.ests.with.cis %>% filter(Parameter == "Rect") %>% select(est) %>% pull()  
 
-MSYproxy.vec <- data.frame(log.est = WHAM_basic.ests$log_Y_FXSPR_static,
-                           log.se  = WHAM_basic.sd$log_Y_FXSPR_static) %>%
-  mutate( est = exp(log.est),
-          lo = exp(log.est - qnorm(0.975)*log.se),
-          hi = exp(log.est + qnorm(0.975)*log.se)
-  )
+# Terminal year estimates in vector form
+unadj.termyr.ests <- basic.env$unadj.termyr.ests
 
-brps <- bind_rows('Fproxy'=Fproxy, 'SSBproxy'=SSBproxy.vec, 'MSYproxy'=MSYproxy.vec, .id='BRP') %>%
-  select(c(BRP,est,lo,hi))
-SSBproxy <- SSBproxy.vec$est
-MSYproxy <- MSYproxy.vec$est
+# Retro adjusted terminal year estimates
+adj.termyr.ests <- basic.env$adj.termyr.ests
 
+# Mohn's rho estimates
+mohns.rho <- basic.env$mohns.rho
 
-# Abundance and F at age
-NAA <- WHAM_basic$rep$NAA
-  rownames(NAA) <- as.character(model.yrs)
-  colnames(NAA) <- ages.labels
-
-FAA <- WHAM_basic$rep$FAA_tot
-  rownames(FAA) <- as.character(model.yrs)
-  colnames(FAA) <- ages.labels
-
-
-# Annual F
-F.yr <- 
-  bind_cols(Year = model.yrs, 
-            log.est = as.vector(WHAM_basic.ests[['log_F']]),
-            log.se = as.vector(WHAM_basic.sd[['log_F']])
-  ) %>%
-  mutate( est = exp(log.est),
-          lo = exp(log.est - qnorm(0.975)*log.se),
-          hi = exp(log.est + qnorm(0.975)*log.se),
-          relF = est/Fproxy
-  )
-
-
-# Annual SSB
-SSB.yr <- 
-  bind_cols(Year = model.yrs,
-            log.est = as.vector(WHAM_basic.ests[['log_SSB']]),
-            log.se = as.vector(WHAM_basic.sd[['log_SSB']])
-  ) %>%
-  mutate( est = exp(log.est),
-          lo = exp(log.est - qnorm(0.975)*log.se),
-          hi = exp(log.est + qnorm(0.975)*log.se),
-          relSSB = est/SSBproxy
-  )
-
-
-# Recruitment
-Rect <- 
-  bind_cols(Year = model.yrs,
-            log.est = as.vector(WHAM_basic.ests[['log_NAA_rep']][,1]),
-            log.se  = as.vector(WHAM_basic.sd[['log_NAA_rep']][,1])
-  ) %>%
-  mutate( est = exp(log.est),
-          lo = exp(log.est - qnorm(0.975)*log.se),
-          hi = exp(log.est + qnorm(0.975)*log.se)
-  )
 
 
 
 ### Previous model
 
-# Import model fit
-prev.model.rds <- paste(prev.run.name, "basic_model.rds", sep="_")
-prev.WHAM_basic <- readRDS(file.path(prev.run.dir, prev.model.rds))
+# Time series estimates
+prev.SSB.yr <- prev.env$SSB.yr
+prev.F.yr <- prev.env$F.yr
+prev.Rect.yr <- prev.env$Rect.yr
 
 # Reference points
-prev.Fproxy <- exp(prev.WHAM_basic$rep$log_FXSPR_static)
-  names(prev.Fproxy) <- 'est'
+prev.Fproxy <- prev.env$Fproxy
+prev.SSBproxy <- prev.env$SSBproxy.vec$est
+prev.MSYproxy <- prev.env$MSYproxy.vec$est
 
-prev.SSBproxy <- exp(prev.WHAM_basic$rep$log_SSB_FXSPR_static)
-  names(prev.SSBproxy) <- 'est'
+# Terminal year estimates
+# Unadjusted
+prev.unadj.termyr.ests <- prev.env$unadj.termyr.ests
+# Rho-adjusted
+prev.adj.termyr.ests   <- prev.env$adj.termyr.ests
 
-prev.MSYproxy <- exp(prev.WHAM_basic$rep$log_Y_FXSPR_static)
-  names(prev.MSYproxy) <- 'est'
+# Mohn's rho estimates
+prev.mohns.rho <- prev.env$mohns.rho
 
 
 
@@ -158,7 +112,7 @@ create.brp.text <- function(brp.name, round.digits)
   output.text
 }
   
-# Apply runction to MSY, SSB and F proxies
+# Apply function to MSY, SSB and F proxies
 msy.text <- create.brp.text('MSYproxy', 0)
 ssb.text <- create.brp.text('SSBproxy', 0)
 f.text <- create.brp.text('Fproxy', 2)
@@ -167,65 +121,25 @@ f.text <- create.brp.text('Fproxy', 2)
 
 ### Current projections
 
-# # Terminal year estimates and relative status
-# relF.termyr <- relF[model.lyr,]
-# relSSB.termyr <- relSSB[model.lyr,]
-# 
-# rel.status <- data.frame(rbind(relF = relF.termyr, relSSB = relSSB.termyr))
-# termyr.ests <- data.frame(rbind('F' = F.yr[model.lyr,], SSB = SSB.yr[model.lyr,]))
+# Extract projected values
+proj.yrs <- proj.env$proj.yrs
+proj.summary <- proj.env$proj.summary
+proj.ssb <- proj.summary %>%
+  filter(Parameter == 'SSB') %>%
+  select(est, lo, hi) 
+proj.catch <- proj.summary %>%
+  filter(Parameter == 'Catch') %>%
+  select(est, lo, hi) 
+proj.f <- proj.summary %>%
+  filter(Parameter == 'F') %>%
+  select(est, lo, hi) 
+
+# Create text for SSB projections
+proj.ssb.text <- apply(proj.ssb, 1, function(x) {
+  paste(x['est'], " (", x['lo'], " - ", x['hi'], ")", sep="")
+})
 
 
-
-# # Create text for SSB projections
-# proj.yrs <- proj.env$proj.yrs
-# proj.ssb <- proj.env$ssb.table[,proj.yrs]
-# proj.ssb.text <- apply(proj.ssb, 2, function(x) {
-#   paste(x['Median'], " (", x['5th Percentile'], " - ", x['95th Percentile'], ")", sep="")
-# })
-# 
-# # > proj.yrs
-# # [1] "2020" "2021" "2022" "2023"
-# # > proj.ssb
-# # 2020   2021   2022   2023
-# # Median           62039  70137  84382 103970
-# # 5th Percentile   27791  29523  38079  52807
-# # 95th Percentile 120790 140000 188330 261522
-# # > proj.ssb.text
-# # 2020                      2021                      2022                      2023 
-# # "62039 (27791 - 120790)"  "70137 (29523 - 140000)"  "84382 (38079 - 188330)" "103970 (52807 - 261522)" 
-# 
-# 
-# 
-# 
-# 
-# # Terminal year estimates
-# terminal.yr.ests <- brp.env$terminal.yr.ests
-# 
-# 
-# # > terminal.yr.ests
-# # Estimate 5th percentile 95th percentile
-# # SSB.mt      42862.000       24371.10       75844.200
-# # Jan1B.mt    69858.000       43364.60      118175.000
-# # Rect.thous 135882.000      142802.25      178475.500
-# # Avg.F           0.458           0.25           0.865
-# 
-
-
-
-# ### Write csv files
-# 
-# if(proj.name == 'F40')
-# {
-#   # Model summary
-#   write.csv(rel.status, file.path(res_dir, "Relative.stock.status.csv"))
-#   write.csv(termyr.ests, file.path(res_dir, "Terminal.yr.ests.csv"))
-#   write.csv(brps, file.path(res_dir, "Reference.points.csv"), row.names = FALSE)
-# 
-#   write.csv(ssb.allyrs[model.yrs,], file.path(res_dir, "SSB.ests.csv"))
-#   write.csv(Fmax.allyrs[model.yrs,], file.path(res_dir, "F.ests.csv"))
-#   write.csv(catch.allyrs[model.yrs,], file.path(res_dir, "Observed.catch.csv"))
-#   write.csv(Rect.allyrs[model.yrs,], file.path(res_dir, "Rect.ests.csv"))
-# }
-# 
+save.image(file.path(run.dir, paste(run.name, "Outputs.For.Report.RDATA", sep='.')))
 
 
