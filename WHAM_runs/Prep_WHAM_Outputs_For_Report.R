@@ -140,6 +140,41 @@ proj.ssb.text <- apply(proj.ssb, 1, function(x) {
 })
 
 
+
+### Create model results tables
+model.summary <- SSB.yr %>%
+  select(Year, est, CV) %>%
+  rename(SSB = est,
+         SSB.CV = CV) %>%
+  full_join(., F.yr[,c('Year','est','CV')]) %>%
+  rename(F = est,
+         F.CV = CV) %>%
+  full_join(., Rect.yr[,c('Year','est','CV')]) %>%
+  rename(Rect = est,
+         Rect.CV = CV)   
+
+prev.model.summary <- prev.SSB.yr %>%
+  select(Year, est, CV) %>%
+  rename(prev.SSB = est,
+         prev.SSB.CV = CV) %>%
+  full_join(., prev.F.yr[,c('Year','est','CV')]) %>%
+  rename(prev.F = est,
+         prev.F.CV = CV) %>%
+  full_join(., prev.Rect.yr[,c('Year','est','CV')]) %>%
+  rename(prev.Rect = est,
+         prev.Rect.CV = CV)   
+
+            
+comb.model.summary <- full_join(
+  model.summary,
+  prev.model.summary
+)
+
+
+
+### Save and output results
+write.csv(comb.model.summary, file.path(run.dir, paste(run.name, "Model.Summary.For.Report.csv")), row.names=FALSE)
 save.image(file.path(run.dir, paste(run.name, "Outputs.For.Report.RDATA", sep='.')))
+
 
 
