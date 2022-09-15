@@ -4,14 +4,14 @@ library(wham)
 
 
 ### Current assessment details
-run.dir <- "WHAM_runs/Run2"
-run.name <- "WHAM_MT_Run2"
+run.dir <- "WHAM_runs/Run3"
+run.name <- "WHAM_MT_Run3"
 proj.name <- 'F40'
 
 
 ### Previous assessment details
-prev.run.dir <- "RT.2022.BridgeRuns/Run3"
-prev.run.name <- "WHAM_MT_BRun3"
+prev.run.dir <- "RT.2022.BridgeRuns/Run4"
+prev.run.name <- "WHAM_MT_BRun4"
 
 
 

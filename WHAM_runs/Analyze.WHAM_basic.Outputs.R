@@ -4,11 +4,11 @@ library(wham)
 
 
 ### Run details
-run.dir <- "WHAM_runs/Run3"
-run.name <- "WHAM_MT_Run3"
+# run.dir <- "WHAM_runs/Run3"
+# run.name <- "WHAM_MT_Run3"
 
-# run.dir <- "RT.2022.BridgeRuns/Run3"
-# run.name <- "WHAM_MT_BRun3"
+run.dir <- "RT.2022.BridgeRuns/Run4"
+run.name <- "WHAM_MT_BRun4"
 
 
 
