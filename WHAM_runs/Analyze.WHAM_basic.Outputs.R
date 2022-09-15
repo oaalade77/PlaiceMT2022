@@ -4,11 +4,11 @@ library(wham)
 
 
 ### Run details
-run.dir <- "WHAM_runs/Run2"
-run.name <- "WHAM_MT_Run2"
+# run.dir <- "WHAM_runs/Run2"
+# run.name <- "WHAM_MT_Run2"
 
-# run.dir <- "RT.2022.BridgeRuns/Run3"
-# run.name <- "WHAM_MT_BRun3"
+run.dir <- "RT.2022.BridgeRuns/Run3"
+run.name <- "WHAM_MT_BRun3"
 
 
 
@@ -76,22 +76,27 @@ FAA <- WHAM_basic$rep$FAA_tot
   colnames(FAA) <- ages.labels
 
 
+# Function to calculate CVs and CIs for estimated time series    
+calc.uncertainty <- function(series)  {
+  series %>%
+    mutate( est = exp(log.est),
+            se = exp(log.se),
+            CV = sqrt(exp(log.se*log.se)-1),
+            lo = exp(log.est - qnorm(0.975)*log.se),
+            hi = exp(log.est + qnorm(0.975)*log.se)
+    ) %>%
+    select(Year, est, se, CV, lo, hi)
+}  
+  
+  
 # Annual F
 F.yr <- 
   bind_cols(Year = model.yrs, 
-            log.est = as.vector(WHAM_basic.ests[['log_F']]),
-            log.se = as.vector(WHAM_basic.sd[['log_F']])
+            log.est = as.vector(WHAM_basic.ests[[var]]),
+            log.se = as.vector(WHAM_basic.sd[[var]])
   ) %>%
-  mutate( est = exp(log.est),
-          se = exp(log.se),
-          # CV = se/est,
-          lo = exp(log.est - qnorm(0.975)*log.se),
-          hi = exp(log.est + qnorm(0.975)*log.se),
-          relF = est/Fproxy
-  ) %>%
-  # select(Year, est, se, CV, lo, hi, relF)
-  select(Year, est, se, lo, hi, relF)
-
+  calc.uncertainty() %>%
+  mutate( relF = est/Fproxy )
 
 
 # Annual SSB
@@ -100,15 +105,8 @@ SSB.yr <-
             log.est = as.vector(WHAM_basic.ests[['log_SSB']]),
             log.se = as.vector(WHAM_basic.sd[['log_SSB']])
   ) %>%
-  mutate( est = exp(log.est),
-          se = exp(log.se),
-          # CV = se/est,
-          lo = exp(log.est - qnorm(0.975)*log.se),
-          hi = exp(log.est + qnorm(0.975)*log.se),
-          relSSB = est/SSBproxy
-  ) %>%
-  # select(Year, est, se, CV, lo, hi, relSSB)
-  select(Year, est, se, lo, hi, relSSB)
+  calc.uncertainty() %>%
+  mutate( relSSB = est/SSBproxy )
 
 
 # Recruitment
@@ -117,15 +115,7 @@ Rect.yr <-
             log.est = as.vector(WHAM_basic.ests[['log_NAA_rep']][,1]),
             log.se  = as.vector(WHAM_basic.sd[['log_NAA_rep']][,1])
   ) %>%
-  mutate( est = exp(log.est),
-          se = exp(log.se),
-          # CV = se/est,
-          lo = exp(log.est - qnorm(0.975)*log.se),
-          hi = exp(log.est + qnorm(0.975)*log.se)
-  ) %>%
-  # select(Year, est, se, CV, lo, hi)
-  select(Year, est, se, lo, hi)
-
+  calc.uncertainty()
 
 
 # Terminal year estimates
@@ -136,7 +126,7 @@ termyr.ests <- bind_rows(
   ) %>%
   bind_rows(., 
             filter(Rect.yr, Year == model.lyr) %>% mutate(Parameter = "Rect")) %>%
-  select(Parameter, est, lo, hi, BRP.ratio) 
+  select(Parameter, est, CV, lo, hi, BRP.ratio) 
 
 
 
@@ -182,6 +172,5 @@ write.csv(adj.termyr.ests, file.path(basic.dir, "Rho.adj.terminal.yr.ests.csv"),
 
 rm(WHAM_basic, input)
 save.image(file.path(basic.dir, paste(run.name, "WHAM_basic.Outputs.RDATA",sep='.')))
-
 
 
