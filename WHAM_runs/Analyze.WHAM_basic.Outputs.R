@@ -7,6 +7,9 @@ library(wham)
 run.dir <- "WHAM_runs/Run2"
 run.name <- "WHAM_MT_Run2"
 
+# run.dir <- "RT.2022.BridgeRuns/Run3"
+# run.name <- "WHAM_MT_BRun3"
+
 
 
 ######################################################
@@ -80,11 +83,14 @@ F.yr <-
             log.se = as.vector(WHAM_basic.sd[['log_F']])
   ) %>%
   mutate( est = exp(log.est),
+          se = exp(log.se),
+          # CV = se/est,
           lo = exp(log.est - qnorm(0.975)*log.se),
           hi = exp(log.est + qnorm(0.975)*log.se),
           relF = est/Fproxy
   ) %>%
-  select(Year, est, lo, hi, relF)
+  # select(Year, est, se, CV, lo, hi, relF)
+  select(Year, est, se, lo, hi, relF)
 
 
 
@@ -95,11 +101,14 @@ SSB.yr <-
             log.se = as.vector(WHAM_basic.sd[['log_SSB']])
   ) %>%
   mutate( est = exp(log.est),
+          se = exp(log.se),
+          # CV = se/est,
           lo = exp(log.est - qnorm(0.975)*log.se),
           hi = exp(log.est + qnorm(0.975)*log.se),
           relSSB = est/SSBproxy
   ) %>%
-  select(Year, est, lo, hi, relSSB)
+  # select(Year, est, se, CV, lo, hi, relSSB)
+  select(Year, est, se, lo, hi, relSSB)
 
 
 # Recruitment
@@ -109,10 +118,13 @@ Rect.yr <-
             log.se  = as.vector(WHAM_basic.sd[['log_NAA_rep']][,1])
   ) %>%
   mutate( est = exp(log.est),
+          se = exp(log.se),
+          # CV = se/est,
           lo = exp(log.est - qnorm(0.975)*log.se),
           hi = exp(log.est + qnorm(0.975)*log.se)
   ) %>%
-  select(Year, est, lo, hi)
+  # select(Year, est, se, CV, lo, hi)
+  select(Year, est, se, lo, hi)
 
 
 
@@ -128,21 +140,48 @@ termyr.ests <- bind_rows(
 
 
 
+### Retrospective analysis
+
+# Extract Mohns rho estimates
+mohns.rho <- mohns_rho(WHAM_basic)
+  names(mohns.rho)[names(mohns.rho)=='Fbar'] <- 'F'
+  names(mohns.rho)[names(mohns.rho)=='R'] <- 'Rect'
+  
+# Function to calculate rho-adjusted values using Mohn's rho
+calc.rho.adj.ests <- function(orig.ests, rho)
+{
+  adj.ests <- (1/(1+rho))*orig.ests
+  adj.ests
+}
+
+# Extracted unadjusted values
+unadj.termyr.ests <- termyr.ests$est
+  names(unadj.termyr.ests) <- termyr.ests$Parameter
+
+# Calculated adjusted values for SSB and F
+adj.termyr.ests <- calc.rho.adj.ests(orig.ests = unadj.termyr.ests,
+                                     rho = mohns.rho[names(unadj.termyr.ests)])
+
+
+
 ### Write csv files
 
 basic.dir <- file.path(run.dir, 'basic_results')
 if(!dir.exists(basic.dir)) {dir.create(basic.dir)}
 
-write.csv(termyr.ests, file.path(basic.dir, "Terminal.yr.ests.csv"), row.names = FALSE)
 write.csv(brps, file.path(basic.dir, "Reference.points.csv"), row.names = FALSE)
 write.csv(SSB.yr, file.path(basic.dir, "SSB.ests.csv"), row.names = FALSE)
 write.csv(F.yr, file.path(basic.dir, "F.ests.csv"), row.names = FALSE)
 write.csv(Rect.yr, file.path(basic.dir, "Rect.ests.csv"))
+write.csv(termyr.ests, file.path(basic.dir, "Terminal.yr.ests.csv"), row.names = FALSE)
+write.csv(adj.termyr.ests, file.path(basic.dir, "Rho.adj.terminal.yr.ests.csv"), row.names = FALSE)
+
 
 
 ### Save workspace
 
 rm(WHAM_basic, input)
-save.image(file.path(basic.dir, "WHAM_basic.Outputs.RDATA"))
+save.image(file.path(basic.dir, paste(run.name, "WHAM_basic.Outputs.RDATA",sep='.')))
+
 
 
