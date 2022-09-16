@@ -1,0 +1,16 @@
+Warning messages:
+1: In sqrt(diag(object$cov.fixed)) : NaNs produced
+2: In fit_wham(temp, do.retro = FALSE, do.osa = FALSE) : 
+** Error during model fit. **
+Check for unidentifiable parameters.
+
+system is computationally singular: reciprocal condition number = 9.04696e-33
+
+3: In fit_wham(temp, do.retro = FALSE, do.osa = FALSE) : 
+** Error during model fit. **
+Check for unidentifiable parameters.
+
+system is computationally singular: reciprocal condition number = 1.36141e-16
+
+4: In calc_hindcast_mase(model$hindcast, horizon = horizon, drop = drop) :
+  Check the following indices for missing data in the chosen horizon years (if missing, could result in MASE value of INF): index1-indexpaa1  index3-indexpaa3

@@ -8,7 +8,10 @@
   # hindcast() calls the above for specified time horizon(s) and indices to drop
 
 ##### Source files with functions to calculate MASE #####
-source(paste("/Users/amandahart/Research/PlaiceWG2021", "WG_Revised_Runs/MASE_Diagnostic", "hindcast.R", sep="/"))
+run.dir <- "WHAM_runs/Run2"
+mase.dir <- "WHAM_runs/Run2/MASE"
+#source(paste("/Users/amandahart/Research/PlaiceWG2021", "WG_Revised_Runs/MASE_Diagnostic", "hindcast.R", sep="/"))
+file.path(paste(mase.dir,"hindcast.R"))
 library(wham)
 
 
@@ -17,7 +20,8 @@ library(wham)
 ############################################################
 
 ##### Read in fitted research track candidate models #####
-model <- readRDS() # !!! This is where the full file path to fitted model object saved as .rds file should be provided
+#model <- readRDS() # !!! This is where the full file path to fitted model object saved as .rds file should be provided
+model <- readRDS(file.path(run.dir, WHAM_MT_Run2_basic_model.rds))
 
 ##### Calculate hindcast #####
 # Set up storage
