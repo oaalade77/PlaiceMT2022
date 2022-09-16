@@ -88,6 +88,7 @@ input <- prepare_wham_input(asap3,
                            )
 
 # Set specification of FXSPR_static to be based on the last five years
+#### Ask Tim about years pulled -- there are 42 years in the model but Tim said to pull years 37:41 for FXSPR_static
 input$data$avg_years_ind = (input$data$n_years_model-5):(input$data$n_years_model-1)
 
 #fix the q values
