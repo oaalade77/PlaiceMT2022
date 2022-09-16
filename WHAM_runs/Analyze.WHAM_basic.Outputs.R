@@ -4,11 +4,11 @@ library(wham)
 
 
 ### Run details
-# run.dir <- "WHAM_runs/Run3"
-# run.name <- "WHAM_MT_Run3"
+# run.dir <- "WHAM_runs/Run4"
+# run.name <- "WHAM_MT_Run4"
 
-run.dir <- "RT.2022.BridgeRuns/Run4"
-run.name <- "WHAM_MT_BRun4"
+run.dir <- "RT.2022.BridgeRuns/Run5"
+run.name <- "WHAM_MT_BRun5"
 
 
 
@@ -88,7 +88,23 @@ calc.uncertainty <- function(series)  {
     select(Year, est, se, CV, lo, hi)
 }  
   
-  
+
+# Function to calculate rho-adjusted values
+calc.rho.adj.ests <- function(series, rho)  {
+  series %>%
+    mutate( est.adj = (1/(1+rho))*est,
+            lo.adj  = (1/(1+rho))*lo,
+            hi.adj  = (1/(1+rho))*hi
+    )
+}
+
+
+# Extract Mohns rho estimates
+mohns.rho <- mohns_rho(WHAM_basic)
+  names(mohns.rho)[names(mohns.rho)=='Fbar'] <- 'F'
+  names(mohns.rho)[names(mohns.rho)=='R'] <- 'Rect'
+
+
 # Annual F
 F.yr <- 
   bind_cols(Year = model.yrs, 
@@ -96,9 +112,11 @@ F.yr <-
             log.se = as.vector(WHAM_basic.sd[['log_F']])
   ) %>%
   calc.uncertainty() %>%
-  mutate( relF = est/Fproxy )
+  mutate( relF = est/Fproxy ) %>%
+  calc.rho.adj.ests(., mohns.rho['F']) %>%
+  mutate( relF.adj = est.adj/Fproxy )
 
-
+  
 # Annual SSB
 SSB.yr <- 
   bind_cols(Year = model.yrs,
@@ -106,7 +124,9 @@ SSB.yr <-
             log.se = as.vector(WHAM_basic.sd[['log_SSB']])
   ) %>%
   calc.uncertainty() %>%
-  mutate( relSSB = est/SSBproxy )
+  mutate( relSSB = est/SSBproxy ) %>%
+  calc.rho.adj.ests(., mohns.rho['SSB']) %>%
+  mutate( relSSB.adj = est.adj/SSBproxy )   
 
 
 # Recruitment
@@ -115,42 +135,19 @@ Rect.yr <-
             log.est = as.vector(WHAM_basic.ests[['log_NAA_rep']][,1]),
             log.se  = as.vector(WHAM_basic.sd[['log_NAA_rep']][,1])
   ) %>%
-  calc.uncertainty()
+  calc.uncertainty() %>%
+  calc.rho.adj.ests(., mohns.rho['Rect'])
 
 
-# Terminal year estimates
-termyr.ests <- bind_rows(
-  F = filter(F.yr, Year == model.lyr) %>% rename(BRP.ratio = relF),
-  SSB = filter(SSB.yr, Year == model.lyr) %>% rename(BRP.ratio = relSSB),
+# Terminal year estimates with cis
+termyr.ests.cis <- bind_rows(
+  F = filter(F.yr, Year == model.lyr) %>% rename(BRP.ratio = relF, BRP.ratio.adj = relF.adj),
+  SSB = filter(SSB.yr, Year == model.lyr) %>% rename(BRP.ratio = relSSB, BRP.ratio.adj = relSSB.adj),
   .id = "Parameter"
-  ) %>%
+) %>%
   bind_rows(., 
             filter(Rect.yr, Year == model.lyr) %>% mutate(Parameter = "Rect")) %>%
-  select(Parameter, est, CV, lo, hi, BRP.ratio) 
-
-
-
-### Retrospective analysis
-
-# Extract Mohns rho estimates
-mohns.rho <- mohns_rho(WHAM_basic)
-  names(mohns.rho)[names(mohns.rho)=='Fbar'] <- 'F'
-  names(mohns.rho)[names(mohns.rho)=='R'] <- 'Rect'
-  
-# Function to calculate rho-adjusted values using Mohn's rho
-calc.rho.adj.ests <- function(orig.ests, rho)
-{
-  adj.ests <- (1/(1+rho))*orig.ests
-  adj.ests
-}
-
-# Extracted unadjusted values
-unadj.termyr.ests <- termyr.ests$est
-  names(unadj.termyr.ests) <- termyr.ests$Parameter
-
-# Calculated adjusted values for SSB and F
-adj.termyr.ests <- calc.rho.adj.ests(orig.ests = unadj.termyr.ests,
-                                     rho = mohns.rho[names(unadj.termyr.ests)])
+  select(Parameter, est, CV, lo, hi, BRP.ratio, est.adj, lo.adj, hi.adj, BRP.ratio.adj) 
 
 
 
@@ -162,9 +159,8 @@ if(!dir.exists(basic.dir)) {dir.create(basic.dir)}
 write.csv(brps, file.path(basic.dir, "Reference.points.csv"), row.names = FALSE)
 write.csv(SSB.yr, file.path(basic.dir, "SSB.ests.csv"), row.names = FALSE)
 write.csv(F.yr, file.path(basic.dir, "F.ests.csv"), row.names = FALSE)
-write.csv(Rect.yr, file.path(basic.dir, "Rect.ests.csv"))
-write.csv(termyr.ests, file.path(basic.dir, "Terminal.yr.ests.csv"), row.names = FALSE)
-write.csv(adj.termyr.ests, file.path(basic.dir, "Rho.adj.terminal.yr.ests.csv"), row.names = FALSE)
+write.csv(Rect.yr, file.path(basic.dir, "Rect.ests.csv"), row.names = FALSE)
+write.csv(termyr.ests.cis, file.path(basic.dir, "Terminal.yr.ests.csv"), row.names = FALSE)
 
 
 
