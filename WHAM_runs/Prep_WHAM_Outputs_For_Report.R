@@ -16,6 +16,10 @@ prev.run.name <- "WHAM_MT_BRun5"
 prev.retro.signif <- FALSE
 
 
+### Specify network directory for report data folder
+net.dir <- '//net.nefsc.noaa.gov/home0/kcurti/Other_Species/Am.Plaice/data'
+
+
 ######################################################
 
 
@@ -203,8 +207,6 @@ save.image(file.path(run.dir, paste(run.name, "Outputs.For.Report.RDATA", sep='.
 
 
 ### Save to copies to report directory on network
-net.dir <- '//net.nefsc.noaa.gov/home0/kcurti/Other_Species/Am.Plaice/data'
-
 write.csv(comb.model.summary.round, file.path(net.dir, "model_results.csv"), row.names=FALSE)
 save.image(file.path(net.dir, paste(run.name, "Outputs.For.Report.RDATA", sep='.')))
 
