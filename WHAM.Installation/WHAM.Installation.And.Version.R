@@ -23,7 +23,6 @@ detach("package:datasets")
 detach("package:methods")
 detach("org:r-lib")
 detach("Autoloads")
-# detach("tools:rstudio")
 
 
 remove.packages("TMB")
