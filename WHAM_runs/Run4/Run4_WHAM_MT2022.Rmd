@@ -191,7 +191,7 @@ if(run.osa == TRUE)
   osa_dir <- file.path(run.dir, 'osa_results')
   if(!dir.exists(osa_dir)) {dir.create(osa_dir)}
   
-  plot_wham_output(mod=WHAM_osa, out.type='html')
+  # plot_wham_output(mod=WHAM_osa, out.type='html')
   plot_wham_output(mod=WHAM_osa, out.type='png', dir.main = osa_dir)
 
   saveRDS(WHAM_osa, file= file.path(run.dir, paste(run.name, "osa_model.rds", sep="_")))
