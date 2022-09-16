@@ -4,15 +4,16 @@ library(wham)
 
 
 ### Current assessment details
-run.dir <- "WHAM_runs/Run3"
-run.name <- "WHAM_MT_Run3"
+run.dir <- "WHAM_runs/Run4"
+run.name <- "WHAM_MT_Run4"
 proj.name <- 'F40'
+retro.signif <- FALSE
 
 
 ### Previous assessment details
-prev.run.dir <- "RT.2022.BridgeRuns/Run4"
-prev.run.name <- "WHAM_MT_BRun4"
-
+prev.run.dir <- "RT.2022.BridgeRuns/Run5"
+prev.run.name <- "WHAM_MT_BRun5"
+prev.retro.signif <- FALSE
 
 
 ######################################################
@@ -51,20 +52,23 @@ SSBproxy.vec <- basic.env$SSBproxy.vec
 MSYproxy.vec <- basic.env$MSYproxy.vec  
 
 # Terminal year estimates
-termyr.ests.with.cis <- basic.env$termyr.ests
-termyr.ssb  <- termyr.ests.with.cis %>% filter(Parameter == "SSB") %>% select(est) %>% pull()  
-termyr.f    <- termyr.ests.with.cis %>% filter(Parameter == "F") %>% select(est) %>% pull()  
-termyr.rect <- termyr.ests.with.cis %>% filter(Parameter == "Rect") %>% select(est) %>% pull()  
+termyr.ests.cis <- basic.env$termyr.ests.cis
+# If retro is not significant, select the original estimate (est); If it is, select the adjusted estimates (est.adj)
+if(retro.signif==FALSE)  {param = 'est'} else {param = 'est.adj'}
+termyr.ssb  <- termyr.ests.cis %>% filter(Parameter == "SSB") %>% select(all_of(param)) %>% pull()  
+termyr.f    <- termyr.ests.cis %>% filter(Parameter == "F")   %>% select(all_of(param)) %>% pull()  
+termyr.rect <- termyr.ests.cis %>% filter(Parameter == "Rect") %>% select(all_of(param)) %>% pull()  
 
-# Terminal year estimates in vector form
-unadj.termyr.ests <- basic.env$unadj.termyr.ests
+# Un-adjusted terminal year estimates
+unadj.termyr.ests <- termyr.ests.cis$est
+  names(unadj.termyr.ests) <- termyr.ests.cis$Parameter
 
-# Retro adjusted terminal year estimates
-adj.termyr.ests <- basic.env$adj.termyr.ests
+# Retro-adjusted terminal year estimates
+adj.termyr.ests <- termyr.ests.cis$est.adj
+  names(adj.termyr.ests) <- termyr.ests.cis$Parameter
 
 # Mohn's rho estimates
 mohns.rho <- basic.env$mohns.rho
-
 
 
 
@@ -81,12 +85,22 @@ prev.SSBproxy <- prev.env$SSBproxy.vec$est
 prev.MSYproxy <- prev.env$MSYproxy.vec$est
 
 # Terminal year estimates
-# Unadjusted
-prev.unadj.termyr.ests <- prev.env$unadj.termyr.ests
-# Rho-adjusted
-prev.adj.termyr.ests   <- prev.env$adj.termyr.ests
+prev.termyr.ests.cis <- basic.env$termyr.ests.cis
+# If retro is not significant, select the original estimate (est); If it is, select the adjusted estimates (est.adj)
+if(prev.retro.signif==FALSE)  {prev.param = 'est'} else {prev.param = 'est.adj'}
+prev.termyr.ssb  <- prev.termyr.ests.cis %>% filter(Parameter == "SSB") %>% select(all_of(prev.param)) %>% pull()  
+prev.termyr.f    <- prev.termyr.ests.cis %>% filter(Parameter == "F")   %>% select(all_of(prev.param)) %>% pull()  
+prev.termyr.rect <- prev.termyr.ests.cis %>% filter(Parameter == "Rect") %>% select(all_of(prev.param)) %>% pull()  
 
-# Mohn's rho estimates
+# Unadjusted
+prev.unadj.termyr.ests <- prev.termyr.ests.cis$est
+  names(prev.unadj.termyr.ests) <- prev.termyr.ests.cis$Parameter
+
+# Rho-adjusted
+prev.adj.termyr.ests   <- prev.termyr.ests.cis$est.adj
+  names(prev.adj.termyr.ests) <- prev.termyr.ests.cis$Parameter
+
+  # Mohn's rho estimates
 prev.mohns.rho <- prev.env$mohns.rho
 
 
@@ -193,6 +207,5 @@ net.dir <- '//net.nefsc.noaa.gov/home0/kcurti/Other_Species/Am.Plaice/data'
 
 write.csv(comb.model.summary.round, file.path(net.dir, "model_results.csv"), row.names=FALSE)
 save.image(file.path(net.dir, paste(run.name, "Outputs.For.Report.RDATA", sep='.')))
-
 
 
