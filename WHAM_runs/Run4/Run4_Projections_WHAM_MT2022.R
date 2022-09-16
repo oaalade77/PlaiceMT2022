@@ -1,4 +1,4 @@
-# WHAM_basic = naa5 in Larry's file
+# Tim indicated that there are now easier ways to specify interim catch and F's with the newest WHAM development release but they are not implemented here
 
 
 ### Code to run short-term projections in WHAM
@@ -23,12 +23,15 @@ library(tidyverse)
 library(wham)
 
 
+# Read in basic model RDS file
 basic.rdsname <- paste(run.name, "basic_model.rds", sep="_")
 WHAM_basic <- readRDS(file.path(run.dir, basic.rdsname))
 
+# Determine projection years
 interim.nyrs <- length(interim.mt)
 tot.proj.nyrs <- interim.nyrs + proj.nyrs
 
+# Creates projection directory
 proj.dir <- file.path(run.dir, "projections")
 if(!dir.exists(proj.dir)) {dir.create(proj.dir)}
 
