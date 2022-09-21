@@ -121,7 +121,8 @@ for(imod in 1:n.mods){
     fit2 <- tryCatch(fit_wham(inputEM, do.sdrep=TRUE, do.osa=F, do.retro=F, do.proj=F, MakeADFun.silent=TRUE),
       error = function(e) conditionMessage(e))
     
-    if(fit2 == "NA/NaN gradient evaluation"){ # If issue with gradient, save message and fill data storage with NA
+    if(fit2[1] == "NA/NaN gradient evaluation"){ ### KLC added the [1] to fit2
+      # If issue with gradient, save message and fill data storage with NA
       reps[[isim]]$error <- fit2
       reps[[isim]]$hessian = "NA"
       reps[[isim]]$na_sdrep = "NA"
@@ -152,7 +153,8 @@ for(imod in 1:n.mods){
     } # End if statement about NA/NaN gradient
 				
 		rm(list=c("inputEM","fit2")) # remove temporary input and fit data for model-specific simulation
-  } # End loop over model-specific simulations
+		
+  } ### End loop over model-specific simulations
   
   rm(list=c("simdata")) # Remove temporary data for model
   
@@ -160,7 +162,7 @@ for(imod in 1:n.mods){
   saveRDS(sdreps, file = file.path(st.dir, paste0("sdreps_",names(models)[imod],".rds")))
   saveRDS(reps,   file = file.path(st.dir, paste0("reps_", names(models)[imod],".rds")))
   
-} # End loop over models
+} ### End loop over models
 
 
 #TJM STOPPED HERE.
@@ -170,11 +172,11 @@ for(imod in 1:n.mods){
 # Loop over models to generate summary statistics and plots for self-tests
 for(imod in 1:n.mods){
   # Read in reps and simdata for specific model
-  simdata <- readRDS(paste(here::here(), "WG_Revised_Runs", "Plaice_Self_Test", paste0("simdata_OM", names(models)[imod], "_tjm.rds"), sep="/"))
+  simdata <- readRDS(file.path(st.dir, paste0("simdata_OM", names(models)[imod], ".rds")))
   # Read in rep data
-  reps <- readRDS(file=paste(here::here(), "WG_Revised_Runs", "Plaice_Self_Test", paste0("reps_", names(models)[imod],".rds"), sep="/"))
+  reps <- readRDS(file.path(st.dir, paste0("reps_", names(models)[imod],".rds")))
   # Read in sdreps data
-  sdreps <- readRDS(file=paste(here::here(), "WG_Revised_Runs", "Plaice_Self_Test", paste0("sdreps_",names(models)[imod],".rds"), sep="/"))
+  sdreps <- readRDS(file.path(st.dir, paste0("sdreps_",names(models)[imod],".rds")))
   
   
   # Loop over sims to pull out data needed for plotting - long form data by simulation
@@ -253,7 +255,7 @@ for(imod in 1:n.mods){
   plotData <- cbind(plotData, converge, sdrepConverge)
   
   # Save plot data for this run
-  saveRDS(plotData, file=paste(here::here(), "WG_Revised_Runs", "Plaice_Self_Test", paste0("plotData_", names(models)[imod],".rds"), sep="/"))
+  saveRDS(plotData, file=file.path(st.dir, paste0("plotData_", names(models)[imod],".rds")))
   
     
   # ##### Pick out parameters with consistent std errors = NaN, uncomment to look at what parameters are not NaNs - to use FILTER SPECIFIC MODEL FIRST
@@ -293,12 +295,13 @@ for(imod in 1:n.mods){
 
 ##### Plot results of self test #####
 #Adapted from best_v4_4_results.R
+# install.packages(c("ggplotFL"), repos="http://flr-project.org/R")
 library(ggplotFL)
 
 # Combine plot data across runs
 plotData <- NULL
 for(imod in 1:n.mods){
-  tempPlot <- readRDS(plotData, file=paste(here::here(), "WG_Revised_Runs", "Plaice_Self_Test", paste0("plotData_", names(models)[imod],".rds"), sep="/"))
+  tempPlot <- readRDS(plotData, file=file.path(st.dir, paste0("plotData_", names(models)[imod],".rds")))
 
   plotData <- rbind(plotData, tempPlot) # Append run to larger plot data set
 }
@@ -316,6 +319,7 @@ plotData$estR <- as.numeric(plotData$estR)
 plotData$relR <- as.numeric(plotData$relR)
 
 # SSB relative error: SSB (sim fit) / SSB (sim data)
+windows()
 ggplot(plotData, aes(x=Year, y=relSSB)) +
   stat_flquantiles(probs=c(0.25, 0.75), alpha=0.5, fill="grey", geom="ribbon") + # middle 50%
   stat_flquantiles(probs=c(0.10, 0.90), alpha=0.35, fill="grey", geom="ribbon") + # middle 80%
@@ -328,9 +332,10 @@ ggplot(plotData, aes(x=Year, y=relSSB)) +
   facet_wrap(facets = "model") + 
   theme_bw() +
   theme(axis.text.x = element_text(size=8), plot.margin = unit(c(0.3,0.3,0.1,0.1), "in"))
-ggsave(file=here::here("WG_Revised_Runs", "Plaice_Self_Test", "plots", "relError_SSB.png"), width=8, height = 5)
+ggsave(file=file.path(st.dir, "relError_SSB.png"), width=8, height = 5)
 
 # SSB boxplots (collapse time series)
+windows()
 ggplot(plotData, aes(x=model, y=relSSB)) +
         geom_boxplot(aes(fill=model), outlier.shape = NA) +
         scale_fill_jco(name="Estimation model") +
@@ -340,9 +345,10 @@ ggplot(plotData, aes(x=model, y=relSSB)) +
         geom_hline(yintercept = 1, linetype=2, color='black') +
         theme_bw() +
         theme(plot.title = element_text(hjust = 0.5))
-ggsave(file=here::here("WG_Revised_Runs", "Plaice_Self_Test", "plots", "boxplot_SSB.png"), height = 5, width = 4)
+ggsave(file=file.path(st.dir, "boxplot_SSB.png"), height = 5, width = 4)
 
 # Fbar relative error: Fbar (sim fit) / Fbar (sim data)
+windows()
 ggplot(plotData, aes(x=Year, y=relF)) +
   stat_flquantiles(probs=c(0.25, 0.75), alpha=0.5, fill="grey", geom="ribbon") + # middle 50%
   stat_flquantiles(probs=c(0.10, 0.90), alpha=0.35, fill="grey", geom="ribbon") + # middle 80%
@@ -355,9 +361,10 @@ ggplot(plotData, aes(x=Year, y=relF)) +
   facet_wrap(facets = "model") + 
   theme_bw() +
   theme(axis.text.x = element_text(size=8), plot.margin = unit(c(0.3,0.3,0.1,0.1), "in"))
-ggsave(file=here::here("WG_Revised_Runs", "Plaice_Self_Test", "plots", "relError_Fbar.png"), width=8, height = 5)
+ggsave(file=file.path(st.dir, "relError_Fbar.png"), width=8, height = 5)
 
 # Fbar boxplots (collapse time series)
+windows()
 ggplot(plotData, aes(x=model, y=relF)) +
   geom_boxplot(aes(fill=model), outlier.shape = NA) +
   scale_fill_jco(name="Estimation model") +
@@ -367,9 +374,10 @@ ggplot(plotData, aes(x=model, y=relF)) +
   geom_hline(yintercept = 1, linetype=2, color='black') +
   theme_bw() +
   theme(plot.title = element_text(hjust = 0.5))
-ggsave(file=here::here("WG_Revised_Runs", "Plaice_Self_Test", "plots", "boxplot_Fbar.png"), height = 5, width = 4)
+ggsave(file=file.path(st.dir, "boxplot_Fbar.png"), height = 5, width = 4)
 
 # R relative error: R (sim fit) / R (sim data)
+windows()
 ggplot(plotData, aes(x=Year, y=relR)) +
   stat_flquantiles(probs=c(0.25, 0.75), alpha=0.5, fill="grey", geom="ribbon") + # middle 50%
   stat_flquantiles(probs=c(0.10, 0.90), alpha=0.35, fill="grey", geom="ribbon") + # middle 80%
@@ -382,9 +390,10 @@ ggplot(plotData, aes(x=Year, y=relR)) +
   facet_wrap(facets = "model") + 
   theme_bw() +
   theme(axis.text.x = element_text(size=8), plot.margin = unit(c(0.3,0.3,0.1,0.1), "in"))
-ggsave(file=here::here("WG_Revised_Runs", "Plaice_Self_Test", "plots", "relError_R.png"), width=8, height = 5)
+ggsave(file=file.path(st.dir, "relError_R.png"), width=8, height = 5)
 
 # R boxplots (collapse time series)
+windows()
 ggplot(plotData, aes(x=model, y=relR)) +
   geom_boxplot(aes(fill=model), outlier.shape = NA) +
   scale_fill_jco(name="Estimation model") +
@@ -394,9 +403,10 @@ ggplot(plotData, aes(x=model, y=relR)) +
   geom_hline(yintercept = 1, linetype=2, color='black') +
   theme_bw() +
   theme(plot.title = element_text(hjust = 0.5))
-ggsave(file=here::here("WG_Revised_Runs", "Plaice_Self_Test", "plots", "boxplot_R.png"), height = 5, width = 4)
+ggsave(file=file.path(st.dir, "boxplot_R.png"), height = 5, width = 4)
 
 # Catch relative error: Catch (sim fit) / Catch (sim data)
+windows()
 ggplot(plotData, aes(x=Year, y=relCat)) +
   stat_flquantiles(probs=c(0.25, 0.75), alpha=0.5, fill="grey", geom="ribbon") + # middle 50%
   stat_flquantiles(probs=c(0.10, 0.90), alpha=0.35, fill="grey", geom="ribbon") + # middle 80%
@@ -409,9 +419,10 @@ ggplot(plotData, aes(x=Year, y=relCat)) +
   facet_wrap(facets = "model") + 
   theme_bw() +
   theme(axis.text.x = element_text(size=8), plot.margin = unit(c(0.3,0.3,0.1,0.1), "in"))
-ggsave(file=here::here("WG_Revised_Runs", "Plaice_Self_Test", "plots", "relError_Catch.png"), width=8, height = 5)
+ggsave(file=file.path(st.dir, "relError_Catch.png"), width=8, height = 5)
 
 # Catch boxplots (collapse time series)
+windows()
 ggplot(plotData, aes(x=model, y=relCat)) +
   geom_boxplot(aes(fill=model), outlier.shape = NA) +
   scale_fill_jco(name="Estimation model") +
@@ -421,14 +432,15 @@ ggplot(plotData, aes(x=model, y=relCat)) +
   geom_hline(yintercept = 1, linetype=2, color='black') +
   theme_bw() +
   theme(plot.title = element_text(hjust = 0.5))
-ggsave(file=here::here("WG_Revised_Runs", "Plaice_Self_Test", "plots", "boxplot_Catch.png"), height = 5, width = 4)
+ggsave(file=file.path(st.dir,  "boxplot_Catch.png"), height = 5, width = 4)
 
 ##### Calculate means (as in box plots) #####
+windows()
 plotData %>%
   group_by(model) %>% 
   select(relSSB, relF, relCat, relR, model) %>% 
   dplyr::summarise(meanSSB = median(relSSB), meanF = median(relF), meanCat = median(relCat), meanR = median(relR))
   
-# Another more detailed check (very small differences in relCat not captured in above due to rounding)
-plotData %>% filter(model == "Run29F2") %>%
-  summary(relSSB)
+# # Another more detailed check (very small differences in relCat not captured in above due to rounding)
+# plotData %>% filter(model == "Run29F2") %>%
+#   summary(relSSB)
