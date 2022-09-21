@@ -432,10 +432,9 @@ ggplot(plotData, aes(x=model, y=relCat)) +
   geom_hline(yintercept = 1, linetype=2, color='black') +
   theme_bw() +
   theme(plot.title = element_text(hjust = 0.5))
-ggsave(file=file.path(st.dir,  "boxplot_Catch.png"), height = 5, width = 4)
+ggsave(file=file.path(st.dir, "boxplot_Catch.png"), height = 5, width = 4)
 
 ##### Calculate means (as in box plots) #####
-windows()
 plotData %>%
   group_by(model) %>% 
   select(relSSB, relF, relCat, relR, model) %>% 
