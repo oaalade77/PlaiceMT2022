@@ -21,7 +21,7 @@ input.rds <- paste(run.name, "input.rds", sep="_")
 proj.rds <- paste(run.name, paste("Proj", proj.name, sep="_"), "rds", sep=".")
 
 # Projection directory
-proj.dir <- file.path(run.dir, "PDT_projections_Iter2", proj.name)
+proj.dir <- file.path(run.dir, "PDT_projections_Iter3", proj.name)
 
 
 ### Import model input, fit and projection files

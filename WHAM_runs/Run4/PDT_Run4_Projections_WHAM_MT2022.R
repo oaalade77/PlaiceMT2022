@@ -10,6 +10,7 @@ run.name <- "WHAM_MT_Run4"
 
 # Interim catch (mt)  MODIFY THIS
 interim.mt <- c(653,5699,5520,5270)
+
 names(interim.mt) <- c("2022", "2023", "2024", "2025")
   
 # Number of years in projections (not including interim catch year)
