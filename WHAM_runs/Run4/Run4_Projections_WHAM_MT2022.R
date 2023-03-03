@@ -13,7 +13,7 @@ interim.mt <- c(653)
   names(interim.mt) <- "2022"
   
 # Number of years in projections (not including interim catch year)
-proj.nyrs <- 2
+proj.nyrs <- 3
 
 
 ######################################################
