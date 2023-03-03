@@ -9,8 +9,8 @@ run.dir <- "WHAM_runs/Run4"
 run.name <- "WHAM_MT_Run4"
 
 # Interim catch (mt)  MODIFY THIS
-interim.mt <- c(653,5699,5520)
-names(interim.mt) <- c("2022", "2023", "2024")
+interim.mt <- c(653,5699,5520,5270)
+names(interim.mt) <- c("2022", "2023", "2024", "2025")
   
 # Number of years in projections (not including interim catch year)
 proj.nyrs <- 3
@@ -32,7 +32,7 @@ interim.nyrs <- length(interim.mt)
 tot.proj.nyrs <- interim.nyrs + proj.nyrs
 
 # Creates projection directory CHANGE THIS
-proj.dir <- file.path(run.dir, "PDT_projections_Iter2")
+proj.dir <- file.path(run.dir, "PDT_projections_Iter3")
 if(!dir.exists(proj.dir)) {dir.create(proj.dir)}
 
 
