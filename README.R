@@ -1,3 +1,6 @@
+# American plaice 2022 MT
+WHAM_runs/Run4 is the final 2022 MT model.
+
 ### Generic program order
 
 #### Code specific to the run
